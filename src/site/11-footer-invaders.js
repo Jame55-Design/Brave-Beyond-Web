@@ -1,5 +1,6 @@
 // BB Footer Invaders: Space Invaders in the footer on the home and Free Goodies pages.
 // Shots chip away at the pixelated Brave Beyond logo on their way up to the invaders.
+// A propeller plane towing a Brave Beyond banner flies over now and then: hit it for 100 points.
 // Pages: set in B.SEL below (Barba namespace + .bb-footer).
 
 // Styles, pages it runs on, colours and sprites
@@ -15,44 +16,86 @@
     '@media (max-width:479px){.bb-footer.bbinv-on{padding-top:32px}.bb-footer.bbinv-on .bbft-ig{left:16px;bottom:16px}}';
   document.head.appendChild(s);
   B.SEL = '[data-barba-namespace="home"] .bb-footer,[data-barba-namespace="goodies"] .bb-footer';
-  B.COL = { g: '#07A87E', ink: '#000101', lime: '#CEFF38', lav: '#E9DBEC' };
+  B.COL = { g: '#07A87E', ink: '#000101', lime: '#CEFF38', lav: '#E9DBEC', pts: '#CCFF00' };
   B.BLOB = [
     ['..XXXX..', '.XXXXXX.', 'XX.XX.XX', 'XXXXXXXX', '.XX..XX.', 'X.X..X.X'],
     ['..XXXX..', '.XXXXXX.', 'XX.XX.XX', 'XXXXXXXX', 'XX.XX.XX', '.X....X.']
   ];
   B.SHIP = ['.....X.....', '....XXX....', '...XXXXX...', '.XXXXXXXXX.', 'XXXXXXXXXXX', 'XX.X...X.XX'];
+  // Old-school propeller plane, nose facing right. X = body, W = wings, C = cockpit
+  B.PLANE = [
+    'XX..................',
+    'XXX......WWWWWWW....',
+    'XXXX.....W.....W....',
+    'XXXXXXXXXXXXXXXXXXX.',
+    '.XXXXXXXXXXXCCXXXXXX',
+    '..XXXXXXXXXXXXXXXXX.',
+    '.........WWWWWWW....',
+    '..........X....X....',
+    '.........XXX..XXX...'
+  ];
   B.spr = function (ctx, rows, x, y, c, px) {
     ctx.fillStyle = c;
     for (var r = 0; r < rows.length; r++)
       for (var k = 0; k < rows[r].length; k++)
         if (rows[r][k] === 'X') ctx.fillRect(Math.round(x + k * px), Math.round(y + r * px), px, px);
   };
+  // Multi-colour sprite; flip mirrors it left-right
+  B.spr2 = function (ctx, rows, x, y, px, map, flip) {
+    var n = rows[0].length;
+    for (var r = 0; r < rows.length; r++)
+      for (var k = 0; k < n; k++) {
+        var c = map[rows[r][k]];
+        if (!c) continue;
+        ctx.fillStyle = c;
+        ctx.fillRect(Math.round(x + (flip ? n - 1 - k : k) * px), Math.round(y + r * px), px, px);
+      }
+  };
   B.part = (B.part || 0) + 1;
 })();
 
-// pixel logo build + damage
+// pixel logo build + damage, banner, HUD button
 (function () {
   var B = window.BBI = window.BBI || {};
   var VB = [0, -15, 1697.27, 410];
-  B.buildLogo = function (g) {
-    var L = g.logo, C = g.C;
-    var w = Math.floor(g.W * 0.98 / C), h = Math.round(w * VB[3] / VB[2]);
+  // Rasterise the logo paths at w cells wide; returns {w, h, a} cropped to the lettering (a = alpha mask)
+  B.raster = function (paths, w) {
+    var h = Math.round(w * VB[3] / VB[2]);
     var t = document.createElement('canvas'); t.width = w; t.height = h;
     var x = t.getContext('2d');
     x.scale(w / VB[2], h / VB[3]); x.translate(-VB[0], -VB[1]);
-    for (var i = 0; i < g.paths.length; i++) x.fill(new Path2D(g.paths[i]));
+    for (var i = 0; i < paths.length; i++) x.fill(new Path2D(paths[i]));
     var src = x.getImageData(0, 0, w, h).data, y0 = h, y1 = 0, yy;
     for (i = 0; i < w * h; i++) if (src[i * 4 + 3] > 110) { yy = (i / w) | 0; if (yy < y0) y0 = yy; if (yy > y1) y1 = yy; }
-    var H2 = Math.max(1, y1 - y0 + 1), o = y0 * w;
-    L.w = w; L.h = H2; L.cv.width = w; L.cv.height = H2;
+    var H2 = Math.max(1, y1 - y0 + 1), o = y0 * w, a = new Uint8Array(w * H2);
+    for (i = 0; i < w * H2; i++) a[i] = src[(i + o) * 4 + 3] > 110 ? 1 : 0;
+    return { w: w, h: H2, a: a };
+  };
+  B.buildLogo = function (g) {
+    var L = g.logo, C = g.C, r = B.raster(g.paths, Math.floor(g.W * 0.98 / C));
+    L.w = r.w; L.h = r.h; L.cv.width = r.w; L.cv.height = r.h;
     var lc = L.cv.getContext('2d');
-    L.img = lc.createImageData(w, H2); L.cells = new Uint8Array(w * H2);
+    L.img = lc.createImageData(r.w, r.h); L.cells = r.a;
     var n = 0, d = L.img.data;
-    for (i = 0; i < w * H2; i++) if (src[(i + o) * 4 + 3] > 110) { L.cells[i] = 1; n++; d[i * 4 + 1] = 1; d[i * 4 + 2] = 1; d[i * 4 + 3] = 255; }
+    for (var i = 0; i < r.w * r.h; i++) if (r.a[i]) { n++; d[i * 4 + 1] = 1; d[i * 4 + 2] = 1; d[i * 4 + 3] = 255; }
     L.total = n || 1; L.alive = n;
-    L.x = Math.round((g.W - w * C) / 2);
-    L.y = g.H - 96 - H2 * C;
+    L.x = Math.round((g.W - r.w * C) / 2);
+    L.y = g.H - 96 - r.h * C;
     lc.putImageData(L.img, 0, 0);
+  };
+  // Pixel banner: lavender cloth with the logo in ink, 1 canvas pixel per cell (drawn scaled up)
+  B.buildBanner = function (g) {
+    var r = B.raster(g.paths, g.W < 600 ? 66 : 96), pad = 3;
+    var bw = r.w + pad * 2, bh = r.h + pad * 2;
+    var c = document.createElement('canvas'); c.width = bw; c.height = bh;
+    var x = c.getContext('2d'), img = x.createImageData(bw, bh), d = img.data;
+    for (var yy = 0; yy < bh; yy++) for (var xx = 0; xx < bw; xx++) {
+      var i = (yy * bw + xx) * 4, on = xx >= pad && yy >= pad && xx < pad + r.w && yy < pad + r.h && r.a[(yy - pad) * r.w + (xx - pad)];
+      if (on) { d[i] = 0; d[i + 1] = 1; d[i + 2] = 1; } else { d[i] = 233; d[i + 1] = 219; d[i + 2] = 236; }
+      d[i + 3] = 255;
+    }
+    x.putImageData(img, 0, 0);
+    g.ban = { cv: c, w: bw, h: bh };
   };
   B.cellAt = function (g, px, py) {
     var L = g.logo, gx = Math.floor((px - L.x) / g.C), gy = Math.floor((py - L.y) / g.C);
@@ -79,11 +122,11 @@
   // HUD 'Restore logo' pill (top right); stores its box so a click/tap can hit it
   B.pill = function (g, x, right, y) {
     var L = g.logo, txt = g.W < 480 ? 'RESTORE' : 'RESTORE LOGO';
-    x.font = '700 11px ' + g.font;
-    var w = x.measureText(txt).width + 20, h = 24, px = right - w, py = y - h / 2;
+    x.font = '700 ' + g.fs + 'px ' + g.font;
+    var w = x.measureText(txt).width + g.fs * 1.8, h = Math.round(g.fs * 2.1), px = right - w, py = y - h / 2;
     g.rb = { x: px, y: py, w: w, h: h };
     x.globalAlpha = L.alive < L.total ? 1 : .35;
-    x.fillStyle = B.COL.ink; x.beginPath(); if (x.roundRect) x.roundRect(px, py, w, h, 12); else x.rect(px, py, w, h); x.fill();
+    x.fillStyle = B.COL.ink; x.beginPath(); if (x.roundRect) x.roundRect(px, py, w, h, h / 2); else x.rect(px, py, w, h); x.fill();
     x.fillStyle = B.COL.lime; x.textAlign = 'center'; x.fillText(txt, px + w / 2, y + 1);
     x.globalAlpha = 1;
     return px;
@@ -97,27 +140,39 @@
   B.size = function (g) {
     var W = Math.round(g.st.getBoundingClientRect().width);
     if (!W || W === g.W) return;
-    var rows = W < 600 ? 2 : 3;
-    g.W = W; g.rows = rows;
-    g.C = Math.max(2, Math.min(4, Math.round(W / 420)));
+    var small = W < 600;
+    g.W = W;
+    g.rows = 3;
+    g.P = small ? 3 : 4;                                   // invader pixel size (smaller on phones so more fit)
+    g.Pl = small ? 2 : 3;                                  // plane pixel size
+    g.Bp = 2;                                              // banner pixel size
+    g.C = Math.max(2, Math.min(4, Math.round(W / 420)));   // logo pixel size
+    g.fs = Math.max(11, Math.min(16, Math.round(W / 96))); // HUD text: 11px on phones, ~15px at 1440
+    g.hy = Math.round(g.fs * 1.6);                         // HUD row centre
+    g.lane = Math.round(g.hy + g.fs + 8);                  // top of the plane's flight lane
+    B.buildBanner(g);
+    g.laneH = Math.max(9 * g.Pl, g.ban.h * g.Bp) + 12;
+    g.top = g.lane + g.laneH + 10;                         // top of the invader formation
     B.buildLogo(g);
-    g.H = 48 + 24 + (rows - 1) * 44 + 64 + g.logo.h * g.C + 96;
+    g.H = g.top + g.rows * 11 * g.P + 56 + g.logo.h * g.C + 96;
     var dpr = Math.min(2, window.devicePixelRatio || 1);
     g.cv.width = W * dpr; g.cv.height = g.H * dpr; g.cv.style.height = g.H + 'px';
     g.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.ship.y = g.H - 50;
     if (!g.ship.x) g.ship.x = g.ship.tx = W / 2;
+    g.pl = null; g.plT = 4 + Math.random() * 4;
     B.reset(g);
   };
   B.wave = function (g) {
-    var cols = Math.max(4, Math.min(10, Math.floor((g.W - 120) / 72)));
+    var P = g.P, sx = 16 * P, sy = 11 * P;
+    var cols = g.W < 600 ? Math.max(5, Math.min(8, Math.floor((g.W - 40) / sx))) : Math.max(4, Math.min(10, Math.floor((g.W - 120) / 72)));
     g.inv = [];
-    for (var r = 0; r < g.rows; r++) for (var c = 0; c < cols; c++) g.inv.push({ ox: c * 64, oy: 48 + r * 44, row: r, on: 1 });
-    g.fx = (g.W - ((cols - 1) * 64 + 32)) / 2; g.fdir = 1;
+    for (var r = 0; r < g.rows; r++) for (var c = 0; c < cols; c++) g.inv.push({ ox: c * sx, oy: g.top + r * sy, row: r, on: 1 });
+    g.fx = (g.W - ((cols - 1) * sx + 8 * P)) / 2; g.fdir = 1;
     g.fsp = 38 + g.wave * 14; g.eT = 1.2;
   };
   B.reset = function (g) {
-    g.score = 0; g.wave = 1; g.lives = 3; g.b = []; g.e = []; g.ship.inv = 0;
+    g.score = 0; g.wave = 1; g.lives = 3; g.b = []; g.e = []; g.pop = []; g.ship.inv = 0;
     B.buildLogo(g); B.wave(g);
   };
   B.input = function (g) {
@@ -142,6 +197,13 @@
     for (var k = 0; k < 26; k++) B.debris(g, g.ship.x, g.ship.y + 10, B.COL.ink, Math.random() < .5);
     if (g.lives <= 0) { g.mode = 'over'; g.fire = false; }
   };
+  // Plane + banner boxes (plane first), in canvas px
+  B.planeBoxes = function (g) {
+    var p = g.pl, Pl = g.Pl, pw = B.PLANE[0].length * Pl, ph = B.PLANE.length * Pl;
+    var bw = g.ban.w * g.Bp, bh = g.ban.h * g.Bp, rope = 5 * Pl;
+    var bx = p.dir > 0 ? p.x - rope - bw : p.x + pw + rope;
+    return [{ x: p.x, y: p.y, w: pw, h: ph }, { x: bx, y: p.y + ph / 2 - bh / 2, w: bw, h: bh, rope: rope }];
+  };
   B.part = (B.part || 0) + 1;
 })();
 
@@ -150,10 +212,20 @@
   var B = window.BBI = window.BBI || {};
   B.update = function (g, dt) {
     g.t += dt;
-    var sh = g.ship, i, v, b;
+    var sh = g.ship, i, v, b, P = g.P, aw = 8 * P, ah = 6 * P;
     if (g.mode === 'idle' && !g.rm) sh.tx = g.W / 2 + Math.sin(g.t * .8) * Math.min(260, g.W * .3);
     sh.x += (sh.tx - sh.x) * Math.min(1, dt * 12);
     if (sh.inv > 0) sh.inv -= dt;
+    // plane: flies across every 12-22s, alternating direction
+    if (g.pl) {
+      g.pl.x += g.pl.dir * g.pl.sp * dt;
+      var bx = B.planeBoxes(g)[1];
+      if ((g.pl.dir > 0 && bx.x > g.W + 10) || (g.pl.dir < 0 && bx.x + bx.w < -10)) { g.pl = null; g.plT = 12 + Math.random() * 10; }
+    } else if ((g.plT -= dt) <= 0) {
+      g.pdir = -(g.pdir || -1);
+      var pw = B.PLANE[0].length * g.Pl;
+      g.pl = { dir: g.pdir, sp: Math.max(70, g.W / 9), x: g.pdir > 0 ? -pw - 4 * g.Pl : g.W + 4 * g.Pl, y: g.lane + (g.laneH - 9 * g.Pl) / 2 };
+    }
     g.fT -= dt;
     if (g.mode === 'play' && g.fire && g.fT <= 0) { g.b.push({ x: sh.x, y: sh.y - 4, p: 3 }); g.fT = .16; }
     for (i = 0; i < g.b.length; i++) {
@@ -167,10 +239,25 @@
       if (b.p > 0) for (var j = 0; j < g.inv.length; j++) {
         v = g.inv[j]; if (!v.on) continue;
         var vx = g.fx + v.ox, vy = v.oy + Math.sin(g.t * 2 + v.ox * .05) * 3;
-        if (b.x > vx && b.x < vx + 32 && b.y > vy && b.y < vy + 24) {
+        if (b.x > vx && b.x < vx + aw && b.y > vy && b.y < vy + ah) {
           v.on = 0; b.p = 0; g.score += (3 - v.row) * 10 + 10;
-          for (var k = 0; k < 18; k++) B.debris(g, vx + 16, vy + 12, v.row ? B.COL.lav : B.COL.lime, Math.random() < .5);
+          for (var k = 0; k < 18; k++) B.debris(g, vx + aw / 2, vy + ah / 2, v.row ? B.COL.lav : B.COL.lime, Math.random() < .5);
           break;
+        }
+      }
+      if (b.p > 0 && g.pl && g.mode === 'play') {
+        var bxs = B.planeBoxes(g);
+        for (var q = 0; q < 2; q++) {
+          var o = bxs[q];
+          if (b.x > o.x && b.x < o.x + o.w && b.y > o.y && b.y < o.y + o.h) {
+            b.p = 0; g.score += 100;
+            g.pop.push({ x: b.x, y: o.y + o.h / 2, t: 0 });
+            var cx = bxs[0].x + bxs[0].w / 2, cy = bxs[0].y + bxs[0].h / 2;
+            for (k = 0; k < 30; k++) B.debris(g, cx, cy, k % 3 ? B.COL.ink : B.COL.pts, Math.random() < .5);
+            for (k = 0; k < 24; k++) B.debris(g, bxs[1].x + Math.random() * bxs[1].w, bxs[1].y + Math.random() * bxs[1].h, k % 2 ? B.COL.lav : B.COL.ink, Math.random() < .3);
+            g.pl = null; g.plT = 12 + Math.random() * 10;
+            break;
+          }
         }
       }
       if (b.y < -10) b.p = 0;
@@ -179,7 +266,7 @@
     var live = g.inv.filter(function (x) { return x.on; });
     if (live.length) {
       var mn = 1e9, mx = -1e9;
-      live.forEach(function (x) { mn = Math.min(mn, x.ox); mx = Math.max(mx, x.ox + 32); });
+      live.forEach(function (x) { mn = Math.min(mn, x.ox); mx = Math.max(mx, x.ox + aw); });
       g.fx += g.fdir * g.fsp * (1 + (1 - live.length / g.inv.length) * 1.4) * dt;
       if (g.fx + mx > g.W - 16) { g.fx = g.W - 16 - mx; g.fdir = -1; }
       if (g.fx + mn < 16) { g.fx = 16 - mn; g.fdir = 1; }
@@ -188,7 +275,7 @@
         var cols = {};
         live.forEach(function (x) { if (!cols[x.ox] || x.oy > cols[x.ox].oy) cols[x.ox] = x; });
         var sh2 = Object.values(cols), s = sh2[(Math.random() * sh2.length) | 0];
-        g.e.push({ x: g.fx + s.ox + 16, y: s.oy + 26, on: 1 });
+        g.e.push({ x: g.fx + s.ox + aw / 2, y: s.oy + ah + 2, on: 1 });
         g.eT = Math.max(.35, 1.6 - g.wave * .12) * (.6 + Math.random() * .8);
       }
     } else if (g.mode === 'play') { g.wave++; g.score += 100; B.wave(g); }
@@ -203,6 +290,8 @@
       if (e.y > g.H + 10) e.on = 0;
     });
     g.e = g.e.filter(function (x) { return x.on; });
+    g.pop.forEach(function (p) { p.t += dt; });
+    g.pop = g.pop.filter(function (p) { return p.t < 1.2; });
     g.parts.forEach(function (p) { p.life -= dt; p.vy += 260 * dt; p.x += p.vx * dt; p.y += p.vy * dt; });
     g.parts = g.parts.filter(function (p) { return p.life > 0 && p.y < g.H + 10; });
   };
@@ -212,14 +301,37 @@
 // draw
 (function () {
   var B = window.BBI = window.BBI || {};
+  B.drawPlane = function (g, x) {
+    var p = g.pl, K = B.COL, Pp = g.Pl, Bp = g.Bp, bob = Math.round(Math.sin(g.t * 3) * 1.5), bx = B.planeBoxes(g), pl = bx[0], bn = bx[1];
+    var py = pl.y + bob, n = B.PLANE[0].length, flip = p.dir < 0;
+    B.spr2(x, B.PLANE, pl.x, py, Pp, { X: K.ink, W: K.lav, C: K.lime }, flip);
+    // spinning propeller just ahead of the nose: hub plus blades that flick up and down
+    var nose = flip ? pl.x - Pp : pl.x + n * Pp, f = Math.floor(g.t * 24) % 2;
+    x.fillStyle = K.ink;
+    x.fillRect(Math.round(nose), Math.round(py + 4 * Pp), Pp, Pp);
+    x.fillRect(Math.round(nose), Math.round(py + (f ? 1 : 5) * Pp), Pp, 3 * Pp);
+    // tow rope from the tail to the banner
+    var tailX = flip ? pl.x + pl.w - 2 * Pp : pl.x + 2 * Pp, ropeY = Math.round(py + 4.5 * Pp);
+    var endX = flip ? bn.x : bn.x + bn.w;
+    x.fillRect(Math.min(tailX, endX), ropeY, Math.abs(endX - tailX), 1);
+    // banner, drawn in 4-cell strips that flutter one pixel step, more towards the free end
+    var cols = g.ban.w, step = 4;
+    for (var i = 0; i < cols; i += step) {
+      var dFromRope = flip ? i : cols - 1 - i, amp = dFromRope / cols;
+      var off = Math.round(Math.sin(g.t * 7 - dFromRope * .12) * amp * 1.4) * Bp + bob;
+      var sw = Math.min(step, cols - i);
+      x.drawImage(g.ban.cv, i, 0, sw, g.ban.h, Math.round(bn.x + i * Bp), Math.round(bn.y + off), sw * Bp, g.ban.h * Bp);
+    }
+  };
   B.draw = function (g) {
-    var x = g.ctx, L = g.logo, K = B.COL, W = g.W, H = g.H;
+    var x = g.ctx, L = g.logo, K = B.COL, W = g.W, H = g.H, P = g.P;
     if (L.dirty) { L.cv.getContext('2d').putImageData(L.img, 0, 0); L.dirty = false; }
     x.clearRect(0, 0, W, H);
     x.globalAlpha = .2; x.fillStyle = K.ink; x.fillRect(0, H - 18, W, 1); x.globalAlpha = 1;
     x.imageSmoothingEnabled = false;
     x.drawImage(L.cv, L.x, L.y, L.w * g.C, L.h * g.C);
-    g.inv.forEach(function (v) { if (v.on) B.spr(x, B.BLOB[g.fr], g.fx + v.ox, v.oy + Math.sin(g.t * 2 + v.ox * .05) * 3, v.row ? K.lav : K.lime, 4); });
+    if (g.pl) B.drawPlane(g, x);
+    g.inv.forEach(function (v) { if (v.on) B.spr(x, B.BLOB[g.fr], g.fx + v.ox, v.oy + Math.sin(g.t * 2 + v.ox * .05) * 3, v.row ? K.lav : K.lime, P); });
     x.fillStyle = K.ink; g.b.forEach(function (b) { x.fillRect(Math.round(b.x - 1), Math.round(b.y), 3, 12); });
     x.fillStyle = K.lav;
     g.e.forEach(function (e) { var z = Math.floor(e.y / 6) % 2 ? 2 : -2; x.fillRect(Math.round(e.x - 1 + z), Math.round(e.y - 10), 3, 5); x.fillRect(Math.round(e.x - 1 - z), Math.round(e.y - 5), 3, 5); });
@@ -227,15 +339,26 @@
     x.globalAlpha = 1;
     var sh = g.ship;
     if (g.mode !== 'over' && !(sh.inv > 0 && Math.floor(sh.inv * 10) % 2)) { x.globalAlpha = g.mode === 'idle' ? .55 : 1; B.spr(x, B.SHIP, sh.x - 22, sh.y, K.ink, 4); x.globalAlpha = 1; }
-    x.font = '500 11px ' + g.font; x.fillStyle = K.ink; x.textBaseline = 'middle';
-    x.textAlign = 'left'; x.fillText('SCORE ' + g.score + '   WAVE ' + g.wave + '   LIVES ' + g.lives, 16, 20);
-    var px = B.pill(g, x, W - 16, 20);
-    x.font = '500 11px ' + g.font; x.fillStyle = K.ink;
-    x.textAlign = 'right'; x.fillText('LOGO ' + Math.round(100 * L.alive / L.total) + '%', px - 10, 20);
+    // +100 pop-ups: flash, rise and fade
+    var ps = Math.max(18, Math.min(30, Math.round(W / 50)));
+    x.font = '700 ' + ps + 'px ' + g.font; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = K.pts;
+    g.pop.forEach(function (p) {
+      var k = p.t / 1.2, flash = p.t < .45 && Math.floor(p.t * 14) % 2;
+      x.globalAlpha = flash ? .25 : (k > .6 ? 1 - (k - .6) / .4 : 1);
+      x.fillText('+100', p.x, p.y - k * 40);
+    });
+    x.globalAlpha = 1;
+    // HUD
+    x.font = '500 ' + g.fs + 'px ' + g.font; x.fillStyle = K.ink; x.textBaseline = 'middle';
+    x.textAlign = 'left'; x.fillText('SCORE ' + g.score + '   WAVE ' + g.wave + '   LIVES ' + g.lives, 16, g.hy);
+    var px = B.pill(g, x, W - 16, g.hy);
+    x.font = '500 ' + g.fs + 'px ' + g.font; x.fillStyle = K.ink;
+    x.textAlign = 'right'; x.fillText('LOGO ' + Math.round(100 * L.alive / L.total) + '%', px - 10, g.hy);
     var msg = g.mode === 'idle' ? (g.touch ? 'TOUCH TO PLAY' : 'MOVE HERE TO PLAY') : g.mode === 'over' ? 'GAME OVER · ' + g.score + ' PTS · ' + (g.touch ? 'TAP' : 'CLICK') + ' TO PLAY AGAIN' : '';
     if (msg) {
-      x.font = '700 12px ' + g.font; var tw = x.measureText(msg).width + 28, cy = L.y - 36;
-      x.fillStyle = K.ink; x.beginPath(); if (x.roundRect) x.roundRect(W / 2 - tw / 2, cy - 15, tw, 30, 15); else x.rect(W / 2 - tw / 2, cy - 15, tw, 30); x.fill();
+      var ms = Math.max(12, Math.min(16, Math.round(W / 90))), bh = Math.round(ms * 2.5);
+      x.font = '700 ' + ms + 'px ' + g.font; var tw = x.measureText(msg).width + ms * 2.4, cy = L.y - 36;
+      x.fillStyle = K.ink; x.beginPath(); if (x.roundRect) x.roundRect(W / 2 - tw / 2, cy - bh / 2, tw, bh, bh / 2); else x.rect(W / 2 - tw / 2, cy - bh / 2, tw, bh); x.fill();
       x.fillStyle = K.lime; x.textAlign = 'center'; x.fillText(msg, W / 2, cy + 1);
     }
   };
@@ -255,7 +378,7 @@
     var st = f.querySelector('.bbinv-stage');
     if (!st) { st = document.createElement('div'); st.className = 'bbinv-stage'; st.innerHTML = '<canvas aria-label="Mini game: shoot the invaders through the Brave Beyond logo"></canvas>'; f.insertBefore(st, f.firstChild); }
     var cv = st.querySelector('canvas');
-    var g = { st: st, cv: cv, ctx: cv.getContext('2d'), paths: paths, logo: { cv: document.createElement('canvas') }, ship: { x: 0, tx: 0, y: 0, inv: 0 }, b: [], e: [], parts: [], inv: [], t: 0, fT: 0, frT: 0, fr: 0, mode: 'idle', W: 0, vis: true,
+    var g = { st: st, cv: cv, ctx: cv.getContext('2d'), paths: paths, logo: { cv: document.createElement('canvas') }, ship: { x: 0, tx: 0, y: 0, inv: 0 }, b: [], e: [], pop: [], parts: [], inv: [], t: 0, fT: 0, frT: 0, fr: 0, mode: 'idle', W: 0, vis: true,
       touch: window.matchMedia && matchMedia('(hover: none)').matches, rm: window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches,
       font: getComputedStyle(document.body).fontFamily || 'sans-serif' };
     B.input(g); B.size(g);
