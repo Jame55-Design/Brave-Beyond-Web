@@ -1,0 +1,11 @@
+{
+  "name": "brave-beyond-web",
+  "private": true,
+  "description": "Custom scripts for bravebeyond.com (Webflow), bundled and served from jsDelivr",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "devDependencies": {
+    "terser": "5.31.0"
+  }
+}
