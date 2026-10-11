@@ -11,11 +11,18 @@ Custom code for bravebeyond.com. Webflow loads two bundles from this repo throug
 
 1. Edit or add a file in `src/head` or `src/site`. Files run in filename order, so keep the number prefix.
 2. `npm install` (first time only), then `npm run build`.
-3. Commit and push, then tag a release: `git tag v1.0.1 && git push --tags`.
-4. In Webflow, point the registered script at the new tag (Claude can do this step):
-   `https://cdn.jsdelivr.net/gh/Jame55-Design/brave-beyond-web@v1.0.1/dist/bb-site.js`
+3. Commit and push.
+4. In Webflow, register a new version of "BB Site Bundle" (or "BB Head Bundle") pointing at that commit, with its sha384 integrity hash (Claude can do this step):
+   `https://cdn.jsdelivr.net/gh/Jame55-Design/brave-beyond-web@<commit-hash>/dist/bb-site.js`
+   A tag (`@v1.0.1`) works the same way.
 
-Always load a tag, never `@main`. jsDelivr caches `@main` for up to 12 hours and Webflow checks each file against a fixed integrity hash, so a changing file would be blocked.
+Always pin to a commit or tag, never `@main`. jsDelivr caches `@main` for up to 12 hours and Webflow checks each file against a fixed integrity hash, so a changing file would be blocked.
+
+Current release: commit `72dbbf510269493d91982045aa28ee51c278ec54` (bundle version 1.0.0 in Webflow).
+
+## Rolling back
+
+The original 15 scripts are still registered in Webflow (Site settings > Custom code > Registered scripts). Re-applying them and removing the two bundles restores the old setup exactly.
 
 Every file is wrapped in its own try/catch in the bundle, so if one feature breaks, the console shows `[bb] filename` and the rest of the site keeps working.
 
