@@ -1,6 +1,6 @@
 // BB Footer Invaders: Space Invaders in the footer on the home and Free Goodies pages.
 // Shots chip away at the pixelated Brave Beyond logo on their way up to the invaders.
-// A propeller plane towing a Brave Beyond banner flies over now and then: hit it for 100 points.
+// A black propeller plane towing the Brave Beyond logo flies over about every 15 seconds: hit it for 100 points.
 // Pages: set in B.SEL below (Barba namespace + .bb-footer).
 
 // Styles, pages it runs on, colours and sprites
@@ -22,7 +22,18 @@
     ['..XXXX..', '.XXXXXX.', 'XX.XX.XX', 'XXXXXXXX', 'XX.XX.XX', '.X....X.']
   ];
   B.SHIP = ['.....X.....', '....XXX....', '...XXXXX...', '.XXXXXXXXX.', 'XXXXXXXXXXX', 'XX.X...X.XX'];
-  // Old-school propeller plane, nose facing right. X = body, W = wings, C = cockpit
+  // 3x5 pixel font for score pop-ups
+  B.FONT = {
+    '+': ['...', '.X.', 'XXX', '.X.', '...'],
+    '0': ['XXX', 'X.X', 'X.X', 'X.X', 'XXX'],
+    '1': ['.X.', 'XX.', '.X.', '.X.', 'XXX']
+  };
+  // Draw pixel text centred on (cx, cy)
+  B.pixText = function (ctx, str, cx, cy, px, c) {
+    var w = str.length * 4 * px - px, x0 = Math.round(cx - w / 2), y0 = Math.round(cy - 2.5 * px);
+    for (var i = 0; i < str.length; i++) { var gl = B.FONT[str[i]]; if (gl) B.spr(ctx, gl, x0 + i * 4 * px, y0, c, px); }
+  };
+  // Old-school propeller plane, nose facing right, all black
   B.PLANE = [
     'XX..................',
     'XXX......WWWWWWW....',
@@ -83,7 +94,7 @@
     L.y = g.H - 96 - r.h * C;
     lc.putImageData(L.img, 0, 0);
   };
-  // Pixel banner: lavender cloth with the logo in ink, 1 canvas pixel per cell (drawn scaled up)
+  // Pixel banner: the logo on its own in ink (transparent background), 1 canvas pixel per cell (drawn scaled up)
   B.buildBanner = function (g) {
     var r = B.raster(g.paths, g.W < 600 ? 66 : 96), pad = 3;
     var bw = r.w + pad * 2, bh = r.h + pad * 2;
@@ -91,8 +102,7 @@
     var x = c.getContext('2d'), img = x.createImageData(bw, bh), d = img.data;
     for (var yy = 0; yy < bh; yy++) for (var xx = 0; xx < bw; xx++) {
       var i = (yy * bw + xx) * 4, on = xx >= pad && yy >= pad && xx < pad + r.w && yy < pad + r.h && r.a[(yy - pad) * r.w + (xx - pad)];
-      if (on) { d[i] = 0; d[i + 1] = 1; d[i + 2] = 1; } else { d[i] = 233; d[i + 1] = 219; d[i + 2] = 236; }
-      d[i + 3] = 255;
+      if (on) { d[i] = 0; d[i + 1] = 1; d[i + 2] = 1; d[i + 3] = 255; }
     }
     x.putImageData(img, 0, 0);
     g.ban = { cv: c, w: bw, h: bh };
@@ -160,7 +170,7 @@
     g.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.ship.y = g.H - 50;
     if (!g.ship.x) g.ship.x = g.ship.tx = W / 2;
-    g.pl = null; g.plT = 4 + Math.random() * 4;
+    g.pl = null; g.plT = 6 + Math.random() * 3;
     B.reset(g);
   };
   B.wave = function (g) {
@@ -216,11 +226,11 @@
     if (g.mode === 'idle' && !g.rm) sh.tx = g.W / 2 + Math.sin(g.t * .8) * Math.min(260, g.W * .3);
     sh.x += (sh.tx - sh.x) * Math.min(1, dt * 12);
     if (sh.inv > 0) sh.inv -= dt;
-    // plane: flies across every 12-22s, alternating direction
+    // plane: flies over roughly every 15 seconds, alternating direction
     if (g.pl) {
       g.pl.x += g.pl.dir * g.pl.sp * dt;
       var bx = B.planeBoxes(g)[1];
-      if ((g.pl.dir > 0 && bx.x > g.W + 10) || (g.pl.dir < 0 && bx.x + bx.w < -10)) { g.pl = null; g.plT = 12 + Math.random() * 10; }
+      if ((g.pl.dir > 0 && bx.x > g.W + 10) || (g.pl.dir < 0 && bx.x + bx.w < -10)) { g.pl = null; g.plT = 13 + Math.random() * 4; }
     } else if ((g.plT -= dt) <= 0) {
       g.pdir = -(g.pdir || -1);
       var pw = B.PLANE[0].length * g.Pl;
@@ -255,7 +265,7 @@
             var cx = bxs[0].x + bxs[0].w / 2, cy = bxs[0].y + bxs[0].h / 2;
             for (k = 0; k < 30; k++) B.debris(g, cx, cy, k % 3 ? B.COL.ink : B.COL.pts, Math.random() < .5);
             for (k = 0; k < 24; k++) B.debris(g, bxs[1].x + Math.random() * bxs[1].w, bxs[1].y + Math.random() * bxs[1].h, k % 2 ? B.COL.lav : B.COL.ink, Math.random() < .3);
-            g.pl = null; g.plT = 12 + Math.random() * 10;
+            g.pl = null; g.plT = 13 + Math.random() * 4;
             break;
           }
         }
@@ -304,7 +314,7 @@
   B.drawPlane = function (g, x) {
     var p = g.pl, K = B.COL, Pp = g.Pl, Bp = g.Bp, bob = Math.round(Math.sin(g.t * 3) * 1.5), bx = B.planeBoxes(g), pl = bx[0], bn = bx[1];
     var py = pl.y + bob, n = B.PLANE[0].length, flip = p.dir < 0;
-    B.spr2(x, B.PLANE, pl.x, py, Pp, { X: K.ink, W: K.lav, C: K.lime }, flip);
+    B.spr2(x, B.PLANE, pl.x, py, Pp, { X: K.ink, W: K.ink, C: K.ink }, flip);
     // spinning propeller just ahead of the nose: hub plus blades that flick up and down
     var nose = flip ? pl.x - Pp : pl.x + n * Pp, f = Math.floor(g.t * 24) % 2;
     x.fillStyle = K.ink;
@@ -340,12 +350,12 @@
     var sh = g.ship;
     if (g.mode !== 'over' && !(sh.inv > 0 && Math.floor(sh.inv * 10) % 2)) { x.globalAlpha = g.mode === 'idle' ? .55 : 1; B.spr(x, B.SHIP, sh.x - 22, sh.y, K.ink, 4); x.globalAlpha = 1; }
     // +100 pop-ups: flash, rise and fade
-    var ps = Math.max(18, Math.min(30, Math.round(W / 50)));
-    x.font = '700 ' + ps + 'px ' + g.font; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = K.pts;
+    var ppx = W < 600 ? 4 : 6;
     g.pop.forEach(function (p) {
       var k = p.t / 1.2, flash = p.t < .45 && Math.floor(p.t * 14) % 2;
       x.globalAlpha = flash ? .25 : (k > .6 ? 1 - (k - .6) / .4 : 1);
-      x.fillText('+100', p.x, p.y - k * 40);
+      var cx = Math.max(60, Math.min(W - 60, p.x));
+      B.pixText(x, '+100', cx, p.y - Math.round(k * 40 / ppx) * ppx, ppx, K.pts);
     });
     x.globalAlpha = 1;
     // HUD
