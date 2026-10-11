@@ -383,18 +383,20 @@
       font: getComputedStyle(document.body).fontFamily || 'sans-serif' };
     B.input(g); B.size(g);
     var raf = 0, last = performance.now(), dead = false;
-    var io = window.IntersectionObserver ? new IntersectionObserver(function (en) { g.vis = en[0].isIntersecting; }) : null;
-    if (io) io.observe(st);
     var ro = window.ResizeObserver ? new ResizeObserver(function () { B.size(g); }) : null;
     if (ro) ro.observe(st);
     function loop(now) {
       if (dead || !cv.isConnected) return;
       var dt = Math.min(.033, (now - last) / 1000); last = now;
+      if (!g.W) B.size(g);
+      // Only run while the game is on screen (measured directly; works inside iframes too)
+      var r = st.getBoundingClientRect(), vh = window.innerHeight || document.documentElement.clientHeight;
+      g.vis = r.bottom > 0 && r.top < vh && r.width > 0;
       if (g.vis) { B.update(g, dt); B.draw(g); }
       raf = requestAnimationFrame(loop);
     }
     raf = requestAnimationFrame(loop);
-    g.stop = function () { dead = true; cancelAnimationFrame(raf); if (io) io.disconnect(); if (ro) ro.disconnect(); };
+    g.stop = function () { dead = true; cancelAnimationFrame(raf); if (ro) ro.disconnect(); };
     B.g = g;
   };
   (function wait(n) {
