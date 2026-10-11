@@ -94,9 +94,9 @@
     L.y = g.H - 96 - r.h * C;
     lc.putImageData(L.img, 0, 0);
   };
-  // Pixel banner: the logo on its own in ink (transparent background), 1 canvas pixel per cell (drawn scaled up)
+  // Banner: the logo on its own in ink (transparent background), rendered fine like the footer logo
   B.buildBanner = function (g) {
-    var r = B.raster(g.paths, g.W < 600 ? 66 : 96), pad = 3;
+    var r = B.raster(g.paths, g.W < 600 ? 170 : 260), pad = 3;
     var bw = r.w + pad * 2, bh = r.h + pad * 2;
     var c = document.createElement('canvas'); c.width = bw; c.height = bh;
     var x = c.getContext('2d'), img = x.createImageData(bw, bh), d = img.data;
@@ -155,7 +155,7 @@
     g.rows = 3;
     g.P = small ? 3 : 4;                                   // invader pixel size (smaller on phones so more fit)
     g.Pl = small ? 2 : 3;                                  // plane pixel size
-    g.Bp = 2;                                              // banner pixel size
+    g.Bp = 1;                                              // banner pixel size (fine, so the logo stays clean)
     g.C = Math.max(2, Math.min(4, Math.round(W / 420)));   // logo pixel size
     g.fs = Math.max(11, Math.min(16, Math.round(W / 96))); // HUD text: 11px on phones, ~15px at 1440
     g.hy = Math.round(g.fs * 1.6);                         // HUD row centre
@@ -324,11 +324,11 @@
     var tailX = flip ? pl.x + pl.w - 2 * Pp : pl.x + 2 * Pp, ropeY = Math.round(py + 4.5 * Pp);
     var endX = flip ? bn.x : bn.x + bn.w;
     x.fillRect(Math.min(tailX, endX), ropeY, Math.abs(endX - tailX), 1);
-    // banner, drawn in 4-cell strips that flutter one pixel step, more towards the free end
-    var cols = g.ban.w, step = 4;
+    // banner, drawn in thin strips that ripple in a wave, more towards the free end
+    var cols = g.ban.w, step = 6;
     for (var i = 0; i < cols; i += step) {
       var dFromRope = flip ? i : cols - 1 - i, amp = dFromRope / cols;
-      var off = Math.round(Math.sin(g.t * 7 - dFromRope * .12) * amp * 1.4) * Bp + bob;
+      var off = Math.round(Math.sin(g.t * 7 - dFromRope * .045) * amp * 3.5) * Bp + bob;
       var sw = Math.min(step, cols - i);
       x.drawImage(g.ban.cv, i, 0, sw, g.ban.h, Math.round(bn.x + i * Bp), Math.round(bn.y + off), sw * Bp, g.ban.h * Bp);
     }
