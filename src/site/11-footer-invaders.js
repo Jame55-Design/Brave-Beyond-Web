@@ -17,7 +17,7 @@
     '@media (max-width:479px){.bb-footer.bbinv-on{padding-top:32px}.bb-footer .bbft-ig{margin:16px 0 0}}';
   document.head.appendChild(s);
   B.SEL = '[data-barba-namespace="home"] .bb-footer,[data-barba-namespace="goodies"] .bb-footer';
-  B.COL = { g: '#07A87E', ink: '#212121', lime: '#CEFF38', lav: '#E9DBEC', pts: '#CCFF00' };
+  B.COL = { g: '#07A87E', ink: '#212121', lime: '#CCFF00', lav: '#E9DBEC', pts: '#CCFF00' };
   B.ROWC = ['#CCFF00', '#D0C6E9', '#E9DBEC']; // alien colour per row, top to bottom
   B.BLOB = [
     // Cyclops blob: one big eye, wobbly frill
