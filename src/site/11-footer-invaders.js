@@ -12,8 +12,9 @@
     '.bb-footer.bbinv-on .bbft-lm{display:none}' +
     '.bbinv-stage{order:0;align-self:stretch;margin:0 -5vw;position:relative}' +
     '.bbinv-stage canvas{display:block;width:100%;touch-action:pan-y;-webkit-user-select:none;user-select:none}' +
-    '.bb-footer.bbinv-on .bbft-ig{margin-top:2vw}' +
-    '@media (max-width:479px){.bb-footer.bbinv-on{padding-top:32px}.bb-footer.bbinv-on .bbft-ig{margin-top:16px}}';
+    // Instagram sits centred just above Privacy Policy (order 1, before the tag in the DOM) on every footer
+    '.bb-footer .bbft-ig{order:1;margin:2vw 0 0}' +
+    '@media (max-width:479px){.bb-footer.bbinv-on{padding-top:32px}.bb-footer .bbft-ig{margin:16px 0 0}}';
   document.head.appendChild(s);
   B.SEL = '[data-barba-namespace="home"] .bb-footer,[data-barba-namespace="goodies"] .bb-footer';
   B.COL = { g: '#07A87E', ink: '#000101', lime: '#CEFF38', lav: '#E9DBEC', pts: '#CCFF00' };
