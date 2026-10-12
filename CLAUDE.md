@@ -1,0 +1,33 @@
+# Brave Beyond website (bravebeyond.com)
+
+James's studio site. Built in Webflow, with custom JS served from this repo via jsDelivr. See README.md for the full release workflow and the current live commits.
+
+## Keep it cheap
+- Work in small steps, one task per chat.
+- Don't paste large files (logo paths, full scripts) into the chat; read only the file you need.
+- Small tweaks: one quick check, no screenshots or staging run unless asked.
+- Show James a preview before pushing new features; small fixes he's approved can go straight out.
+
+## Where things live
+- Webflow site ID: 683b15fc7583963ba10b4d51. Staging: https://brave-beyond-1620a0-6b3e3-02af519fdc4e3.webflow.io. Live custom domain IDs: 684105c8617e7ac784c44808, 684105c7617e7ac784c447fa.
+- Branch site-script-bundle holds the bundle work. Hero videos load from @main.
+- src/head/*.js -> dist/bb-head.js (styles). src/site/*.js -> dist/bb-site.js (everything else). Build: npm install && npm run build.
+- Webflow loads only 2 registered scripts: "BB Head Bundle" (header) and "BB Site Bundle" (footer). Webflow caps site scripts at 15 and inline scripts at 2000 chars, so new code goes in the bundle.
+- Site freeform footer code holds Barba page transitions, footer logo bend, nav logo flip. Pages swap via Barba: hook barba.hooks.after for anything that must re-run.
+
+## Releasing a change
+1. Edit src, npm run build, commit, push (tag pushes are blocked; pin by commit).
+2. Hash: openssl dgst -sha384 -binary dist/bb-site.js | openssl base64 -A
+3. Register a new version of the hosted script in Webflow at https://cdn.jsdelivr.net/gh/Jame55-Design/brave-beyond-web@<full-commit>/dist/bb-site.js with integrity sha384-..., then apply that version. Never use @main.
+4. Publish (staging only unless James says live; once per minute max).
+5. Update "Current release" in README.md.
+
+## Brand
+- Main Green #07A87E, Purps #AE9AE4, ink #000101, lime #CEFF38, lavender #E9DBEC, score flash #CCFF00.
+- Plain text only: no text shadows or effects unless asked.
+- Contact + privacy pages are purple; home and Free Goodies footers are green.
+
+## Footer game (src/site/11-footer-invaders.js)
+- Runs on Barba namespaces home and goodies only (B.SEL). Other pages keep the logo with footer hearts.
+- Reads logo paths from the footer SVG at runtime; no need to copy logo data.
+- Test without a visible browser by stepping BBI.update(g, 1/60) and BBI.draw(g) on BBI.g.
