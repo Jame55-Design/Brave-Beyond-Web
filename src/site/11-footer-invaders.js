@@ -18,8 +18,9 @@
   B.SEL = '[data-barba-namespace="home"] .bb-footer,[data-barba-namespace="goodies"] .bb-footer';
   B.COL = { g: '#07A87E', ink: '#000101', lime: '#CEFF38', lav: '#E9DBEC', pts: '#CCFF00' };
   B.BLOB = [
-    ['..XXXX..', '.XXXXXX.', 'XX.XX.XX', 'XXXXXXXX', '.XX..XX.', 'X.X..X.X'],
-    ['..XXXX..', '.XXXXXX.', 'XX.XX.XX', 'XXXXXXXX', 'XX.XX.XX', '.X....X.']
+    // Cyclops blob: one big eye, wobbly frill
+    ['..XXXX..', '.XXXXXX.', 'XXX..XXX', 'XXXXXXXX', 'XXXXXXXX', 'X.X.X.X.'],
+    ['..XXXX..', '.XXXXXX.', 'XXX..XXX', 'XXXXXXXX', 'XXXXXXXX', '.X.X.X.X']
   ];
   B.SHIP = ['.....X.....', '....XXX....', '...XXXXX...', '.XXXXXXXXX.', 'XXXXXXXXXXX', 'XX.X...X.XX'];
   // 3x5 pixel font for score pop-ups
