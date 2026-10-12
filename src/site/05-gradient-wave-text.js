@@ -3,7 +3,7 @@ function load(n,cb){if(window[n])return cb();var s=document.createElement('scrip
 function kill(){live.forEach(function(x){x.revert();});live=[];}
 function init(){kill();document.querySelectorAll('[data-gradient-wave-text]').forEach(function(h){
 var A=function(n,d){return h.getAttribute('data-gradient-wave-'+n)||d;};
-var st=A('scroll-start','top 90%'),en=A('scroll-end','center 40%'),c0=A('color-start','rgba(24,24,24,0.2)'),cw=A('color-wave','#E8CAE9'),dur=parseFloat(A('duration'))||0.4,scr=parseFloat(A('scrub'))||0.1,c1=getComputedStyle(h).color;
+var st=A('scroll-start','top 90%'),en=A('scroll-end','center 40%'),c0=A('color-start','rgba(33,33,33,0.2)'),cw=A('color-wave','#E8CAE9'),dur=parseFloat(A('duration'))||0.4,scr=parseFloat(A('scrub'))||0.1,c1=getComputedStyle(h).color;
 live.push(new SplitText(h,{type:'words, chars',autoSplit:true,onSplit:function(self){var ch=self.chars,on=new Set(),p={v:0},ready=false;
 function sync(){var n=Math.round(p.v*ch.length);ch.forEach(function(c,i){var a=i<n;gsap.killTweensOf(c);gsap.set(c,{color:a?c1:c0});a?on.add(c):on.delete(c);});}
 return gsap.context(function(){gsap.set(ch,{color:c0});gsap.to(p,{v:1,ease:'none',scrollTrigger:{trigger:h,start:st,end:en,scrub:scr,onRefresh:function(){ready=false;sync();requestAnimationFrame(function(){ready=true;});}},
