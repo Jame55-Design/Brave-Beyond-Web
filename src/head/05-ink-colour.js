@@ -4,7 +4,7 @@
   var s = document.createElement('style');
   s.textContent =
     '.bb-nav-logo svg path,.bbnl-back path,.bbft-lm path{fill:#212121}' +
-    '.bbft-bottom,.bbft-copy{color:#212121}' +
-    '.bbft-ig{border-color:#212121;color:#212121}';
+    '.bb-footer .bbft-bottom,.bb-footer .bbft-copy{color:#212121}' +
+    '.bb-footer .bbft-ig{border-color:#212121;color:#212121}';
   document.head.appendChild(s);
 })();
