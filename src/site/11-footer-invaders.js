@@ -12,11 +12,12 @@
     '.bb-footer.bbinv-on .bbft-lm{display:none}' +
     '.bbinv-stage{order:0;align-self:stretch;margin:0 -5vw;position:relative}' +
     '.bbinv-stage canvas{display:block;width:100%;touch-action:pan-y;-webkit-user-select:none;user-select:none}' +
-    '.bb-footer.bbinv-on .bbft-ig{order:3;position:absolute;left:5vw;bottom:1.5vw;margin:0}' +
-    '@media (max-width:479px){.bb-footer.bbinv-on{padding-top:32px}.bb-footer.bbinv-on .bbft-ig{left:16px;bottom:16px}}';
+    '.bb-footer.bbinv-on .bbft-ig{margin-top:2vw}' +
+    '@media (max-width:479px){.bb-footer.bbinv-on{padding-top:32px}.bb-footer.bbinv-on .bbft-ig{margin-top:16px}}';
   document.head.appendChild(s);
   B.SEL = '[data-barba-namespace="home"] .bb-footer,[data-barba-namespace="goodies"] .bb-footer';
   B.COL = { g: '#07A87E', ink: '#000101', lime: '#CEFF38', lav: '#E9DBEC', pts: '#CCFF00' };
+  B.ROWC = ['#CCFF00', '#D0C6E9', '#E9DBEC']; // alien colour per row, top to bottom
   B.BLOB = [
     // Cyclops blob: one big eye, wobbly frill
     ['..XXXX..', '.XXXXXX.', 'XXX..XXX', 'XXXXXXXX', 'XXXXXXXX', 'X.X.X.X.'],
@@ -252,7 +253,7 @@
         var vx = g.fx + v.ox, vy = v.oy + Math.sin(g.t * 2 + v.ox * .05) * 3;
         if (b.x > vx && b.x < vx + aw && b.y > vy && b.y < vy + ah) {
           v.on = 0; b.p = 0; g.score += (3 - v.row) * 10 + 10;
-          for (var k = 0; k < 18; k++) B.debris(g, vx + aw / 2, vy + ah / 2, v.row ? B.COL.lav : B.COL.lime, Math.random() < .5);
+          for (var k = 0; k < 18; k++) B.debris(g, vx + aw / 2, vy + ah / 2, B.ROWC[v.row] || B.COL.lav, Math.random() < .5);
           break;
         }
       }
@@ -342,7 +343,7 @@
     x.imageSmoothingEnabled = false;
     x.drawImage(L.cv, L.x, L.y, L.w * g.C, L.h * g.C);
     if (g.pl) B.drawPlane(g, x);
-    g.inv.forEach(function (v) { if (v.on) B.spr(x, B.BLOB[g.fr], g.fx + v.ox, v.oy + Math.sin(g.t * 2 + v.ox * .05) * 3, v.row ? K.lav : K.lime, P); });
+    g.inv.forEach(function (v) { if (v.on) B.spr(x, B.BLOB[g.fr], g.fx + v.ox, v.oy + Math.sin(g.t * 2 + v.ox * .05) * 3, B.ROWC[v.row] || K.lav, P); });
     x.fillStyle = K.ink; g.b.forEach(function (b) { x.fillRect(Math.round(b.x - 1), Math.round(b.y), 3, 12); });
     x.fillStyle = K.lav;
     g.e.forEach(function (e) { var z = Math.floor(e.y / 6) % 2 ? 2 : -2; x.fillRect(Math.round(e.x - 1 + z), Math.round(e.y - 10), 3, 5); x.fillRect(Math.round(e.x - 1 - z), Math.round(e.y - 5), 3, 5); });
