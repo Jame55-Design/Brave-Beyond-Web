@@ -52,44 +52,53 @@
     '..OLLLLLO..',
     '...OOOOO...'
   ];
-  // HYDRA (splits the ball). X = ink, E = lime eye, two frames so the heads bob
+  // HYDRA (splits the ball): three dragon heads. X = ink, E = lime eyes, T = lavender fangs, V = lavender belly, L = lime spines.
+  // Frame 2 shuts the jaws, so it snaps as it falls.
   B.HYDRA = [[
-    '.XX.....XXX.....XX.',
-    'XEXX...XXEXX...XXEX',
-    'XXXX...XXXXX...XXXX',
-    '.XX.....XXX.....XX.',
-    '.XX.....XXX.....XX.',
-    '..XX....XXX....XX..',
-    '..XX....XXX....XX..',
-    '...XX...XXX...XX...',
-    '...XXXXXXXXXXXXX...',
-    '..XXXXXXXXXXXXXXX..',
-    '.XXXXXXXXXXXXXXXXX.',
-    '.XXXXXXXXXXXXXXXXX.',
-    '..XX.XX.....XX.XX..',
-    '..XX.XX.....XX.XX..'
-  ], [
-    '...................',
-    '.XX.....XXX.....XX.',
-    'XEXX...XXEXX...XXEX',
-    'XXXX...XXXXX...XXXX',
-    '.XX.....XXX.....XX.',
-    '..XX....XXX....XX..',
-    '..XX....XXX....XX..',
-    '...XX...XXX...XX...',
-    '...XXXXXXXXXXXXX...',
-    '..XXXXXXXXXXXXXXX..',
-    '.XXXXXXXXXXXXXXXXX.',
-    '.XXXXXXXXXXXXXXXXX.',
-    '..XX.XX.....XX.XX..',
-    '..XX.XX.....XX.XX..'
-  ]];
+      '...........XXXXXX...........',
+      '...XXXX...XXXXXXXX...XXXX...',
+      '.XXXXXEX..XXEXXEXX..XEXXXXX.',
+      'XXXXXXXX..XXXXXXXX..XXXXXXXX',
+      '.T..T.XX..XTXXXXTX..XX.T..T.',
+      'XXXXXXXX...XXXXXX...XXXXXXXX',
+      '....XXX.....XXXX.....XXX....',
+      '.....XXX....XXXX....XXX.....',
+      '......XXX...XXXX...XXX......',
+      '.......XXX..XXXX..XXX.......',
+      '........XXXXXXXXXXXX........',
+      '......XXXXLXXXXXXLXXXX......',
+      '.....XXXXVVVVVVVVVXXXXX.....',
+      '....XXXXVVVVVVVVVVVXXXXX....',
+      '....XXXXVVVVVVVVVVVXXXXXX...',
+      '.....XXXXVVVVVVVVVXXXXXXXXX.',
+      '.....XXX.XXX...XXX.XXX..XXXX',
+      '.....XX...XX....XX..XX....XX'
+    ], [
+      '...........XXXXXX...........',
+      '...XXXX...XXXXXXXX...XXXX...',
+      '.XXXXXEX..XXEXXEXX..XEXXXXX.',
+      'XXXXXXXX..XXXXXXXX..XXXXXXXX',
+      'XXXXXXXX..XXXXXXXX..XXXXXXXX',
+      'XXXXXXXX...XXXXXX...XXXXXXXX',
+      '....XXX.....XXXX.....XXX....',
+      '.....XXX....XXXX....XXX.....',
+      '......XXX...XXXX...XXX......',
+      '.......XXX..XXXX..XXX.......',
+      '........XXXXXXXXXXXX........',
+      '......XXXXLXXXXXXLXXXX......',
+      '.....XXXXVVVVVVVVVXXXXX.....',
+      '....XXXXVVVVVVVVVVVXXXXX....',
+      '....XXXXVVVVVVVVVVVXXXXXX...',
+      '.....XXXXVVVVVVVVVXXXXXXXXX.',
+      '.....XXX.XXX...XXX.XXX..XXXX',
+      '.....XX...XX....XX..XX....XX'
+    ]];
   B.FONT = {
     'A': ['.###.', '#...#', '#...#', '#####', '#...#', '#...#', '#...#'],
     'C': ['.###.', '#...#', '#....', '#....', '#....', '#...#', '.###.'],
     'E': ['#####', '#....', '#....', '####.', '#....', '#....', '#####'],
     'F': ['#####', '#....', '#....', '####.', '#....', '#....', '#....'],
-    'G': ['.###.', '#...#', '#....', '#.###', '#...#', '#...#', '.###.'],
+    'G': ['.####', '#....', '#....', '#..##', '#...#', '#...#', '.###.'],
     'H': ['#...#', '#...#', '#...#', '#####', '#...#', '#...#', '#...#'],
     'I': ['###', '.#.', '.#.', '.#.', '.#.', '.#.', '###'],
     'K': ['#...#', '#..#.', '#.#..', '##...', '#.#..', '#..#.', '#...#'],
@@ -98,7 +107,7 @@
     'T': ['#####', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..'],
     'U': ['#...#', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.'],
     'X': ['#...#', '#...#', '.#.#.', '..#..', '.#.#.', '#...#', '#...#'],
-    '0': ['.###.', '#...#', '#..##', '#.#.#', '##..#', '#...#', '.###.'],
+    '0': ['.###.', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.'],
     '1': ['..#..', '.##..', '..#..', '..#..', '..#..', '..#..', '.###.'],
     '6': ['.###.', '#....', '#....', '####.', '#...#', '#...#', '.###.'],
     '+': ['.....', '..#..', '..#..', '#####', '..#..', '..#..', '.....'],
@@ -113,8 +122,9 @@
       x.fillStyle = c; x.fillRect(Math.round(left + (flip ? n - 1 - k : k) * px), Math.round(top + r * px), px, px);
     }
   };
+  // Chunky letters: every pixel of the 5x7 font is drawn two pixels wide
   B.textW = function (str, px) {
-    var w = 0; for (var i = 0; i < str.length; i++) w += ((B.FONT[str[i]] || B.FONT[' '])[0].length + 1) * px;
+    var w = 0; for (var i = 0; i < str.length; i++) w += ((B.FONT[str[i]] || B.FONT[' '])[0].length + 2) * px;
     return w - px;
   };
   // Pixel text centred on (cx, cy). wave = how far each letter bobs (0 for none)
@@ -123,8 +133,8 @@
     x.fillStyle = c;
     for (var i = 0; i < str.length; i++) {
       var gl = B.FONT[str[i]] || B.FONT[' '], dy = wave ? Math.round(Math.sin(t * 6 - i * .5) * wave) * px : 0;
-      for (var r = 0; r < 7; r++) for (var k = 0; k < gl[r].length; k++) if (gl[r][k] === '#') x.fillRect(lx + k * px, top + dy + r * px, px, px);
-      lx += (gl[0].length + 1) * px;
+      for (var r = 0; r < 7; r++) for (var k = 0; k < gl[r].length; k++) if (gl[r][k] === '#') x.fillRect(lx + k * px, top + dy + r * px, px * 2, px);
+      lx += (gl[0].length + 2) * px;
     }
   };
 })();
@@ -305,6 +315,14 @@
     x.fillStyle = K.lime; g.flash.forEach(function (f) { x.fillRect(f.x, f.y, s, s); });
     g.parts.forEach(function (q) { x.globalAlpha = Math.max(0, Math.min(1, q.life * 2)); x.fillStyle = q.c; x.fillRect(Math.round(q.x), Math.round(q.y), 2, 2); });
     x.globalAlpha = 1;
+    // logo cleared: a row of flickering pixel flames along the bottom line
+    if (g.win) {
+      var fpx = W < 600 ? 2 : 3, fw = B.FIRE[0].length * fpx, fh = B.FIRE.length * fpx, n = Math.ceil(W / (fw * 1.15)) + 1, sp = W / (n - 1);
+      for (var fi = 0; fi < n; fi++) {
+        var bob = Math.round(Math.abs(Math.sin(g.t * 7 + fi * 1.9)) * 2) * fpx;
+        B.sprite(x, B.FIRE, Math.round(fi * sp - fw / 2), H - 18 - fh + bob, fpx, { O: K.ink, L: K.lime, V: K.lav }, (fi + Math.floor(g.t * 8)) % 2);
+      }
+    }
     var p = g.pad;
     x.globalAlpha = g.mode === 'idle' ? .55 : 1;
     x.fillStyle = K.ink; x.fillRect(Math.round(p.x - p.w / 2), g.py, Math.round(p.w), 8);
@@ -317,19 +335,21 @@
     g.pu.forEach(function (u) {
       var sz = B.puSize(g, u.type), ux = u.x - sz.w / 2, uy = u.y - sz.h / 2;
       if (u.type === 'thru') B.sprite(x, B.FIRE, ux, uy, ppx, { O: K.ink, L: K.lime, V: K.lav }, fr);
-      else B.sprite(x, B.HYDRA[fr], ux, uy, ppx, { X: K.ink, E: K.lime });
+      else B.sprite(x, B.HYDRA[fr], ux, uy, ppx, { X: K.ink, E: K.lime, T: K.lav, V: K.lav, L: K.lime });
     });
     // pick-up label: pixel text, rises and fades
     g.pops.forEach(function (q) { x.globalAlpha = 1 - q.t; B.ptext(x, q.txt, q.x, q.y - q.t * 30, ppx, K.lime, 0, 0); });
     x.globalAlpha = 1;
-    // logo cleared: +100K and GET THE FUCK IN! in purple pixel letters, bobbing in a wave
+    // logo cleared: +100K and GET THE FUCK IN! in chunky purple pixel letters, laid out to fit between the top
+    // line and the play-again message, bobbing in a wave
     if (g.win) {
-      var top = g.oy, area = g.rows * g.s, line2 = 'GET THE FUCK IN!';
-      var px2 = Math.max(2, Math.floor(Math.min(W * .9 / B.textW(line2, 1), area * .5 / 7)));
-      var px1 = Math.max(3, Math.floor(px2 * 1.6)), pop = Math.min(1, g.win.t * 4);
-      if (pop >= 1 || Math.floor(g.win.t * 20) % 2) {
-        B.ptext(x, '+100K', W / 2, top + area * .3, px1, K.purp, .5, g.t);
-        B.ptext(x, line2, W / 2, top + area * .78, px2, K.purp, .6, g.t + 1);
+      var line2 = 'GET THE FUCK IN!', top = g.ceil + 12, avail = (g.py - 72) - top;
+      var px2 = Math.max(2, Math.floor(Math.min(W * (W < 600 ? .9 : .62) / B.textW(line2, 1), avail / 27)));
+      var px1 = Math.max(3, Math.min(Math.round(px2 * 1.5), Math.floor(W * .9 / B.textW('+100K', 1))));
+      var blockH = 9 * px1 + 4 * px2 + 9 * px2, y0 = top + Math.max(0, (avail - blockH) / 2);
+      if (g.win.t > .25 || Math.floor(g.win.t * 20) % 2) {
+        B.ptext(x, '+100K', W / 2, y0 + px1 + 3.5 * px1, px1, K.purp, .5, g.t);
+        B.ptext(x, line2, W / 2, y0 + 9 * px1 + 4 * px2 + px2 + 3.5 * px2, px2, K.purp, .5, g.t + 1);
       }
     }
     // HUD
