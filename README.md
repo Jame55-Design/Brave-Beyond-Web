@@ -19,8 +19,8 @@ Custom code for bravebeyond.com. Webflow loads two bundles from this repo throug
 Always pin to a commit or tag, never `@main`. jsDelivr caches `@main` for up to 12 hours and Webflow checks each file against a fixed integrity hash, so a changing file would be blocked.
 
 Current release:
-- `bb-head.js`: commit `d3504fef8a467bac01a08eb9a90614fd49baf3bc` (BB Head Bundle 1.0.6, Services timeline states + green nav on Services, staging)
-- `bb-site.js`: commit `d3504fef8a467bac01a08eb9a90614fd49baf3bc` (BB Site Bundle 1.5.0, Services "How it works" step timeline, staging)
+- `bb-head.js`: commit `d3504fef8a467bac01a08eb9a90614fd49baf3bc` (BB Head Bundle 1.0.6, Services timeline states + green nav on Services, live)
+- `bb-site.js`: commit `d3504fef8a467bac01a08eb9a90614fd49baf3bc` (BB Site Bundle 1.5.0, Services "How it works" step timeline, live)
 - Previous live: head 1.0.5 (`3f1e1de`), site 1.4.4 (`044441f`)
 
 ## Rolling back
