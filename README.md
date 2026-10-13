@@ -20,7 +20,7 @@ Always pin to a commit or tag, never `@main`. jsDelivr caches `@main` for up to 
 
 Current release:
 - `bb-head.js`: commit `3f1e1de5efe95e93e95ff91c67153b6d9bb3dbd7` (BB Head Bundle 1.0.5)
-- `bb-site.js`: commit `153ce739797bae22e0cd99d670417eabe761b453` (BB Site Bundle 1.4.2, Services brick breaker)
+- `bb-site.js`: commit `f16eda31726acb70edb518eebc8a0567da8ab9aa` (BB Site Bundle 1.4.3, Services brick breaker)
 
 ## Rolling back
 
