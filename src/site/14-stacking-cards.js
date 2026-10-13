@@ -41,12 +41,30 @@
     });
   }
 
+  // A card taller than the screen would have its bottom hidden while it's stuck,
+  // so it sticks higher instead: just high enough for its bottom to show.
+  // clientHeight is the smallest viewport (iOS toolbars showing), so it doesn't
+  // jump around as Safari's bars hide and show.
+  function fitStickyTops(sections) {
+    var vh = document.documentElement.clientHeight;
+    sections.forEach(function (section) {
+      section.querySelectorAll('[data-stacking-card]').forEach(function (card) {
+        card.style.top = '';
+        var cssTop = parseFloat(getComputedStyle(card).top);
+        if (isNaN(cssTop)) return;
+        var fit = vh - card.offsetHeight - 16;
+        if (fit < cssTop) card.style.top = Math.round(fit) + 'px';
+      });
+    });
+  }
+
   function init() {
     kill();
     var cs = document.querySelectorAll('[data-barba="container"]');
     var scope = cs.length ? cs[cs.length - 1] : document;
     var sections = scope.querySelectorAll('[data-stacking-cards-init]');
     if (!sections.length) return;
+    fitStickyTops(sections);
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     var tier = tierNow();
