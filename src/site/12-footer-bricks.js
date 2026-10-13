@@ -53,7 +53,9 @@
     var lw = Math.min(W * (W < 600 ? 0.86 : 0.62), 820);
     g.s = Math.max(4, Math.min(9, Math.round(lw / 85)));     // brick size
     g.cols = Math.floor(lw / g.s); g.rows = Math.round(g.cols * B.VH / B.VW);
-    g.ox = Math.round((W - g.cols * g.s) / 2); g.oy = g.hy + g.fs + 22;
+    g.ox = Math.round((W - g.cols * g.s) / 2);
+    g.ceil = Math.round(g.hy + g.fs * 1.05 + 10);              // top line the ball bounces off
+    g.oy = g.ceil + 18;
     g.py = g.oy + g.rows * g.s + Math.max(110, Math.round(W * 0.14)); // paddle row
     g.H = g.py + 46;
     var dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -97,7 +99,7 @@
     b.x += b.vx * dt; if (B.hitBrick(g)) b.vx *= -1;
     if (b.x < b.r || b.x > W - b.r) { b.vx *= -1; b.x = Math.max(b.r, Math.min(W - b.r, b.x)); }
     b.y += b.vy * dt; if (B.hitBrick(g)) b.vy *= -1;
-    if (b.y < g.hy + g.fs + b.r) b.vy = Math.abs(b.vy);
+    if (b.y < g.ceil + 1 + b.r) { b.y = g.ceil + 1 + b.r; b.vy = Math.abs(b.vy); }
     var p = g.pad;
     if (b.vy > 0 && b.y + b.r >= g.py && b.y < g.py + 10 && Math.abs(b.x - p.x) < p.w / 2 + b.r) {
       var o = (b.x - p.x) / (p.w / 2), sp = Math.min(Math.hypot(b.vx, b.vy) * 1.015, 760);
@@ -137,7 +139,8 @@
   B.draw = function (g) {
     var x = g.ctx, K = B.COL, W = g.W, H = g.H, s = g.s;
     x.clearRect(0, 0, W, H);
-    x.globalAlpha = .2; x.fillStyle = K.ink; x.fillRect(0, H - 18, W, 1); x.globalAlpha = 1;
+    // hairlines top and bottom, same style as the invaders game's ground line
+    x.globalAlpha = .2; x.fillStyle = K.ink; x.fillRect(0, g.ceil, W, 1); x.fillRect(0, H - 18, W, 1); x.globalAlpha = 1;
     x.fillStyle = K.ink;
     var gap = s >= 6 ? 1 : .5;
     g.bricks.forEach(function (k) { if (k.a) x.fillRect(k.x + gap / 2, k.y + gap / 2, s - gap, s - gap); });
