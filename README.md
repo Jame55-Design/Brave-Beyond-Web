@@ -20,7 +20,7 @@ Always pin to a commit or tag, never `@main`. jsDelivr caches `@main` for up to 
 
 Current release:
 - `bb-head.js`: commit `d3504fef8a467bac01a08eb9a90614fd49baf3bc` (BB Head Bundle 1.0.6, Services timeline states + green nav on Services, live)
-- `bb-site.js`: commit `d3504fef8a467bac01a08eb9a90614fd49baf3bc` (BB Site Bundle 1.5.0, Services "How it works" step timeline, live)
+- `bb-site.js`: commit `d8286d00728ab20f07fc3faf950eb61a5358b847` (BB Site Bundle 1.6.0, Services stacking Expertise cards + step timeline, live)
 - Previous live: head 1.0.5 (`3f1e1de`), site 1.4.4 (`044441f`)
 
 ## Rolling back
