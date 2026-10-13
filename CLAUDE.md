@@ -31,3 +31,7 @@ James's studio site. Built in Webflow, with custom JS served from this repo via 
 - Runs on Barba namespaces home and goodies only (B.SEL). Other pages keep the logo with footer hearts.
 - Reads logo paths from the footer SVG at runtime; no need to copy logo data.
 - Test without a visible browser by stepping BBI.update(g, 1/60) and BBI.draw(g) on BBI.g.
+
+## Footer bricks (src/site/12-footer-bricks.js)
+- Brick breaker on the Services footer (namespace services or /services path). Bricks are the stacked logo (paths embedded, from the design system), gaps opened before pixelating.
+- Keeps Instagram, Privacy Policy and the rights line under the game. Top and bottom rules are 1.5px solid ink.
