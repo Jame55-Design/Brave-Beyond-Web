@@ -41,8 +41,10 @@
     });
   }
 
-  // A card taller than the screen would have its bottom hidden while it's stuck,
-  // so it sticks higher instead: just high enough for its bottom to show.
+  // Where each card sticks:
+  // - roughly centred on screen (a touch above true centre, which reads as centred),
+  //   but never higher than the CSS top, which keeps it clear of the nav;
+  // - if a card is too tall for that, just high enough for its bottom to show.
   // clientHeight is the smallest viewport (iOS toolbars showing), so it doesn't
   // jump around as Safari's bars hide and show.
   function fitStickyTops(sections) {
@@ -52,8 +54,11 @@
         card.style.top = '';
         var cssTop = parseFloat(getComputedStyle(card).top);
         if (isNaN(cssTop)) return;
-        var fit = vh - card.offsetHeight - 16;
-        if (fit < cssTop) card.style.top = Math.round(fit) + 'px';
+        var h = card.offsetHeight;
+        var centred = (vh - h) * 0.45;
+        var fit = vh - h - 16;
+        var top = Math.min(Math.max(cssTop, centred), fit);
+        if (Math.round(top) !== Math.round(cssTop)) card.style.top = Math.round(top) + 'px';
       });
     });
   }
@@ -72,7 +77,6 @@
       if (section.getAttribute('data-stacking-cards-' + tier) !== 'true') return;
       var cards = Array.prototype.slice.call(section.querySelectorAll('[data-stacking-card]'));
       if (!cards.length) return;
-      var stickyTop = parseFloat(getComputedStyle(cards[0]).top) || 0;
       var base = 'data-stacking-cards-' + tier;
       var rot = parse(section, base + '-rotate', [0, 4, -4], true);
       var xs = parse(section, base + '-x', ['0em']);
@@ -81,6 +85,7 @@
       cards.forEach(function (card, i) {
         var target = card.querySelector('[data-stacking-card-target]');
         if (!target) return;
+        var stickyTop = parseFloat(getComputedStyle(card).top) || 0;
         gsap.set(target, { rotate: 0, x: 0, y: 0, scale: 1, zIndex: cards.length - i });
         gsap.to(target, {
           rotate: rot[i % rot.length], x: xs[i % xs.length], y: ys[i % ys.length],
@@ -104,7 +109,10 @@
     clearTimeout(rt);
     rt = setTimeout(function () {
       var t = tierNow();
-      if (t !== lastTier) { lastTier = t; if (window.ScrollTrigger) init(); }
+      if (t !== lastTier) { lastTier = t; if (window.ScrollTrigger) init(); return; }
+      // Desktop window height changes: re-centre the cards. Phones skip this,
+      // since their height changes as the browser bars hide and show.
+      if (t === 'desktop' && window.ScrollTrigger) init();
     }, 250);
   });
 
