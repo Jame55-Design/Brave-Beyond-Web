@@ -139,8 +139,8 @@
   B.draw = function (g) {
     var x = g.ctx, K = B.COL, W = g.W, H = g.H, s = g.s;
     x.clearRect(0, 0, W, H);
-    // top and bottom rules: 1px solid ink, same as the site's divider lines
-    x.fillStyle = K.ink; x.fillRect(0, g.ceil, W, 1); x.fillRect(0, H - 18, W, 1);
+    // top and bottom rules: solid ink, 2px
+    x.fillStyle = K.ink; x.fillRect(0, g.ceil - 1, W, 2); x.fillRect(0, H - 18, W, 2);
     x.fillStyle = K.ink;
     var gap = s >= 6 ? 1 : .5;
     g.bricks.forEach(function (k) { if (k.a) x.fillRect(k.x + gap / 2, k.y + gap / 2, s - gap, s - gap); });
