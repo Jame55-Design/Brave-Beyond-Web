@@ -36,4 +36,4 @@ James's studio site. Built in Webflow, with custom JS served from this repo via 
 - Brick breaker on the Services footer (namespace services or /services path). Bricks are the stacked logo (paths embedded, from the design system), gaps opened before pixelating.
 - Keeps Instagram, Privacy Policy and the rights line under the game. Top and bottom rules are 1.5px solid ink.
 - Power-ups drop from the top about every 10s while playing (B.PU_EVERY), drawn as pixel sprites: FIRE flame (ball becomes a lime fireball that cuts through bricks, B.THRU_TIME s) and HYDRA (each ball splits into 6, capped at B.MAX_BALLS).
-- 5 lives (B.LIVES). Clearing the logo adds +100K (B.WIN_BONUS) and shows GET THE FUCK IN! in purps pixel letters (B.FONT, 5x7).
+- 5 lives (B.LIVES). Clearing the logo adds +100K (B.WIN_BONUS) and shows GET THE FUCK IN! in chunky purps pixel letters (B.FONT 5x7, drawn 2px wide) with a row of flickering pixel flames along the bottom.
