@@ -256,7 +256,8 @@
   };
   // Power-ups: one drops from the top about every 10 seconds; catch it with the paddle
   B.puPx = function (g) { return g.W < 600 ? 3 : 4; };
-  B.puSize = function (g, type) { var px = B.puPx(g), r = type === 'thru' ? B.FIRE : B.HYDRA[0]; return { w: r[0].length * px, h: r.length * px }; };
+  B.puPxFor = function (g, type) { return type === 'thru' ? B.puPx(g) : B.puPx(g) - 1; };   // hydra is wider, so one size down
+  B.puSize = function (g, type) { var px = B.puPxFor(g, type), r = type === 'thru' ? B.FIRE : B.HYDRA[0]; return { w: r[0].length * px, h: r.length * px }; };
   B.powerups = function (g, dt) {
     if (g.thru > 0) g.thru = Math.max(0, g.thru - dt);
     if ((g.puT -= dt) <= 0) {
@@ -335,7 +336,7 @@
     g.pu.forEach(function (u) {
       var sz = B.puSize(g, u.type), ux = u.x - sz.w / 2, uy = u.y - sz.h / 2;
       if (u.type === 'thru') B.sprite(x, B.FIRE, ux, uy, ppx, { O: K.ink, L: K.lime, V: K.lav }, fr);
-      else B.sprite(x, B.HYDRA[fr], ux, uy, ppx, { X: K.ink, E: K.lime, T: K.lav, V: K.lav, L: K.lime });
+      else B.sprite(x, B.HYDRA[fr], ux, uy, ppx - 1, { X: K.ink, E: K.lime, T: K.lav, V: K.lav, L: K.lime });
     });
     // pick-up label: pixel text, rises and fades
     g.pops.forEach(function (q) { x.globalAlpha = 1 - q.t; B.ptext(x, q.txt, q.x, q.y - q.t * 30, ppx, K.lime, 0, 0); });
