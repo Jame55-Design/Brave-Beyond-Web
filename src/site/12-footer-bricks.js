@@ -407,7 +407,7 @@
   // Power-ups: one drops from the top about every 10 seconds; catch it with the paddle
   B.puPx = function (g) { return g.W < 600 ? 3 : 4; };
   B.puPxFor = function (g, type) { return type === 'x6' ? 1 : B.puPx(g); };   // hydra is a detailed 88px sprite, drawn 1:1 on desktop
-  B.hyScale = function (g) { return g.W < 600 ? .7 : 1; };                      // and scaled down to 70% on phones
+  B.hyScale = function (g) { return g.W < 600 ? .7 : g.W < 1200 ? .8 : 1; };   // scaled to 70% on phones, 80% on iPads/tablets
   B.puSize = function (g, type) { var px = B.puPxFor(g, type), r = type === 'thru' ? B.FIRE : type === 'life' ? B.ELIXIR : B.HYDRA, k = type === 'x6' ? B.hyScale(g) : 1; return { w: Math.round(r[0].length * px * k), h: Math.round(r.length * px * k) }; };
   B.powerups = function (g, dt) {
     if (g.thru > 0) g.thru = Math.max(0, g.thru - dt);
