@@ -32,7 +32,19 @@
       .to(t, { scaleX: 1, scaleY: 1, duration: 1, ease: 'elastic.out(1, 0.3)' });
   }
 
+  // iOS Safari moves sticky cards a frame late (a jittery bounce) when any ancestor
+  // has overflow-x: clip. On phones, pages with stacking cards drop that clip and
+  // stop sideways panning with touch-action instead.
+  var FIX = 'bb-sticky-fix';
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html.' + FIX + ',html.' + FIX + ' body,html.' + FIX + ' .cards-stack,html.' + FIX +
+      ' [data-stacking-cards-init]{overflow-x:visible!important}html.' + FIX + '{touch-action:pan-y pinch-zoom}';
+    document.head.appendChild(s);
+  })();
+
   function kill() {
+    document.documentElement.classList.remove(FIX);
     ScrollTrigger.getAll().forEach(function (t) {
       if (t.vars && t.vars.id && String(t.vars.id).indexOf('stacking-') === 0) t.kill();
     });
@@ -69,8 +81,9 @@
     var scope = cs.length ? cs[cs.length - 1] : document;
     var sections = scope.querySelectorAll('[data-stacking-cards-init]');
     if (!sections.length) return;
-    fitStickyTops(sections);
     var tier = tierNow();
+    if (tier === 'mobile') document.documentElement.classList.add(FIX);
+    fitStickyTops(sections);
 
     // Hold on the last card: once it lands, freeze the whole section for a short
     // stretch of scrolling (data-stacking-cards-hold, in % of screen height,
