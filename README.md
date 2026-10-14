@@ -20,8 +20,8 @@ Always pin to a commit or tag, never `@main`. jsDelivr caches `@main` for up to 
 
 Current release:
 - `bb-head.js`: commit `1ab765e11d13450d53168edcff4cb03c6a774b47` (BB Head Bundle 1.0.8, live: Blog links hidden in all menus via src/head/08-hide-blog-links.js; delete that file to bring Blog back)
-- `bb-site.js`: commit `225cb1f90d57c2d954ac43a17f2306fb9bbc1e9f` (BB Site Bundle 1.7.9, staging only: hydra power-up in the Services footer bricks game drawn at 70% on phone widths (under 600px); live is still 1.7.8 `dc1bf51`)
-- Previous live: head 1.0.7 (`a913f9e`), site 1.7.2 (`3db7daa`)
+- `bb-site.js`: commit `6306ca4ede88de7b1ec2b2b73902d727f8763e85` (BB Site Bundle 1.7.10, live: hydra power-up in the Services footer bricks game drawn at 70% on phones (<600px) and 80% on iPads/tablets (600-1199px); plus the Services stacking-card phone fixes from 1.7.8)
+- Previous live: head 1.0.7 (`a913f9e`), site 1.7.8 (`dc1bf51`)
 
 ## Rolling back
 
