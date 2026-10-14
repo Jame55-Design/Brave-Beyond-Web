@@ -406,8 +406,9 @@
   };
   // Power-ups: one drops from the top about every 10 seconds; catch it with the paddle
   B.puPx = function (g) { return g.W < 600 ? 3 : 4; };
-  B.puPxFor = function (g, type) { return type === 'x6' ? 1 : B.puPx(g); };   // hydra is a detailed 88px sprite, drawn 1:1   // hydra is a bigger sprite, so drawn smaller
-  B.puSize = function (g, type) { var px = B.puPxFor(g, type), r = type === 'thru' ? B.FIRE : type === 'life' ? B.ELIXIR : B.HYDRA; return { w: r[0].length * px, h: r.length * px }; };
+  B.puPxFor = function (g, type) { return type === 'x6' ? 1 : B.puPx(g); };   // hydra is a detailed 88px sprite, drawn 1:1 on desktop
+  B.hyScale = function (g) { return g.W < 600 ? .7 : 1; };                      // and scaled down to 70% on phones
+  B.puSize = function (g, type) { var px = B.puPxFor(g, type), r = type === 'thru' ? B.FIRE : type === 'life' ? B.ELIXIR : B.HYDRA, k = type === 'x6' ? B.hyScale(g) : 1; return { w: Math.round(r[0].length * px * k), h: Math.round(r.length * px * k) }; };
   B.powerups = function (g, dt) {
     if (g.thru > 0) g.thru = Math.max(0, g.thru - dt);
     if ((g.puT -= dt) <= 0) {
@@ -496,7 +497,7 @@
       var sz = B.puSize(g, u.type), ux = u.x - sz.w / 2, uy = u.y - sz.h / 2;
       if (u.type === 'life') B.sprite(x, B.ELIXIR, ux, uy + Math.round(Math.sin(g.t * 5 + u.x) * 1.5) * ppx, ppx, { X: K.ink, P: K.purp, V: K.lav, L: K.lime, H: '#FFFFFF' });
       else if (u.type === 'thru') B.sprite(x, B.FIRE, ux, uy, ppx, { O: K.ink, L: K.lime, V: K.lav }, fr);
-      else B.drawHydra(x, ux, uy + Math.round(Math.sin(g.t * 4 + u.x) * 2), B.puPxFor(g, 'x6'), g.t, u.x * .01);
+      else { var hk = B.hyScale(g); x.save(); x.translate(Math.round(ux), Math.round(uy + Math.sin(g.t * 4 + u.x) * 2)); x.scale(hk, hk); B.drawHydra(x, 0, 0, B.puPxFor(g, 'x6'), g.t, u.x * .01); x.restore(); }
     });
     // pick-up label: pixel text, rises and fades
     g.pops.forEach(function (q) { x.globalAlpha = 1 - q.t; B.ptext(x, q.txt, q.x, q.y - q.t * 30, ppx, K.lime, 0, 0); });
