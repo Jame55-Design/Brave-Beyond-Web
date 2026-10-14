@@ -70,9 +70,38 @@
     var sections = scope.querySelectorAll('[data-stacking-cards-init]');
     if (!sections.length) return;
     fitStickyTops(sections);
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
     var tier = tierNow();
+
+    // Hold on the last card: once it lands, freeze the whole section for a short
+    // stretch of scrolling (data-stacking-cards-hold, in % of screen height,
+    // default 35), then let the page carry on. Desktop and tablet only; phones
+    // skip it because pinning fights iOS scrolling.
+    if (tier !== 'mobile') {
+      sections.forEach(function (section, si) {
+        var cards = section.querySelectorAll('[data-stacking-card]');
+        var list = section.querySelector('[data-stacking-card-stack]');
+        if (cards.length < 2 || !list) return;
+        var last = cards[cards.length - 1];
+        var hold = parseFloat(section.getAttribute('data-stacking-cards-hold'));
+        if (isNaN(hold)) hold = 35;
+        ScrollTrigger.create({
+          id: 'stacking-hold-' + si,
+          trigger: list,
+          // the list ends at the last card's bottom, so this fires the moment
+          // the last card reaches its stuck position
+          start: function () {
+            var top = parseFloat(getComputedStyle(last).top) || 0;
+            return 'bottom top+=' + Math.round(top + last.offsetHeight);
+          },
+          end: function () { return '+=' + Math.round(window.innerHeight * hold / 100); },
+          pin: section,
+          pinSpacing: true,
+          invalidateOnRefresh: true
+        });
+      });
+    }
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { ScrollTrigger.refresh(); return; }
     sections.forEach(function (section, si) {
       if (section.getAttribute('data-stacking-cards-' + tier) !== 'true') return;
       var cards = Array.prototype.slice.call(section.querySelectorAll('[data-stacking-card]'));
