@@ -53,68 +53,68 @@
     '...OOOOO...'
   ];
   // HYDRA (splits the ball): an original three-headed sea serpent in brand colours.
-  // X = ink outline, V = lavender, P = purps scales, E = lime eyes, L = lime forked tongues.
+  // X = ink outline, V = lavender, P = purps scales, E = lime eyes, W = lavender fangs, L = lime forked tongues.
   // Frame 2 sways the necks and pulls the tongues in.
   B.HYDRA = [[
-      '...............XXXXX................',
-      '...............XVVVVX...............',
-      '..............XVEVEVVX..............',
-      '....XXXX......XVVVVVVX......XXXX....',
-      '.XXXXVXX......XVVVVVVX......XXVXXXX.',
-      'XVVVEVVVX......XVXVVX......XVVVEVVVX',
-      'VVVVVVVVVX......XVVVVX....XVVVVVVVVV',
-      'VVVVVVVVVX.......LPVVVX...XVVVVVVVVV',
-      'XXXXVVVVX........XPPVVX....XVVVVXXXX',
-      'PPPPPVVVX.........XPVVX....XPPVPPPPP',
-      'XXXXPVVX.........XPPVVX.....XPVVXXXX',
-      '..XPVVVX.........XPPVVX.....XPPVVX..',
-      '..XPVVVX........XPPVVVX.....XPPVVX..',
-      '..XPVVVX.......XPPVVVX......XPPVVX..',
-      '...XPVVVXX.....XPVVVVX....XXPPVVX...',
-      '...XPVVVVVXX..XPPVVVX...XXPPPVVVX...',
-      '....XPVVVVVVXXPPVVVX..XXPPPVVVVX....',
-      '.....XPPVVVVVVPVVVVXXXPPPVVVVVX.....',
-      '......XPPPVVVPPVVVXXPPPVVVVVVX.X....',
-      '.......XXPPPVPPVVVXPPVVVVVVXXXXVX...',
-      '.........XXPPPPVVVPPVVVVVXX.XVVVVX..',
-      '...........XPPPVVVPVVVVVX...XVPPPVX.',
-      '...........XPPPPVVPVVVVVX...XVPXPVVX',
-      '...........XPPPPPPPPPPPPX....XVXPVX.',
-      '..........XVVVVVPPVPVVVVVXXXXXXPVVX.',
-      '.........XVVVVVVVVVVPPVVPPPPPPPVVVX.',
-      '..........XVVVVVVVVVVVVVVVVVVVVVVX..',
-      '...........XXVVVVVVVVVVVVVVVVVVXX...',
-      '.............XXXXXXXXXXXXXXXXXX.....'
+      '......................XX.........................',
+      '.......................XXXXX.....................',
+      '.......................XVVVVXXXX.................',
+      '......................XVVEVVVVVVXXX..............',
+      '......................XVVVVVVVVVVVX..............',
+      '......................XVVVXXXXXXXXX..............',
+      '...........XX.........XVVXXWXXXWXLL.XX...........',
+      '.......XXXXX.........XXVPPPPPPPXX.L..XXXXX.......',
+      '...XXXXVVVVX.........XPXXXXXXXXX.....XVVVVXXXX...',
+      'XXXVVVVVVEVVX.........XPPVVVX.......XVVEVVVVVVXXX',
+      'XVVVVVVVVVVVX..........XPPVVX.......XVVVVVVVVVVVX',
+      'XXXXXXXXXVVVX..........XPPVVX.......XVVVXXXXXXXXX',
+      'LLXWXXXWXXVVX..........XPPVVX......XXVVXXWXXXWXLL',
+      'L.XXPPPPPPPVX.........XPPVVVX......XXVPPPPPPPXX.L',
+      '...XXXXXXXXXXX.......XPPVVVX......XXXXXXXXXXXX...',
+      '.......XPVVVVVXXX...XPPVVVX....XXXPPPPVVX........',
+      '.......XPVVVVVVVVXXXPPVVVVX.XXXPPPPPPVVVX........',
+      '........XPPVVVVVVVVVPVVVVXXXPPPPPVVVVVVX.........',
+      '.........XXPPPVVVVVPPVVVXXPPPVVVVVVVVXX..........',
+      '...........XXPPPPVVPVVVVXPPVVVVVVVVXX............',
+      '.............XXPPPPPPVVVPPVVVVVVVXX..............',
+      '...............XXXPPPVVVPVVVVVXXX................',
+      '.................XPPPPVVPVVVVVX..................',
+      '.................XPPPPPPPPPPPPX.........X........',
+      '................XVVVVVPPVPVVVVVXX....XXXVX.......',
+      '...............XVVVVVVVVVVPPVVPPPXXXXPPVX........',
+      '................XVVVVVVVVVVVVVVVPPPPVVVX.........',
+      '.................XXVVVVVVVVVVVVVVVVVVXX..........',
+      '...................XXXXXXXXXXXXXXXXXX............'
     ], [
-      '...............XXXXX................',
-      '..............XVVVVVX...............',
-      '..............XVEVEVX...............',
-      '.....XXXX.....XVVVVVX......XXXX.....',
-      '..XXXXVXX.....XVVVVVX......XXVXXXX..',
-      '.XVVVEVVVX.....XVXVVX.....XVVVEVVVX.',
-      'XVVVVVVVVVX....XVVVVVX...XVVVVVVVVVX',
-      'XVVVVVVVVVX.....XPPVVX...XVVVVVVVVVX',
-      'XXXXXVVVVX.......XPVVVX...XVVVVXXXXX',
-      'XPPPPPVVVX.......XPPVVX...XPPVPPPPPX',
-      '.XXXPPVVX........XPPVVX....XPVVVXXX.',
-      '...XPVVVX........XPPVVX....XPPVVX...',
-      '...XPVVVX.......XPPVVX.....XPPVVX...',
-      '...XPVVVX......XPPVVVX.....XPPVVX...',
-      '...XPVVVVX.....XPVVVVX....XPPVVVX...',
-      '....XPVVVVXXX.XPPVVVX..XXXPPVVVX....',
-      '.....XPVVVVVVXPPVVVX.XXPPPPVVVX.....',
-      '......XPVVVVVVPVVVVXXPPPPVVVVX......',
-      '.......XPPVVVPPVVVXXPPPVVVVVX..X....',
-      '........XPPPVPPVVVXPPVVVVVVX.XXVX...',
-      '.........XXPPPPVVVPPVVVVVXX.XVVVVX..',
-      '...........XXPPVVVPVVVVXX...XVPPPVX.',
-      '...........XPPPPVVPVVVVVX...XVPXPVVX',
-      '...........XPPPPPPPPPPPPX....XVXPVX.',
-      '..........XVVVVVPPVPPVVVVXXXXXXPVVX.',
-      '.........XVVVVVVVVVVPPVVPPPPPPPVVVX.',
-      '..........XVVVVVVVVVVVVVVVVVVVVVVX..',
-      '...........XXVVVVVVVVVVVVVVVVVVXX...',
-      '.............XXXXXXXXXXXXXXXXXX.....'
+      '.....................XX..........................',
+      '......................XXXXX......................',
+      '......................XVVVVXXXX..................',
+      '.....................XVVEVVVVVVXXX...............',
+      '.....................XVVVVVVVVVVVX...............',
+      '.....................XVVVXXXXXXXXX...............',
+      '............XX.......XVVXXWXXXWX...XX............',
+      '........XXXXX........XVPPPPPPPXX....XXXXX........',
+      '....XXXXVVVVX........XXXXXXXXXX.....XVVVVXXXX....',
+      '.XXXVVVVVVEVVX........XPPVVVX......XVVEVVVVVVXXX.',
+      '.XVVVVVVVVVVVX.........XPPVVX......XVVVVVVVVVVVX.',
+      '.XXXXXXXXXVVVX.........XPPVVX......XVVVXXXXXXXXX.',
+      '...XWXXXWXXVVX........XPPPVVX.....XXVVXXWXXXWX...',
+      '...XXPPPPPPPVX........XPPVVX......XXVPPPPPPPXX...',
+      '....XXXXXXXXXX.......XPPVVVX......XXXXXXXXXXX....',
+      '........XPVVVVXXX...XPPVVVX....XXXPPPVVX.........',
+      '........XPVVVVVVVXXXPPVVVVX.XXXPPPPPVVVX.........',
+      '.........XPPVVVVVVVVPVVVVXXXPPPPVVVVVVX..........',
+      '..........XPPPVVVVVPPVVVXXPPPVVVVVVVVX...........',
+      '...........XXPPPPVVPVVVVXPPVVVVVVVVXX............',
+      '.............XXXPPPPPVVVPPVVVVVVXXX..............',
+      '................XXPPPVVVPVVVVVXX.................',
+      '.................XPPPPVVPVVVVVX..................',
+      '.................XPPPPPPPPPPPPX.........X........',
+      '................XVVVVVPPVPVVVVVXX....XXXVX.......',
+      '...............XVVVVVVVVVVPPVVPPPXXXXPPVX........',
+      '................XVVVVVVVVVVVVVVVPPPPVVVX.........',
+      '.................XXVVVVVVVVVVVVVVVVVVXX..........',
+      '...................XXXXXXXXXXXXXXXXXX............'
     ]];
   B.FONT = {
     'A': ['.###.', '#...#', '#...#', '#####', '#...#', '#...#', '#...#'],
@@ -285,7 +285,7 @@
   };
   // Power-ups: one drops from the top about every 10 seconds; catch it with the paddle
   B.puPx = function (g) { return g.W < 600 ? 3 : 4; };
-  B.puPxFor = function (g, type) { return type === 'thru' ? B.puPx(g) : Math.max(2, B.puPx(g) - 2); };   // hydra is a bigger sprite, so drawn smaller
+  B.puPxFor = function (g, type) { return type === 'thru' ? B.puPx(g) : 2; };   // hydra is a big sprite, so drawn at 2px   // hydra is a bigger sprite, so drawn smaller
   B.puSize = function (g, type) { var px = B.puPxFor(g, type), r = type === 'thru' ? B.FIRE : B.HYDRA[0]; return { w: r[0].length * px, h: r.length * px }; };
   B.powerups = function (g, dt) {
     if (g.thru > 0) g.thru = Math.max(0, g.thru - dt);
@@ -366,7 +366,7 @@
     g.pu.forEach(function (u) {
       var sz = B.puSize(g, u.type), ux = u.x - sz.w / 2, uy = u.y - sz.h / 2;
       if (u.type === 'thru') B.sprite(x, B.FIRE, ux, uy, ppx, { O: K.ink, L: K.lime, V: K.lav }, fr);
-      else B.sprite(x, B.HYDRA[fr], ux, uy, B.puPxFor(g, 'x6'), { X: K.ink, E: K.lime, V: K.lav, P: K.purp, L: K.lime });
+      else B.sprite(x, B.HYDRA[fr], ux, uy, B.puPxFor(g, 'x6'), { X: K.ink, E: K.lime, V: K.lav, P: K.purp, W: K.lav, L: K.lime });
     });
     // pick-up label: pixel text, rises and fades
     g.pops.forEach(function (q) { x.globalAlpha = 1 - q.t; B.ptext(x, q.txt, q.x, q.y - q.t * 30, ppx, K.lime, 0, 0); });
