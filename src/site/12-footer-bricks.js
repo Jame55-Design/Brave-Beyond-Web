@@ -52,70 +52,133 @@
     '..OLLLLLO..',
     '...OOOOO...'
   ];
-  // HYDRA (splits the ball): an original three-headed sea serpent in brand colours.
-  // X = ink outline, V = lavender, P = purps scales, E = lime eyes, W = lavender fangs, L = lime forked tongues.
-  // Frame 2 sways the necks and pulls the tongues in.
-  B.HYDRA = [[
-      '......................XX.........................',
-      '.......................XXXXX.....................',
-      '.......................XVVVVXXXX.................',
-      '......................XVVEVVVVVVXXX..............',
-      '......................XVVVVVVVVVVVX..............',
-      '......................XVVVXXXXXXXXX..............',
-      '...........XX.........XVVXXWXXXWXLL.XX...........',
-      '.......XXXXX.........XXVPPPPPPPXX.L..XXXXX.......',
-      '...XXXXVVVVX.........XPXXXXXXXXX.....XVVVVXXXX...',
-      'XXXVVVVVVEVVX.........XPPVVVX.......XVVEVVVVVVXXX',
-      'XVVVVVVVVVVVX..........XPPVVX.......XVVVVVVVVVVVX',
-      'XXXXXXXXXVVVX..........XPPVVX.......XVVVXXXXXXXXX',
-      'LLXWXXXWXXVVX..........XPPVVX......XXVVXXWXXXWXLL',
-      'L.XXPPPPPPPVX.........XPPVVVX......XXVPPPPPPPXX.L',
-      '...XXXXXXXXXXX.......XPPVVVX......XXXXXXXXXXXX...',
-      '.......XPVVVVVXXX...XPPVVVX....XXXPPPPVVX........',
-      '.......XPVVVVVVVVXXXPPVVVVX.XXXPPPPPPVVVX........',
-      '........XPPVVVVVVVVVPVVVVXXXPPPPPVVVVVVX.........',
-      '.........XXPPPVVVVVPPVVVXXPPPVVVVVVVVXX..........',
-      '...........XXPPPPVVPVVVVXPPVVVVVVVVXX............',
-      '.............XXPPPPPPVVVPPVVVVVVVXX..............',
-      '...............XXXPPPVVVPVVVVVXXX................',
-      '.................XPPPPVVPVVVVVX..................',
-      '.................XPPPPPPPPPPPPX.........X........',
-      '................XVVVVVPPVPVVVVVXX....XXXVX.......',
-      '...............XVVVVVVVVVVPPVVPPPXXXXPPVX........',
-      '................XVVVVVVVVVVVVVVVPPPPVVVX.........',
-      '.................XXVVVVVVVVVVVVVVVVVVXX..........',
-      '...................XXXXXXXXXXXXXXXXXX............'
-    ], [
-      '.....................XX..........................',
-      '......................XXXXX......................',
-      '......................XVVVVXXXX..................',
-      '.....................XVVEVVVVVVXXX...............',
-      '.....................XVVVVVVVVVVVX...............',
-      '.....................XVVVXXXXXXXXX...............',
-      '............XX.......XVVXXWXXXWX...XX............',
-      '........XXXXX........XVPPPPPPPXX....XXXXX........',
-      '....XXXXVVVVX........XXXXXXXXXX.....XVVVVXXXX....',
-      '.XXXVVVVVVEVVX........XPPVVVX......XVVEVVVVVVXXX.',
-      '.XVVVVVVVVVVVX.........XPPVVX......XVVVVVVVVVVVX.',
-      '.XXXXXXXXXVVVX.........XPPVVX......XVVVXXXXXXXXX.',
-      '...XWXXXWXXVVX........XPPPVVX.....XXVVXXWXXXWX...',
-      '...XXPPPPPPPVX........XPPVVX......XXVPPPPPPPXX...',
-      '....XXXXXXXXXX.......XPPVVVX......XXXXXXXXXXX....',
-      '........XPVVVVXXX...XPPVVVX....XXXPPPVVX.........',
-      '........XPVVVVVVVXXXPPVVVVX.XXXPPPPPVVVX.........',
-      '.........XPPVVVVVVVVPVVVVXXXPPPPVVVVVVX..........',
-      '..........XPPPVVVVVPPVVVXXPPPVVVVVVVVX...........',
-      '...........XXPPPPVVPVVVVXPPVVVVVVVVXX............',
-      '.............XXXPPPPPVVVPPVVVVVVXXX..............',
-      '................XXPPPVVVPVVVVVXX.................',
-      '.................XPPPPVVPVVVVVX..................',
-      '.................XPPPPPPPPPPPPX.........X........',
-      '................XVVVVVPPVPVVVVVXX....XXXVX.......',
-      '...............XVVVVVVVVVVPPVVPPPXXXXPPVX........',
-      '................XVVVVVVVVVVVVVVVPPPPVVVX.........',
-      '.................XXVVVVVVVVVVVVVVVVVVXX..........',
-      '...................XXXXXXXXXXXXXXXXXX............'
-    ]];
+  // HYDRA (splits the ball): James's own pixel hydra (Brave_Hydra.svg), sampled to an 88 x 85 pixel grid.
+  // X = ink, P = purps, V = light lavender, H = white, E = lime eyes.
+  // Tongues are lime, one letter set per tongue, ordered outwards from the mouth: a-i, j-r, s-z + '#'.
+  B.HYDRA = [
+    '..........................................X...XX........................................',
+    '..........................................XX...XX.......................................',
+    '..........................................XXX..XXX......................................',
+    '..........................................XPX...XXXXXX..................................',
+    '..........................................XPPXXXXXXPXXXX................................',
+    '...........................................XPPPPXXXPPPXXX...............................',
+    '............................................XXPPPXXXXPXXX...............................',
+    '.............................................XXPPPPXXXXXXX..............................',
+    '..........................................XXXXXXXPPXXPPPXXXX............................',
+    '........................................XXXVXXXXXXPPXXPPPPXXX...........................',
+    '......................................XXXXXXVVVVXXXXXXXPPPPPPX..........................',
+    '.....................................XXXVVVVVVVVVVXXXXXXXPPPPXX.........................',
+    '....................................XXXXVVVPPPPVVVXXVVXXXXPPPXX.........................',
+    '...................................XXXXVVPPPPPPPVVVXXVPXEEXPPXXX........................',
+    '....................................XXVVPPPPPXXXXVVVVVPPXXXXPPPXX.......................',
+    '...................................XXVVPPPPXXXXXXXXVVVXPPPPXXPPPXXX.....................',
+    '..................................XXXVPPPPPXXX..XXXVVXXXXXXPPPPPPXX.....................',
+    '..................................XXVPPPPPXXX....XXVVXXEXXXXXXXPPXX.....................',
+    '.................................XXXVPPPPXXX......XXVVXXXX..XXXXPXX.....................',
+    '.................................XXVVPPPPXX........XXVVVXa....XXXX......................',
+    '.................................XXVVPPPPXX........XXXVVXXab....XX......................',
+    '.................................XXVVPPPPXX.........XXVVXXXbcd..........................',
+    '................................XXXVVPPPPXX...........XVVX..cde.........................',
+    '................................XXXVVPPPPXX...........XXVVXX..ef........................',
+    '................................XXXVVPPPPXXX...........XVVVX...f...i....................',
+    '...................X............XXXXVVPPPPXXX..........XXXXX...gghi.....................',
+    '.............X....XX............XXXXVVPPPPPXX............XXX....hhi.....................',
+    '............XX...XX..............XXXXVVPPPPPXXX.........................................',
+    '...........XX...XXX..............XXXXVVVPPPPPXXX........................X...............',
+    '..........XPXXXXPPX.XXXX..........XXXXVVVVPPPPPXX.................X.....XX..............',
+    '.........XPPXXPPPXXXXVVXXXXX......XXXXXVVVVVPPPPXX................XXX...XXX.............',
+    '........XXPPXPPPXXXVVXXXXXXXX......XXXXXVVVVVPPPPXX...............XPXXX.XPXX............',
+    '.......XXPPXPPPXXXXXXXPPPPPXXXX.....XXXXXXVVVVPPPPXX..............XPPPXXXPPXX...........',
+    '......XXPPXXPPPXXXXPPPPPPPPPPXXXXX..XXXXXXXVVVVPPPPX..........XXX.XXXPPPXXPPXX..........',
+    '......XPXXXXPPXXXPPPPPPPPPPPPPPXXXX..XXXXXXXVVVPPPPXX........XXXXX.XXPPPPXXPPXXX........',
+    '.....XXXXXXXPPXXPPPPPPPPPPPPPPPPPXXX..XXXXXXVVVPPPPXXX....XXXXXXVVXXXXPPPXXPPPXX........',
+    '.....XXXXPPPXPXXPPPPPPPPPPPPPPPPPPXXX..XXXXXXVVVPPPPXX.XXXXVVXXXXXVVXXXPPPXXPPXX........',
+    '....XXPPPPPXXXXVPPPPXXXXXXVVVPPPPPPXXX..XXXXXVVVPPPPXX.XXXXXXPPPPPVVVXXXPPXXXXXX........',
+    '...XXPPPPPPXXXVVPPXXXXXXXXXXVVVPPPPPXXX.XXXXXXVVVPPPXXXXXXXPPPPPPPVVVVVXXXXPPXXX........',
+    '...XPPPPPXXXPXVVVXXX.....XXXXVVVPPPPPXX..XXXXXVVVPPPXXXXXPPPPPPPPPPPVVVVXPPPPPPXXX......',
+    '...XPPPXEXPPXXVVXXX........XXXVVPPPPPXXX.XXXXXVVVPPXXXXXPPPPPPPPPPPPVVVVXXPPPPPPPXX.....',
+    '..XXPPXEXXPVVVVVXX..........XXVVVPPPPPXX..XXXXVVPPPXXXXPPPPPPPPXXXXXXVVVVXPXXXXPPPX.....',
+    'XXXPPXXXXPPVVVVVX............XXVVVPPPPXXX.XXXVVVPPXXXXPPPPPPPXXXXXXXXXVVVVPXEXXPPPX.....',
+    'XXXPPPPPPXXXVVXXX............XXVVVPPPPPXX.XXXVVVPXXXXVPPPPPXXXX.....XXXVVVPPXEXXPPPX....',
+    'XPPPPPPPPXXXVVXX.............XXXVVPPPPPXX.XXVVVPPXXXVVPPPPXXX........XXVVVVPPXXXXPPPXX..',
+    'XPPXXXXXXXXXVXX..............XXXVVPPPPPXXXXVVVPPXXXXVPPPPXXX..........XXVVXXPPPPPPPPPXX.',
+    'XXXXXXX.EXXVVXX.............XXXXVVPPPPPXXXVVVVPPXXXXVPPPPXXX..........XXVVXXXXXPPPPPPPX.',
+    '.XX.X...XXXVX...............XXXVVPPPPPXXXXVVVPPXXXXXVPPPXXX............XXVXXjXXXXXXXPPX.',
+    '..X....sXXVVX..............XXXVVPPPPPPXXXVVVPPPXXXXVVPPPXXX.............XVVXXjk..XXXXPX.',
+    '......sXXXVX..............XXXVVPPPPPPXXXXVVPPPPXXXXVVVPPXXX..............XVVXXkl..XXXX..',
+    '.....ttXXVVX.............XXXVVPPPPPPXXXXXVVPPPPXXXXVVVPPXXXX..............XVVXXll...X...',
+    '....uu.XVVX............XXXXVPPPPPPPPXXXXVVVVPPPPXXXXVVPPPXXXX..............XVXXXlmn.....',
+    '....vv.XXX............XXXXVPPPPPPPXXXXXXVVVVPPPPPXXXVVVPPPXXXXXX...........XVVXX..n.....',
+    '...ww................XXXPPPPPPXXXXXXXXXXXVVVVPPPPPXXXVVVPPPXXXXXX...........XVVXX.oo....',
+    '...xx...............XXXPPPPXXXXPPPPPXXXXXXVVVVPPPPPPXXXVVPPPPXXXXX..........XXXX..oo....',
+    '#zyy................XXXPPPXXXPPPPPPPPPPXXXXXVVVPPPPPXXXXVVVVPPPXXX..................pqrr',
+    '.zz................XXVVPPXXPPPPPPPPPPPPPPXXXXVVVPPPPPPXXXVVVVPPPXXX.................qq..',
+    '.#.................XXVVPXXPPPPPPPPPPPPPPPPPXXXXVVPPPPPPXXXVVVPPPPXXXX................r..',
+    '..................XXVVVXXPPPPPPPPPPPPPPPPPPPPXXXVVVPPPPPXXXXVVPPPPXXX................r..',
+    '..................XXVVXXXPPPPPPVVVVVVVVPPPPPPXXXXVVVPPPPPXXXVVVPPPPPXX..................',
+    '..................XXVXXXPPPPPPVVVVVVVVVVVPPPPPXXXXVVVPPPPPPXXVVVPPPPPXX.................',
+    '..................XXXXXPPPPPVVVVXXXXXVVVVVPPPPPXXXXVVPPPPPPXXXVVVPPPPXX.................',
+    '..................XXXXPPPPPPVVXXXXXXXXXVVVVPPPPPPXXVVVPPPPPPXXXVVPPPPPXX................',
+    '..................XXXXPPPPPVVXXXXXXXXXXXVVVVPPPPPXXXVVVPPPPPXXXVVVPPPPXX................',
+    '...................XXPPPPPPVXXXXXXHHXXXXXVVVVPPPPXXXVVVPPPPPXXXVVVPPPPXX................',
+    '...................XXPPPPPPVXXXXXHHHHXXXXVVVVPPPVXXXXVVPPPPPPXXXVVVPPPPX................',
+    '..................XPPPPPPPPVXXXXHHHHHHXXXXVVVPPPVXXXXVVPPPPPPXXXXVVPPPPX................',
+    '..................XPPPPPPPPVXXXXHHHHHHHXXXXVVPVVXXXXXVPPPPPPPXXXXVVPPPPX................',
+    '..................XPPPPPPPPPXXXXHHHHHHHHXXXVVVVVXXXXXPPPPPPPPXXXXVVVPPPX................',
+    '..................XPPPPPPPPPPXXXXHHHHHHXXXXVVVVXXXXXPPPPPPPPPXXXXVVVPPXX................',
+    '..................XVVPPPPPPPPPXXXXXHHHHXXXXXVVXXXXXPPPPPPPPPXXXXXVVVPPXX................',
+    '..................XVVVPPPPPPPPPXXXXXHHXXXXXXXXXXXPPPPPPPPPPPXXXXVVVVXXX.................',
+    '..................XXVVPPPPPPPPPPXXXXXXXXXXXXXXXPPPPPPPPPPPPVXXXXVVVVXXX.................',
+    '..................XXVVVPPPPPPPPPPPPXXXXXXXXXPPPPPPPPPPPPPPVVXXXVVVVXXX..................',
+    '...................XVVVVVPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPVVXXXXVVVXXX...................',
+    '...................XXVVVVVPPPPPPPPPPPPPPPPPPPPPPPPPPPPPVVVVXXXXVVXXX....................',
+    '...................XXXXVVVVVPPPPPPPPPPPPPPPPPPPPPPPPPVVVVVXXXXXXXXX.....................',
+    '....................XXXXXVVVVVPPPPPPPPPPPPPPPPPPPPPVVVVVVXXXXXXXX.......................',
+    '.....................XXXXXXVVVVVVVPPPPPPPPPPPPPPVVVVVVVXXXXXXXX.........................',
+    '......................XXXXXXVVVVVVVVVVPPPPPPVVVVVVVVVVXXXXX.............................',
+    '.......................XXXXXXXVVVVVVVVVPPPPVVVVVVVVVVXXXXX..............................',
+    '.........................XXXXXXVVVVVVVVVVVVVVVVVVXXXXXXXX...............................',
+    '...........................XXXXXXXXXVVVVVVVVVXXXXXXXXX..................................',
+    '..............................XXXXXXXXXXXXXXXXXXXXXX....................................',
+    '..................................XXXXXXXXXXXXXX........................................'
+  ];
+  B.TONGUES = ['abcdefghi', 'jklmnopqr', 'stuvwxyz#'];
+  // How far each tongue is out (-1 = in, 8 = fully out). They flick out and back in turn.
+  B.tongueStage = function (t, i) {
+    var c = ((t / 1.6) + i / 3) % 1;
+    if (c < .12) return Math.floor(c / .12 * 9);
+    if (c < .4) return 8;
+    if (c < .52) return 8 - Math.floor((c - .4) / .12 * 9);
+    return -1;
+  };
+  // The body is drawn once per size to a hidden canvas; only the tongues are drawn every frame
+  B.hydraBase = function (px) {
+    B._hb = B._hb || {};
+    if (B._hb[px] !== undefined) return B._hb[px];
+    var c = document.createElement('canvas'), x = c.getContext && c.getContext('2d');
+    if (!x) return (B._hb[px] = null);
+    c.width = B.HYDRA[0].length * px; c.height = B.HYDRA.length * px;
+    var K = B.COL, map = { X: K.ink, P: K.purp, V: '#E8CAE9', H: '#FDFDFD', E: K.lime };
+    B.sprite(x, B.HYDRA, 0, 0, px, map);
+    return (B._hb[px] = c);
+  };
+  B.drawHydra = function (x, left, top, px, t, off) {
+    var K = B.COL, base = B.hydraBase(px);
+    if (base) x.drawImage(base, Math.round(left), Math.round(top));
+    else B.sprite(x, B.HYDRA, left, top, px, { X: K.ink, P: K.purp, V: '#E8CAE9', H: '#FDFDFD', E: K.lime });
+    var st = [B.tongueStage(t + off, 0), B.tongueStage(t + off, 1), B.tongueStage(t + off, 2)];
+    x.fillStyle = K.lime;
+    for (var r = 0; r < B.HYDRA.length; r++) {
+      var row = B.HYDRA[r];
+      for (var k = 0; k < row.length; k++) {
+        var ch = row[k];
+        for (var i = 0; i < 3; i++) {
+          var n = B.TONGUES[i].indexOf(ch);
+          if (n >= 0) { if (n <= st[i]) x.fillRect(Math.round(left + k * px), Math.round(top + r * px), px, px); break; }
+        }
+      }
+    }
+  };
   B.FONT = {
     'A': ['.###.', '#...#', '#...#', '#####', '#...#', '#...#', '#...#'],
     'C': ['.###.', '#...#', '#....', '#....', '#....', '#...#', '.###.'],
@@ -285,8 +348,8 @@
   };
   // Power-ups: one drops from the top about every 10 seconds; catch it with the paddle
   B.puPx = function (g) { return g.W < 600 ? 3 : 4; };
-  B.puPxFor = function (g, type) { return type === 'thru' ? B.puPx(g) : 2; };   // hydra is a big sprite, so drawn at 2px   // hydra is a bigger sprite, so drawn smaller
-  B.puSize = function (g, type) { var px = B.puPxFor(g, type), r = type === 'thru' ? B.FIRE : B.HYDRA[0]; return { w: r[0].length * px, h: r.length * px }; };
+  B.puPxFor = function (g, type) { return type === 'thru' ? B.puPx(g) : 1; };   // hydra is a detailed 88px sprite, drawn 1:1   // hydra is a bigger sprite, so drawn smaller
+  B.puSize = function (g, type) { var px = B.puPxFor(g, type), r = type === 'thru' ? B.FIRE : B.HYDRA; return { w: r[0].length * px, h: r.length * px }; };
   B.powerups = function (g, dt) {
     if (g.thru > 0) g.thru = Math.max(0, g.thru - dt);
     if ((g.puT -= dt) <= 0) {
@@ -366,7 +429,7 @@
     g.pu.forEach(function (u) {
       var sz = B.puSize(g, u.type), ux = u.x - sz.w / 2, uy = u.y - sz.h / 2;
       if (u.type === 'thru') B.sprite(x, B.FIRE, ux, uy, ppx, { O: K.ink, L: K.lime, V: K.lav }, fr);
-      else B.sprite(x, B.HYDRA[fr], ux, uy, B.puPxFor(g, 'x6'), { X: K.ink, E: K.lime, V: K.lav, P: K.purp, W: K.lav, L: K.lime });
+      else B.drawHydra(x, ux, uy + Math.round(Math.sin(g.t * 4 + u.x) * 2), B.puPxFor(g, 'x6'), g.t, u.x * .01);
     });
     // pick-up label: pixel text, rises and fades
     g.pops.forEach(function (q) { x.globalAlpha = 1 - q.t; B.ptext(x, q.txt, q.x, q.y - q.t * 30, ppx, K.lime, 0, 0); });
