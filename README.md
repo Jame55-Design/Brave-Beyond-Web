@@ -20,7 +20,7 @@ Always pin to a commit or tag, never `@main`. jsDelivr caches `@main` for up to 
 
 Current release:
 - `bb-head.js`: commit `a913f9ecabe458ad81d0ede0959bd8d6b63341c2` (BB Head Bundle 1.0.7, no sideways scroll on phones, live)
-- `bb-site.js`: commit `76616d4c5a49db98f27111ebfa02a0adf15e2613` (BB Site Bundle 1.7.5, staging only, testing: on phones, pages with stacking cards drop overflow-x clip so iOS Safari stops jittering the sticky cards; touch-action blocks sideways panning). Live is 1.7.2 (`3db7daa`, every iPhone/iPad browser gets the hero .mov)
+- `bb-site.js`: commit `ea8d1575d0920bdc02863aa4cf83046801f058f5` (BB Site Bundle 1.7.6, staging only: on phones, pages with stacking cards drop overflow-x clip so iOS Safari stops jittering the sticky cards; touch-action blocks sideways panning). Live is 1.7.2 (`3db7daa`, every iPhone/iPad browser gets the hero .mov; cards never stick under the nav)
 - Previous live: head 1.0.5 (`3f1e1de`), site 1.7.1 (`7a744c2`)
 
 ## Rolling back
