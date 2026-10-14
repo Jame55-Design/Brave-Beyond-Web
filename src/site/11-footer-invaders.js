@@ -1,6 +1,9 @@
 // BB Footer Invaders: Space Invaders in the footer on the home and Free Goodies pages.
 // Shots chip away at the pixelated Brave Beyond logo on their way up to the invaders.
 // A black propeller plane towing the Brave Beyond logo flies over about every 15 seconds: hit it for 100 points.
+// Clear 5 waves of blobs and the FINAL WAVE is hydras (James's pixel hydra from the bricks game): each takes
+// 3 hits and fires from all three heads. Clear it to win: +100K and GET THE FUCK IN! with pixel flames.
+// Lose all 3 lives and it says GIT GUD. Big pixel letters use the bricks game's chunky font (window.BBB).
 // Pages: set in B.SEL below (Barba namespace + .bb-footer).
 
 // Styles, pages it runs on, colours and sprites
@@ -17,7 +20,10 @@
     '@media (max-width:479px){.bb-footer.bbinv-on{padding-top:32px}.bb-footer .bbft-ig{margin:16px 0 0}}';
   document.head.appendChild(s);
   B.SEL = '[data-barba-namespace="home"] .bb-footer,[data-barba-namespace="goodies"] .bb-footer';
-  B.COL = { g: '#07A87E', ink: '#212121', lime: '#CCFF00', lav: '#E9DBEC', pts: '#CCFF00' };
+  B.COL = { g: '#07A87E', ink: '#212121', lime: '#CCFF00', lav: '#E9DBEC', pts: '#CCFF00', purp: '#AE9AE4' };
+  B.WAVES = 5;          // blob waves before the hydra wave
+  B.HYDRA_HP = 3;       // hits per hydra
+  B.WIN_BONUS = 100000;
   B.ROWC = ['#CCFF00', '#D0C6E9', '#E9DBEC']; // alien colour per row, top to bottom
   B.BLOB = [
     // Cyclops blob: one big eye, wobbly frill
@@ -177,7 +183,19 @@
     B.reset(g);
   };
   B.wave = function (g) {
-    var P = g.P, sx = 16 * P, sy = 11 * P;
+    var P = g.P, sx = 16 * P, sy = 11 * P, H = window.BBB;
+    g.hyd = g.wave > B.WAVES && H && H.drawHydra ? 1 : 0;
+    if (g.hyd) {
+      // FINAL WAVE: two rows of hydras, sized to fit the formation area
+      var hs = Math.min(.75, (g.rows * 11 * P - 8) / (2 * 85)), hw = Math.round(88 * hs), hh = Math.round(85 * hs), gap = Math.round(hw * .35);
+      var hc = Math.max(3, Math.min(g.W < 600 ? 4 : 6, Math.floor((g.W - 40) / (hw + gap))));
+      g.hs = hs; g.aw = hw; g.ah = hh; g.inv = [];
+      for (var hr = 0; hr < 2; hr++) for (var c2 = 0; c2 < hc; c2++) g.inv.push({ ox: c2 * (hw + gap), oy: g.top + hr * (hh + 6), row: hr, on: 1, hp: B.HYDRA_HP, fl: 0 });
+      g.fx = (g.W - ((hc - 1) * (hw + gap) + hw)) / 2; g.fdir = 1;
+      g.fsp = 60; g.eT = 1.2; g.intro = 2.2;
+      return;
+    }
+    g.aw = 8 * P; g.ah = 6 * P;
     var cols = g.W < 600 ? Math.max(5, Math.min(8, Math.floor((g.W - 40) / sx))) : Math.max(4, Math.min(10, Math.floor((g.W - 120) / 72)));
     g.inv = [];
     for (var r = 0; r < g.rows; r++) for (var c = 0; c < cols; c++) g.inv.push({ ox: c * sx, oy: g.top + r * sy, row: r, on: 1 });
@@ -185,7 +203,7 @@
     g.fsp = 38 + g.wave * 14; g.eT = 1.2;
   };
   B.reset = function (g) {
-    g.score = 0; g.wave = 1; g.lives = 3; g.b = []; g.e = []; g.pop = []; g.ship.inv = 0;
+    g.score = 0; g.wave = 1; g.lives = 3; g.b = []; g.e = []; g.pop = []; g.ship.inv = 0; g.win = null; g.ot = 0; g.intro = 0;
     B.buildLogo(g); B.wave(g);
   };
   B.input = function (g) {
@@ -197,7 +215,7 @@
       var r = cv.getBoundingClientRect(), b = g.rb, px = e.clientX - r.left, py = e.clientY - r.top;
       if (b && px >= b.x - 6 && px <= b.x + b.w + 6 && py >= b.y - 6 && py <= b.y + b.h + 6) { B.buildLogo(g); g.fire = false; return; }
       tx(e);
-      if (g.mode === 'over') { B.reset(g); g.mode = 'play'; }
+      if (g.mode === 'over' || g.mode === 'win') { B.reset(g); g.mode = 'play'; }
       go(); g.fire = true;
     });
     function off(e) { if (e.pointerType !== 'mouse') g.fire = false; }
@@ -208,7 +226,11 @@
   B.hit = function (g) {
     g.lives--; g.ship.inv = 1.6;
     for (var k = 0; k < 26; k++) B.debris(g, g.ship.x, g.ship.y + 10, B.COL.ink, Math.random() < .5);
-    if (g.lives <= 0) { g.mode = 'over'; g.fire = false; }
+    if (g.lives <= 0) { g.mode = 'over'; g.fire = false; g.ot = 0; }
+  };
+  // Hydra wave cleared
+  B.winner = function (g) {
+    g.score += B.WIN_BONUS; g.mode = 'win'; g.fire = false; g.e = []; g.win = { t: 0, fl: [] };
   };
   // Plane + banner boxes (plane first), in canvas px
   B.planeBoxes = function (g) {
@@ -225,7 +247,17 @@
   var B = window.BBI = window.BBI || {};
   B.update = function (g, dt) {
     g.t += dt;
-    var sh = g.ship, i, v, b, P = g.P, aw = 8 * P, ah = 6 * P;
+    var sh = g.ship, i, v, b, P = g.P, aw = g.aw, ah = g.ah, BB = window.BBB;
+    if (g.mode === 'over') g.ot += dt;
+    if (g.intro > 0) g.intro -= dt;
+    // won: pixel flames rain down everywhere (fewer on narrow screens)
+    if (g.win && BB && BB.FIRE) {
+      g.win.t += dt;
+      var fl = g.win.fl, dens = Math.max(.3, g.W / 1440);
+      if (fl.length < 70 * dens && Math.random() < dt * 22 * dens) fl.push({ x: Math.random() * g.W, y: g.lane - 40, vy: 110 + Math.random() * 180, px: Math.random() < .5 ? 2 : 3, ph: Math.random() * 6 });
+      fl.forEach(function (q) { q.y += q.vy * dt; });
+      g.win.fl = fl.filter(function (q) { return q.y < g.H; });
+    }
     if (g.mode === 'idle' && !g.rm) sh.tx = g.W / 2 + Math.sin(g.t * .8) * Math.min(260, g.W * .3);
     sh.x += (sh.tx - sh.x) * Math.min(1, dt * 12);
     if (sh.inv > 0) sh.inv -= dt;
@@ -253,8 +285,14 @@
         v = g.inv[j]; if (!v.on) continue;
         var vx = g.fx + v.ox, vy = v.oy + Math.sin(g.t * 2 + v.ox * .05) * 3;
         if (b.x > vx && b.x < vx + aw && b.y > vy && b.y < vy + ah) {
-          v.on = 0; b.p = 0; g.score += (3 - v.row) * 10 + 10;
-          for (var k = 0; k < 18; k++) B.debris(g, vx + aw / 2, vy + ah / 2, B.ROWC[v.row] || B.COL.lav, Math.random() < .5);
+          b.p = 0;
+          if (g.hyd && --v.hp > 0) {
+            v.fl = .12; g.score += 10;
+            for (var k = 0; k < 6; k++) B.debris(g, b.x, b.y, B.COL.lime, Math.random() < .5);
+            break;
+          }
+          v.on = 0; g.score += g.hyd ? 150 : (3 - v.row) * 10 + 10;
+          for (k = 0; k < (g.hyd ? 40 : 18); k++) B.debris(g, vx + aw / 2, vy + ah / 2, g.hyd ? [B.COL.purp, B.COL.ink, B.COL.lav][k % 3] : B.ROWC[v.row] || B.COL.lav, Math.random() < .5);
           break;
         }
       }
@@ -284,14 +322,20 @@
       if (g.fx + mx > g.W - 16) { g.fx = g.W - 16 - mx; g.fdir = -1; }
       if (g.fx + mn < 16) { g.fx = 16 - mn; g.fdir = 1; }
       g.frT += dt; if (g.frT > .45) { g.frT = 0; g.fr ^= 1; }
-      if (g.mode === 'play' && (g.eT -= dt) <= 0) {
+      live.forEach(function (x) { if (x.fl > 0) x.fl -= dt; });
+      if (g.mode === 'play' && g.intro <= 0 && (g.eT -= dt) <= 0) {
         var cols = {};
         live.forEach(function (x) { if (!cols[x.ox] || x.oy > cols[x.ox].oy) cols[x.ox] = x; });
         var sh2 = Object.values(cols), s = sh2[(Math.random() * sh2.length) | 0];
-        g.e.push({ x: g.fx + s.ox + aw / 2, y: s.oy + ah + 2, on: 1 });
+        // hydras fire from all three heads at once: three times the bullets
+        if (g.hyd) BB.HEADS.forEach(function (h) { g.e.push({ x: g.fx + s.ox + h.x * g.hs, y: s.oy + (h.y + 8) * g.hs, on: 1, hy: 1 }); });
+        else g.e.push({ x: g.fx + s.ox + aw / 2, y: s.oy + ah + 2, on: 1 });
         g.eT = Math.max(.35, 1.6 - g.wave * .12) * (.6 + Math.random() * .8);
       }
-    } else if (g.mode === 'play') { g.wave++; g.score += 100; B.wave(g); }
+    } else if (g.mode === 'play') {
+      if (g.hyd) B.winner(g);
+      else { g.wave++; g.score += 100; B.wave(g); }
+    }
     g.e.forEach(function (e) {
       var dist = 240 * dt;
       while (dist > 0 && e.on) {
@@ -299,7 +343,7 @@
         var idx = B.cellAt(g, e.x, e.y);
         if (idx >= 0) { B.carve(g, idx, 1.8 + Math.random() * .8, 1); e.on = 0; }
       }
-      if (e.on && sh.inv <= 0 && Math.abs(e.x - sh.x) < 22 && e.y > sh.y && e.y < sh.y + 24) { e.on = 0; B.hit(g); }
+      if (e.on && g.mode === 'play' && sh.inv <= 0 && Math.abs(e.x - sh.x) < 22 && e.y > sh.y && e.y < sh.y + 24) { e.on = 0; B.hit(g); }
       if (e.y > g.H + 10) e.on = 0;
     });
     g.e = g.e.filter(function (x) { return x.on; });
@@ -336,6 +380,18 @@
       x.drawImage(g.ban.cv, i, 0, sw, g.ban.h, Math.round(bn.x + i * Bp), Math.round(bn.y + off), sw * Bp, g.ban.h * Bp);
     }
   };
+  // Big chunky pixel lines (bricks game font), centred between the formation top and the message pill.
+  // lines: [[text, relative size], ...]; flickers in for the first quarter second
+  B.bigText = function (g, x, lines, t) {
+    var BB = window.BBB; if (!BB || !BB.ptext) return;
+    var W = g.W, ms = Math.max(12, Math.min(16, Math.round(W / 90))), top = g.top - 4, avail = g.logo.y - 36 - ms * 1.25 - 10 - top;
+    var f = W < 600 ? .9 : .62, k = 10, hsum = 0;
+    lines.forEach(function (l) { k = Math.min(k, W * f / (BB.textW(l[0], 1) * l[1])); hsum += 9 * l[1]; });
+    k = Math.min(k, avail / hsum);
+    var y = top + Math.max(0, (avail - hsum * k) / 2);
+    if (!(t > .25 || Math.floor(t * 20) % 2)) return;
+    lines.forEach(function (l, i) { var px = Math.max(2, Math.floor(k * l[1])); BB.ptext(x, l[0], W / 2, y + px + 3.5 * px, px, B.COL.purp, .5, g.t + i); y += 9 * px; });
+  };
   B.draw = function (g) {
     var x = g.ctx, L = g.logo, K = B.COL, W = g.W, H = g.H, P = g.P;
     if (L.dirty) { L.cv.getContext('2d').putImageData(L.img, 0, 0); L.dirty = false; }
@@ -344,12 +400,31 @@
     x.imageSmoothingEnabled = false;
     x.drawImage(L.cv, L.x, L.y, L.w * g.C, L.h * g.C);
     if (g.pl) B.drawPlane(g, x);
-    g.inv.forEach(function (v) { if (v.on) B.spr(x, B.BLOB[g.fr], g.fx + v.ox, v.oy + Math.sin(g.t * 2 + v.ox * .05) * 3, B.ROWC[v.row] || K.lav, P); });
+    if (g.mode === 'over') x.globalAlpha = .3;
+    g.inv.forEach(function (v) {
+      if (!v.on) return;
+      var vy = v.oy + Math.sin(g.t * 2 + v.ox * .05) * 3;
+      if (!g.hyd) return B.spr(x, B.BLOB[g.fr], g.fx + v.ox, vy, B.ROWC[v.row] || K.lav, P);
+      var a = x.globalAlpha; x.save(); x.translate(Math.round(g.fx + v.ox), Math.round(vy)); x.scale(g.hs, g.hs);
+      if (v.fl > 0) x.globalAlpha = a * .35;   // flashes when hit
+      window.BBB.drawHydra(x, 0, 0, 1, g.t, v.ox * .01); x.restore();
+    });
+    x.globalAlpha = 1;
     x.fillStyle = K.ink; g.b.forEach(function (b) { x.fillRect(Math.round(b.x - 1), Math.round(b.y), 3, 12); });
-    x.fillStyle = K.lav;
-    g.e.forEach(function (e) { var z = Math.floor(e.y / 6) % 2 ? 2 : -2; x.fillRect(Math.round(e.x - 1 + z), Math.round(e.y - 10), 3, 5); x.fillRect(Math.round(e.x - 1 - z), Math.round(e.y - 5), 3, 5); });
+    g.e.forEach(function (e) {
+      x.fillStyle = e.hy ? K.lime : K.lav; var z = Math.floor(e.y / 6) % 2 ? 2 : -2; x.fillRect(Math.round(e.x - 1 + z), Math.round(e.y - 10), 3, 5); x.fillRect(Math.round(e.x - 1 - z), Math.round(e.y - 5), 3, 5); });
     g.parts.forEach(function (p) { x.globalAlpha = Math.max(0, Math.min(1, p.life * 1.6)); x.fillStyle = p.c; x.fillRect(Math.round(p.x), Math.round(p.y), p.s, p.s); });
     x.globalAlpha = 1;
+    // won: flickering pixel flames, behind everything below the HUD
+    var BB = window.BBB;
+    if (g.win && BB && BB.FIRE) {
+      x.save(); x.beginPath(); x.rect(0, g.lane - 4, W, H - 18 - g.lane + 4); x.clip();
+      g.win.fl.forEach(function (q) {
+        var fw = BB.FIRE[0].length * q.px, fh = BB.FIRE.length * q.px;
+        BB.sprite(x, BB.FIRE, Math.round(q.x - fw / 2), Math.round(q.y - fh / 2), q.px, { O: K.ink, L: K.lime, V: K.lav }, Math.floor(g.t * 8 + q.ph) % 2);
+      });
+      x.restore();
+    }
     var sh = g.ship;
     if (g.mode !== 'over' && !(sh.inv > 0 && Math.floor(sh.inv * 10) % 2)) { x.globalAlpha = g.mode === 'idle' ? .55 : 1; B.spr(x, B.SHIP, sh.x - 22, sh.y, K.ink, 4); x.globalAlpha = 1; }
     // +100 pop-ups: flash, rise and fade
@@ -361,13 +436,17 @@
       B.pixText(x, '+100', cx, p.y - Math.round(k * 40 / ppx) * ppx, ppx, K.pts);
     });
     x.globalAlpha = 1;
+    // big pixel words
+    if (g.mode === 'over') B.bigText(g, x, [['GIT GUD', 1]], g.ot);
+    else if (g.win) B.bigText(g, x, [['+100K', 1.5], ['GET THE FUCK IN!', 1]], g.win.t);
+    else if (g.hyd && g.intro > 0 && g.mode === 'play') B.bigText(g, x, [['FINAL WAVE', 1]], 2.2 - g.intro);
     // HUD
     x.font = '500 ' + g.fs + 'px ' + g.font; x.fillStyle = K.ink; x.textBaseline = 'middle';
-    x.textAlign = 'left'; x.fillText('SCORE ' + g.score + '   WAVE ' + g.wave + '   LIVES ' + g.lives, 16, g.hy);
+    x.textAlign = 'left'; x.fillText('SCORE ' + g.score + '   ' + (g.hyd ? 'FINAL WAVE' : 'WAVE ' + g.wave + '/' + B.WAVES) + '   LIVES ' + g.lives, 16, g.hy);
     var px = B.pill(g, x, W - 16, g.hy);
     x.font = '500 ' + g.fs + 'px ' + g.font; x.fillStyle = K.ink;
     x.textAlign = 'right'; x.fillText('LOGO ' + Math.round(100 * L.alive / L.total) + '%', px - 10, g.hy);
-    var msg = g.mode === 'idle' ? (g.touch ? 'TOUCH TO PLAY' : 'MOVE HERE TO PLAY') : g.mode === 'over' ? 'GAME OVER · ' + g.score + ' PTS · ' + (g.touch ? 'TAP' : 'CLICK') + ' TO PLAY AGAIN' : '';
+    var msg = g.mode === 'idle' ? (g.touch ? 'TOUCH TO PLAY' : 'MOVE HERE TO PLAY') : g.mode === 'over' || g.mode === 'win' ? (g.mode === 'win' ? 'YOU WIN · ' : 'GAME OVER · ') + g.score + ' PTS · ' + (g.touch ? 'TAP' : 'CLICK') + ' TO PLAY AGAIN' : '';
     if (msg) {
       var ms = Math.max(12, Math.min(16, Math.round(W / 90))), bh = Math.round(ms * 2.5);
       x.font = '700 ' + ms + 'px ' + g.font; var tw = x.measureText(msg).width + ms * 2.4, cy = L.y - 36;
