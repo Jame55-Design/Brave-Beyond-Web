@@ -192,7 +192,7 @@
       g.hs = hs; g.aw = hw; g.ah = hh; g.inv = [];
       for (var hr = 0; hr < 2; hr++) for (var c2 = 0; c2 < hc; c2++) g.inv.push({ ox: c2 * (hw + gap), oy: g.top + hr * (hh + 6), row: hr, on: 1, hp: B.HYDRA_HP, fl: 0 });
       g.fx = (g.W - ((hc - 1) * (hw + gap) + hw)) / 2; g.fdir = 1;
-      g.fsp = 60; g.eT = 1.2; g.intro = 2.2;
+      g.fsp = 120; g.eT = 1.2; g.intro = 2.2;   // hydras move twice as fast as before
       return;
     }
     g.aw = 8 * P; g.ah = 6 * P;
@@ -330,7 +330,7 @@
         // hydras fire from all three heads at once: three times the bullets
         if (g.hyd) BB.HEADS.forEach(function (h) { g.e.push({ x: g.fx + s.ox + h.x * g.hs, y: s.oy + (h.y + 8) * g.hs, on: 1, hy: 1 }); });
         else g.e.push({ x: g.fx + s.ox + aw / 2, y: s.oy + ah + 2, on: 1 });
-        g.eT = Math.max(.35, 1.6 - g.wave * .12) * (.6 + Math.random() * .8);
+        g.eT = Math.max(.35, 1.6 - g.wave * .12) * (.6 + Math.random() * .8) * (g.hyd ? .5 : 1);   // hydras fire twice as often
       }
     } else if (g.mode === 'play') {
       if (g.hyd) B.winner(g);
