@@ -20,7 +20,7 @@ Always pin to a commit or tag, never `@main`. jsDelivr caches `@main` for up to 
 
 Current release:
 - `bb-head.js`: commit `1ab765e11d13450d53168edcff4cb03c6a774b47` (BB Head Bundle 1.0.8, live: Blog links hidden in all menus via src/head/08-hide-blog-links.js; delete that file to bring Blog back)
-- `bb-site.js`: commit `dc1bf5189d6ff74b74afc970d59ed887c43e938f` (BB Site Bundle 1.7.8, live: phone fixes for the Services stacking cards: no overflow-x clip around the sticky cards (iOS jitter), cards zoomed to fit below the visible nav bar, card images load straight away and cards re-fit when they land; plus the iOS hero .mov fix from 1.7.2)
+- `bb-site.js`: commit `225cb1f90d57c2d954ac43a17f2306fb9bbc1e9f` (BB Site Bundle 1.7.9, staging only: hydra power-up in the Services footer bricks game drawn at 70% on phone widths (under 600px); live is still 1.7.8 `dc1bf51`)
 - Previous live: head 1.0.7 (`a913f9e`), site 1.7.2 (`3db7daa`)
 
 ## Rolling back
