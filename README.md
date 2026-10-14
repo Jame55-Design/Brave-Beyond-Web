@@ -20,7 +20,7 @@ Always pin to a commit or tag, never `@main`. jsDelivr caches `@main` for up to 
 
 Current release:
 - `bb-head.js`: commit `a913f9ecabe458ad81d0ede0959bd8d6b63341c2` (BB Head Bundle 1.0.7, no sideways scroll on phones, live)
-- `bb-site.js`: commit `91d1ecde2a3009b215e777122e06e107aa23cea8` (BB Site Bundle 1.7.3, staging only: no stacking-card bounce on phones). Live is 1.7.2 (`3db7daa`, every iPhone/iPad browser gets the hero .mov)
+- `bb-site.js`: commit `90298b81243a209c4ad8bb326eb2317c9f482069` (BB Site Bundle 1.7.4, staging only: on phones the stacking cards sit at their final angles, no scroll tilt or bounce). Live is 1.7.2 (`3db7daa`, every iPhone/iPad browser gets the hero .mov)
 - Previous live: head 1.0.5 (`3f1e1de`), site 1.7.1 (`7a744c2`)
 
 ## Rolling back
