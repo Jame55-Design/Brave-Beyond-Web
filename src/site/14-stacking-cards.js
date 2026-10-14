@@ -1,4 +1,4 @@
-// Stacking sticky cards with a bounce as each card locks (Services "Expertise" cards).
+// Stacking sticky cards with a bounce as each card locks (Services "Expertise" cards). Phones skip the bounce.
 // Markup: [data-stacking-cards-init] section > [data-stacking-card] items > [data-stacking-card-target].
 // Per-breakpoint toggles/values: data-stacking-cards-{desktop|tablet|mobile}[-rotate|-x|-y].
 // Re-runs after Barba page transitions and when the viewport tier changes.
@@ -124,6 +124,8 @@
             start: 'top 75%', end: 'top-=' + stickyTop + ' top', scrub: true
           }
         });
+        // No bounce on phones: the squash-and-spring makes the stuck cards jitter in iOS Safari.
+        if (tier === 'mobile') return;
         ScrollTrigger.create({
           id: 'stacking-bounce-' + si + '-' + i, trigger: card,
           start: 'top-=' + stickyTop + ' top', onEnter: function () { pulse(target); }
