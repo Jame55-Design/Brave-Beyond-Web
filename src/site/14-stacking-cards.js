@@ -1,4 +1,4 @@
-// Stacking sticky cards with a bounce as each card locks (Services "Expertise" cards). Phones skip the bounce.
+// Stacking sticky cards with a bounce as each card locks (Services "Expertise" cards). Phones skip the scroll animation and show each card at its final angle.
 // Markup: [data-stacking-cards-init] section > [data-stacking-card] items > [data-stacking-card-target].
 // Per-breakpoint toggles/values: data-stacking-cards-{desktop|tablet|mobile}[-rotate|-x|-y].
 // Re-runs after Barba page transitions and when the viewport tier changes.
@@ -115,6 +115,12 @@
         var target = card.querySelector('[data-stacking-card-target]');
         if (!target) return;
         var stickyTop = parseFloat(getComputedStyle(card).top) || 0;
+        // Phones: no scroll-driven tilt or bounce, which jitter on stuck cards in iOS Safari.
+        // Each card just sits at its final angle and the stacking stays native.
+        if (tier === 'mobile') {
+          gsap.set(target, { rotate: rot[i % rot.length], x: xs[i % xs.length], y: ys[i % ys.length], scale: 1, zIndex: cards.length - i });
+          return;
+        }
         gsap.set(target, { rotate: 0, x: 0, y: 0, scale: 1, zIndex: cards.length - i });
         gsap.to(target, {
           rotate: rot[i % rot.length], x: xs[i % xs.length], y: ys[i % ys.length],
@@ -124,8 +130,6 @@
             start: 'top 75%', end: 'top-=' + stickyTop + ' top', scrub: true
           }
         });
-        // No bounce on phones: the squash-and-spring makes the stuck cards jitter in iOS Safari.
-        if (tier === 'mobile') return;
         ScrollTrigger.create({
           id: 'stacking-bounce-' + si + '-' + i, trigger: card,
           start: 'top-=' + stickyTop + ' top', onEnter: function () { pulse(target); }
