@@ -61,6 +61,8 @@
   // jump around as Safari's bars hide and show.
   function fitStickyTops(sections) {
     var vh = document.documentElement.clientHeight;
+    var nav = document.querySelector('.navigation');
+    var navBottom = nav ? Math.max(0, nav.getBoundingClientRect().bottom) : 0;
     sections.forEach(function (section) {
       section.querySelectorAll('[data-stacking-card]').forEach(function (card) {
         card.style.top = '';
@@ -70,6 +72,8 @@
         var centred = (vh - h) * 0.45;
         var fit = vh - h - 16;
         var top = Math.min(Math.max(cssTop, centred), fit);
+        // never tuck under the fixed nav (phones: tall cards would otherwise ride up behind it)
+        top = Math.max(top, navBottom + 12);
         if (Math.round(top) !== Math.round(cssTop)) card.style.top = Math.round(top) + 'px';
       });
     });
