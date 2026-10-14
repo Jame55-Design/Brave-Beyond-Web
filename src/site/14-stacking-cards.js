@@ -59,16 +59,26 @@
   // - if a card is too tall for that, just high enough for its bottom to show.
   // clientHeight is the smallest viewport (iOS toolbars showing), so it doesn't
   // jump around as Safari's bars hide and show.
-  function fitStickyTops(sections) {
+  // Phones: iOS Safari jitters a stuck card that hangs off the bottom of the screen,
+  // so any card too tall for the space between the nav and the screen bottom is
+  // zoomed down (CSS zoom, which shrinks its layout too) until it fits.
+  function fitStickyTops(sections, tier) {
     var vh = document.documentElement.clientHeight;
     var nav = document.querySelector('.navigation');
     var navBottom = nav ? Math.max(0, nav.getBoundingClientRect().bottom) : 0;
     sections.forEach(function (section) {
       section.querySelectorAll('[data-stacking-card]').forEach(function (card) {
         card.style.top = '';
+        var target = card.querySelector('[data-stacking-card-target]') || card;
+        target.style.zoom = '';
         var cssTop = parseFloat(getComputedStyle(card).top);
         if (isNaN(cssTop)) return;
         var h = card.offsetHeight;
+        var room = vh - (navBottom + 12) - 16;
+        if (tier === 'mobile' && h > room && room > 0) {
+          target.style.zoom = (Math.floor(room / h * 1000) / 1000).toString();
+          h = card.offsetHeight;
+        }
         var centred = (vh - h) * 0.45;
         var fit = vh - h - 16;
         var top = Math.min(Math.max(cssTop, centred), fit);
@@ -87,7 +97,7 @@
     if (!sections.length) return;
     var tier = tierNow();
     if (tier === 'mobile') document.documentElement.classList.add(FIX);
-    fitStickyTops(sections);
+    fitStickyTops(sections, tier);
 
     // Hold on the last card: once it lands, freeze the whole section for a short
     // stretch of scrolling (data-stacking-cards-hold, in % of screen height,
