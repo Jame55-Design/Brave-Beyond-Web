@@ -52,46 +52,69 @@
     '..OLLLLLO..',
     '...OOOOO...'
   ];
-  // HYDRA (splits the ball): three dragon heads. X = ink, E = lime eyes, T = lavender fangs, V = lavender belly, L = lime spines.
-  // Frame 2 shuts the jaws, so it snaps as it falls.
+  // HYDRA (splits the ball): an original three-headed sea serpent in brand colours.
+  // X = ink outline, V = lavender, P = purps scales, E = lime eyes, L = lime forked tongues.
+  // Frame 2 sways the necks and pulls the tongues in.
   B.HYDRA = [[
-      '...........XXXXXX...........',
-      '...XXXX...XXXXXXXX...XXXX...',
-      '.XXXXXEX..XXEXXEXX..XEXXXXX.',
-      'XXXXXXXX..XXXXXXXX..XXXXXXXX',
-      '.T..T.XX..XTXXXXTX..XX.T..T.',
-      'XXXXXXXX...XXXXXX...XXXXXXXX',
-      '....XXX.....XXXX.....XXX....',
-      '.....XXX....XXXX....XXX.....',
-      '......XXX...XXXX...XXX......',
-      '.......XXX..XXXX..XXX.......',
-      '........XXXXXXXXXXXX........',
-      '......XXXXLXXXXXXLXXXX......',
-      '.....XXXXVVVVVVVVVXXXXX.....',
-      '....XXXXVVVVVVVVVVVXXXXX....',
-      '....XXXXVVVVVVVVVVVXXXXXX...',
-      '.....XXXXVVVVVVVVVXXXXXXXXX.',
-      '.....XXX.XXX...XXX.XXX..XXXX',
-      '.....XX...XX....XX..XX....XX'
+      '...............XXXXX................',
+      '...............XVVVVX...............',
+      '..............XVEVEVVX..............',
+      '....XXXX......XVVVVVVX......XXXX....',
+      '.XXXXVXX......XVVVVVVX......XXVXXXX.',
+      'XVVVEVVVX......XVXVVX......XVVVEVVVX',
+      'VVVVVVVVVX......XVVVVX....XVVVVVVVVV',
+      'VVVVVVVVVX.......LPVVVX...XVVVVVVVVV',
+      'XXXXVVVVX........XPPVVX....XVVVVXXXX',
+      'PPPPPVVVX.........XPVVX....XPPVPPPPP',
+      'XXXXPVVX.........XPPVVX.....XPVVXXXX',
+      '..XPVVVX.........XPPVVX.....XPPVVX..',
+      '..XPVVVX........XPPVVVX.....XPPVVX..',
+      '..XPVVVX.......XPPVVVX......XPPVVX..',
+      '...XPVVVXX.....XPVVVVX....XXPPVVX...',
+      '...XPVVVVVXX..XPPVVVX...XXPPPVVVX...',
+      '....XPVVVVVVXXPPVVVX..XXPPPVVVVX....',
+      '.....XPPVVVVVVPVVVVXXXPPPVVVVVX.....',
+      '......XPPPVVVPPVVVXXPPPVVVVVVX.X....',
+      '.......XXPPPVPPVVVXPPVVVVVVXXXXVX...',
+      '.........XXPPPPVVVPPVVVVVXX.XVVVVX..',
+      '...........XPPPVVVPVVVVVX...XVPPPVX.',
+      '...........XPPPPVVPVVVVVX...XVPXPVVX',
+      '...........XPPPPPPPPPPPPX....XVXPVX.',
+      '..........XVVVVVPPVPVVVVVXXXXXXPVVX.',
+      '.........XVVVVVVVVVVPPVVPPPPPPPVVVX.',
+      '..........XVVVVVVVVVVVVVVVVVVVVVVX..',
+      '...........XXVVVVVVVVVVVVVVVVVVXX...',
+      '.............XXXXXXXXXXXXXXXXXX.....'
     ], [
-      '...........XXXXXX...........',
-      '...XXXX...XXXXXXXX...XXXX...',
-      '.XXXXXEX..XXEXXEXX..XEXXXXX.',
-      'XXXXXXXX..XXXXXXXX..XXXXXXXX',
-      'XXXXXXXX..XXXXXXXX..XXXXXXXX',
-      'XXXXXXXX...XXXXXX...XXXXXXXX',
-      '....XXX.....XXXX.....XXX....',
-      '.....XXX....XXXX....XXX.....',
-      '......XXX...XXXX...XXX......',
-      '.......XXX..XXXX..XXX.......',
-      '........XXXXXXXXXXXX........',
-      '......XXXXLXXXXXXLXXXX......',
-      '.....XXXXVVVVVVVVVXXXXX.....',
-      '....XXXXVVVVVVVVVVVXXXXX....',
-      '....XXXXVVVVVVVVVVVXXXXXX...',
-      '.....XXXXVVVVVVVVVXXXXXXXXX.',
-      '.....XXX.XXX...XXX.XXX..XXXX',
-      '.....XX...XX....XX..XX....XX'
+      '...............XXXXX................',
+      '..............XVVVVVX...............',
+      '..............XVEVEVX...............',
+      '.....XXXX.....XVVVVVX......XXXX.....',
+      '..XXXXVXX.....XVVVVVX......XXVXXXX..',
+      '.XVVVEVVVX.....XVXVVX.....XVVVEVVVX.',
+      'XVVVVVVVVVX....XVVVVVX...XVVVVVVVVVX',
+      'XVVVVVVVVVX.....XPPVVX...XVVVVVVVVVX',
+      'XXXXXVVVVX.......XPVVVX...XVVVVXXXXX',
+      'XPPPPPVVVX.......XPPVVX...XPPVPPPPPX',
+      '.XXXPPVVX........XPPVVX....XPVVVXXX.',
+      '...XPVVVX........XPPVVX....XPPVVX...',
+      '...XPVVVX.......XPPVVX.....XPPVVX...',
+      '...XPVVVX......XPPVVVX.....XPPVVX...',
+      '...XPVVVVX.....XPVVVVX....XPPVVVX...',
+      '....XPVVVVXXX.XPPVVVX..XXXPPVVVX....',
+      '.....XPVVVVVVXPPVVVX.XXPPPPVVVX.....',
+      '......XPVVVVVVPVVVVXXPPPPVVVVX......',
+      '.......XPPVVVPPVVVXXPPPVVVVVX..X....',
+      '........XPPPVPPVVVXPPVVVVVVX.XXVX...',
+      '.........XXPPPPVVVPPVVVVVXX.XVVVVX..',
+      '...........XXPPVVVPVVVVXX...XVPPPVX.',
+      '...........XPPPPVVPVVVVVX...XVPXPVVX',
+      '...........XPPPPPPPPPPPPX....XVXPVX.',
+      '..........XVVVVVPPVPPVVVVXXXXXXPVVX.',
+      '.........XVVVVVVVVVVPPVVPPPPPPPVVVX.',
+      '..........XVVVVVVVVVVVVVVVVVVVVVVX..',
+      '...........XXVVVVVVVVVVVVVVVVVVXX...',
+      '.............XXXXXXXXXXXXXXXXXX.....'
     ]];
   B.FONT = {
     'A': ['.###.', '#...#', '#...#', '#####', '#...#', '#...#', '#...#'],
@@ -246,6 +269,12 @@
     g.pops.forEach(function (q) { q.t += dt; }); g.pops = g.pops.filter(function (q) { return q.t < 1; });
     if (g.win) {
       g.win.t += dt;
+      // flames rain down everywhere while the win screen is up
+      var fl = g.win.flames || (g.win.flames = []);
+      var dens = Math.max(.3, g.W / 1440);   // fewer flames on narrow screens
+      if (fl.length < 70 * dens && Math.random() < dt * 22 * dens) fl.push({ x: Math.random() * g.W, y: g.ceil - 40, vy: 110 + Math.random() * 180, px: Math.random() < .5 ? 2 : 3, ph: Math.random() * 6 });
+      fl.forEach(function (q) { q.y += q.vy * dt; });
+      g.win.flames = fl.filter(function (q) { return q.y < g.H; });
       if (g.win.t < 2.5 && Math.random() < .5) { for (var c = 0; c < 4; c++) B.debris(g, Math.random() * g.W, g.oy + Math.random() * g.rows * g.s, [B.COL.purp, B.COL.lime, B.COL.lav][c % 3]); }
     }
     // fireball trail
@@ -256,7 +285,7 @@
   };
   // Power-ups: one drops from the top about every 10 seconds; catch it with the paddle
   B.puPx = function (g) { return g.W < 600 ? 3 : 4; };
-  B.puPxFor = function (g, type) { return type === 'thru' ? B.puPx(g) : B.puPx(g) - 1; };   // hydra is wider, so one size down
+  B.puPxFor = function (g, type) { return type === 'thru' ? B.puPx(g) : Math.max(2, B.puPx(g) - 2); };   // hydra is a bigger sprite, so drawn smaller
   B.puSize = function (g, type) { var px = B.puPxFor(g, type), r = type === 'thru' ? B.FIRE : B.HYDRA[0]; return { w: r[0].length * px, h: r.length * px }; };
   B.powerups = function (g, dt) {
     if (g.thru > 0) g.thru = Math.max(0, g.thru - dt);
@@ -316,13 +345,14 @@
     x.fillStyle = K.lime; g.flash.forEach(function (f) { x.fillRect(f.x, f.y, s, s); });
     g.parts.forEach(function (q) { x.globalAlpha = Math.max(0, Math.min(1, q.life * 2)); x.fillStyle = q.c; x.fillRect(Math.round(q.x), Math.round(q.y), 2, 2); });
     x.globalAlpha = 1;
-    // logo cleared: a row of flickering pixel flames along the bottom line
-    if (g.win) {
-      var fpx = W < 600 ? 2 : 3, fw = B.FIRE[0].length * fpx, fh = B.FIRE.length * fpx, n = Math.ceil(W / (fw * 1.15)) + 1, sp = W / (n - 1);
-      for (var fi = 0; fi < n; fi++) {
-        var bob = Math.round(Math.abs(Math.sin(g.t * 7 + fi * 1.9)) * 2) * fpx;
-        B.sprite(x, B.FIRE, Math.round(fi * sp - fw / 2), H - 18 - fh + bob, fpx, { O: K.ink, L: K.lime, V: K.lav }, (fi + Math.floor(g.t * 8)) % 2);
-      }
+    // logo cleared: flickering pixel flames raining down everywhere (behind the win text)
+    if (g.win && g.win.flames) {
+      x.save(); x.beginPath(); x.rect(0, g.ceil + 1, W, H - 18 - g.ceil - 1); x.clip();
+      g.win.flames.forEach(function (q) {
+        var fw = B.FIRE[0].length * q.px, fh = B.FIRE.length * q.px;
+        B.sprite(x, B.FIRE, Math.round(q.x - fw / 2), Math.round(q.y - fh / 2), q.px, { O: K.ink, L: K.lime, V: K.lav }, Math.floor(g.t * 8 + q.ph) % 2);
+      });
+      x.restore();
     }
     var p = g.pad;
     x.globalAlpha = g.mode === 'idle' ? .55 : 1;
@@ -336,7 +366,7 @@
     g.pu.forEach(function (u) {
       var sz = B.puSize(g, u.type), ux = u.x - sz.w / 2, uy = u.y - sz.h / 2;
       if (u.type === 'thru') B.sprite(x, B.FIRE, ux, uy, ppx, { O: K.ink, L: K.lime, V: K.lav }, fr);
-      else B.sprite(x, B.HYDRA[fr], ux, uy, ppx - 1, { X: K.ink, E: K.lime, T: K.lav, V: K.lav, L: K.lime });
+      else B.sprite(x, B.HYDRA[fr], ux, uy, B.puPxFor(g, 'x6'), { X: K.ink, E: K.lime, V: K.lav, P: K.purp, L: K.lime });
     });
     // pick-up label: pixel text, rises and fades
     g.pops.forEach(function (q) { x.globalAlpha = 1 - q.t; B.ptext(x, q.txt, q.x, q.y - q.t * 30, ppx, K.lime, 0, 0); });
