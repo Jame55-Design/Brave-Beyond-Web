@@ -6,6 +6,7 @@
 //   FIRE (pixel flame)  - the ball becomes a fireball and cuts straight through every brick it touches for a few seconds
 //   HYDRA (three heads) - the ball splits into 6
 // 5 lives. Clearing the whole logo scores +100K and shows GET THE FUCK IN! in purple pixel letters.
+// Losing every life shows GIT GUD in the same letters, with the logo faded behind it.
 // Pages: set in B.SEL / B.PATHS below (Barba namespace or URL path + .bb-footer).
 
 (function () {
@@ -375,6 +376,7 @@
     }
   };
   B.update = function (g, dt) {
+    if (g.mode === 'over') g.ot = (g.ot || 0) + dt;
     g.t += dt;
     var p = g.pad, kp = g.W * 1.3;
     if (g.keys.ArrowLeft) p.x -= kp * dt;
@@ -386,7 +388,7 @@
     else {
       g.balls.forEach(function (b) { for (var i = 0; i < 4; i++) B.step(g, b, dt / 4); });
       g.balls = g.balls.filter(function (b) { return b.y < g.H + 10; });
-      if (!g.balls.length) { g.lives--; B.serve(g); g.mode = g.lives > 0 ? 'serve' : 'over'; }
+      if (!g.balls.length) { g.lives--; B.serve(g); g.mode = g.lives > 0 ? 'serve' : 'over'; g.ot = 0; }
       else if (!g.alive) { g.balls = [g.balls[0]]; g.balls[0].stuck = 1; g.pu = []; g.thru = 0; g.mode = 'clear'; B.winner(g); }
     }
     if (g.mode === 'play') B.powerups(g, dt);
@@ -474,7 +476,9 @@
     x.fillStyle = K.ink; x.fillRect(0, g.ceil - .5, W, 1.5); x.fillRect(0, H - 18, W, 1.5);
     x.fillStyle = K.ink;
     var gap = s >= 6 ? 1 : .5;
+    if (g.mode === 'over') x.globalAlpha = .3;   // logo fades back behind GIT GUD
     g.bricks.forEach(function (k) { if (k.a) x.fillRect(k.x + gap / 2, k.y + gap / 2, s - gap, s - gap); });
+    x.globalAlpha = 1;
     x.fillStyle = K.lime; g.flash.forEach(function (f) { x.fillRect(f.x, f.y, s, s); });
     g.parts.forEach(function (q) { x.globalAlpha = Math.max(0, Math.min(1, q.life * 2)); x.fillStyle = q.c; x.fillRect(Math.round(q.x), Math.round(q.y), 2, 2); });
     x.globalAlpha = 1;
@@ -516,6 +520,12 @@
         B.ptext(x, '+100K', W / 2, y0 + px1 + 3.5 * px1, px1, K.purp, .5, g.t);
         B.ptext(x, line2, W / 2, y0 + 9 * px1 + 4 * px2 + px2 + 3.5 * px2, px2, K.purp, .5, g.t + 1);
       }
+    }
+    // out of lives: GIT GUD, centred in the space the win message uses
+    if (g.mode === 'over') {
+      var gl = 'GIT GUD', gt = g.ceil + 12, ga = (g.py - 72) - gt;
+      var gp = Math.max(2, Math.floor(Math.min(10, W * (W < 600 ? .8 : .45) / B.textW(gl, 1), ga / 9)));   // same size as the invaders game
+      if (g.ot > .25 || Math.floor(g.ot * 20) % 2) B.ptext(x, gl, W / 2, gt + ga / 2, gp, K.purp, .5, g.t);
     }
     // HUD
     x.font = '500 ' + g.fs + 'px ' + g.font; x.fillStyle = K.ink; x.textBaseline = 'middle'; x.textAlign = 'left';
