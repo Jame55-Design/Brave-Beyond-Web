@@ -64,7 +64,8 @@
   // zoomed down (CSS zoom, which shrinks its layout too) until it fits.
   function fitStickyTops(sections, tier) {
     var vh = document.documentElement.clientHeight;
-    var nav = document.querySelector('.navigation');
+    // the visible nav bar (the .navigation wrapper itself is shorter than the bar it shows)
+    var nav = document.querySelector('.twostep-nav__bar') || document.querySelector('.navigation');
     var navBottom = nav ? Math.max(0, nav.getBoundingClientRect().bottom) : 0;
     sections.forEach(function (section) {
       section.querySelectorAll('[data-stacking-card]').forEach(function (card) {
@@ -98,6 +99,19 @@
     var tier = tierNow();
     if (tier === 'mobile') document.documentElement.classList.add(FIX);
     fitStickyTops(sections, tier);
+
+    // The card images are lazy and have no size set, so cards start short and grow as
+    // the images arrive mid-scroll (the first-scroll jitter). Load them straight away and
+    // re-fit once each one lands.
+    var refit = function () { fitStickyTops(sections, tierNow()); if (window.ScrollTrigger) ScrollTrigger.refresh(); };
+    sections.forEach(function (section) {
+      section.querySelectorAll('[data-stacking-card] img').forEach(function (img) {
+        if (img.getAttribute('loading') === 'lazy') img.setAttribute('loading', 'eager');
+        if (!img.complete) img.addEventListener('load', refit, { once: true });
+      });
+    });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
+    if (document.readyState !== 'complete') window.addEventListener('load', refit, { once: true });
 
     // Hold on the last card: once it lands, freeze the whole section for a short
     // stretch of scrolling (data-stacking-cards-hold, in % of screen height,
