@@ -19,9 +19,9 @@ Custom code for bravebeyond.com. Webflow loads two bundles from this repo throug
 Always pin to a commit or tag, never `@main`. jsDelivr caches `@main` for up to 12 hours and Webflow checks each file against a fixed integrity hash, so a changing file would be blocked.
 
 Current release:
-- `bb-head.js`: commit `a913f9ecabe458ad81d0ede0959bd8d6b63341c2` (BB Head Bundle 1.0.7, no sideways scroll on phones, live)
-- `bb-site.js`: commit `dc1bf5189d6ff74b74afc970d59ed887c43e938f` (BB Site Bundle 1.7.8, staging only: on phones, pages with stacking cards drop overflow-x clip so iOS Safari stops jittering the sticky cards; touch-action blocks sideways panning). Live is 1.7.2 (`3db7daa`, every iPhone/iPad browser gets the hero .mov; cards never stick under the nav and on phones are zoomed down to fit fully on screen; card images load straight away and cards re-fit when they land; nav measured from the visible bar)
-- Previous live: head 1.0.5 (`3f1e1de`), site 1.7.1 (`7a744c2`)
+- `bb-head.js`: commit `1ab765e11d13450d53168edcff4cb03c6a774b47` (BB Head Bundle 1.0.8, live: Blog links hidden in all menus via src/head/08-hide-blog-links.js; delete that file to bring Blog back)
+- `bb-site.js`: commit `dc1bf5189d6ff74b74afc970d59ed887c43e938f` (BB Site Bundle 1.7.8, live: phone fixes for the Services stacking cards: no overflow-x clip around the sticky cards (iOS jitter), cards zoomed to fit below the visible nav bar, card images load straight away and cards re-fit when they land; plus the iOS hero .mov fix from 1.7.2)
+- Previous live: head 1.0.7 (`a913f9e`), site 1.7.2 (`3db7daa`)
 
 ## Rolling back
 
