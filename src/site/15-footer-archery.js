@@ -27,6 +27,7 @@
   B.FAST = 1.5;         // pop within this many seconds of it lighting up...
   B.FAST_PTS = 50;      // ...for this bonus
   B.BULL_PTS = 100;     // dead-centre bonus
+  B.NEW_LOGO = 1000;    // bonus when the logo is shot away and a fresh one goes up
   B.TARGET = .11;       // bullseye radius as a share of the logo height
   B.RELOAD = .22;       // seconds between arrows
   B.VB = [0, -15, 1697.27, 410]; // fallback viewBox for the footer logo
@@ -81,7 +82,8 @@
     B.reset(g, 'idle');
   };
 
-  B.reset = function (g, mode) {
+  // Draw a fresh, whole logo and its hit mask
+  B.fresh = function (g) {
     var dpr = g.dpr;
     paint(g, g.lc, g.lw * dpr, g.lh * dpr, B.COL.ink);
     // 1px-per-CSS-pixel hit mask
@@ -89,13 +91,33 @@
     var d = mx.getImageData(0, 0, mw, mh).data, m = new Uint8Array(mw * mh);
     for (var i = 0; i < mw * mh; i++) m[i] = d[i * 4 + 3] > 100 ? 1 : 0;
     g.mask = m; g.mw = mw; g.mh = mh;
+  };
+
+  B.reset = function (g, mode) {
+    B.fresh(g);
     g.tr = clamp(g.lh * B.TARGET, 9, 24);
     g.arrows = []; g.parts = []; g.rings = []; g.pops = [];
     g.score = 0; g.streak = 0; g.left = B.TIME; g.mode = mode; g.reload = 0; g.drawing = false; g.pull = 0; g.flash = 0;
-    g.rise = mode === 'play' ? 1 : 0; g.tg = null;
+    g.rise = mode === 'play' ? 1 : 0; g.tg = null; g.next = 0;
     B.pick(g);
   };
 
+  // Move an arrow on by dt in small steps (the game and the reach check both use this, so they always agree)
+  function fly(g, ar, dt, probe) {
+    var sp = Math.hypot(ar.vx, ar.vy), n = Math.max(1, Math.ceil(sp * dt / 3)), h = dt / n;
+    for (var k = 0; k < n; k++) {
+      ar.vy += g.G * h * (ar.fall ? 2 : 1); ar.x += ar.vx * h; ar.y += ar.vy * h;
+      if (probe) { var r = probe(ar); if (r) return r; }
+    }
+    return 0;
+  }
+  // Solid ink at (px, py)? Ignores hairline slivers so arrows don't snag on nothing
+  function solid(g, px, py) {
+    if (px < 1 || py < 1 || px >= g.mw - 1 || py >= g.mh - 1 || !g.mask[py * g.mw + px]) return false;
+    var n = 0, m = g.mask, w = g.mw;
+    for (var y = -1; y <= 1; y++) for (var x = -1; x <= 1; x++) n += m[(py + y) * w + px + x];
+    return n >= 6;
+  }
   // Share of the circle (cx, cy, r) in logo coords that is still ink
   function cover(g, cx, cy, r) {
     var n = 0, k = 0, st = Math.max(1, Math.round(r / 6));
@@ -110,45 +132,77 @@
   function clear(g, cx, cy, r) {
     var a = Math.atan2(g.ly + cy - g.by, g.lx + cx - g.bx);
     if (a > -.12 || a < -Math.PI + .12) return false;
-    var x = g.bx + Math.cos(a) * g.L, y = g.by + Math.sin(a) * g.L, vx = Math.cos(a) * g.V, vy = Math.sin(a) * g.V, h = 2 / g.V;
-    for (var n = 0; n < 4000; n++) {
-      vy += g.G * h; x += vx * h; y += vy * h;
-      if (y < g.ly - 10 || x < 0 || x > g.W) return false;
-      var lx = x - g.lx, ly = y - g.ly;
-      if ((lx - cx) * (lx - cx) + (ly - cy) * (ly - cy) < r * r * .8) return true;
-      var px = lx | 0, py = ly | 0;
-      if (px >= 0 && py >= 0 && px < g.mw && py < g.mh && g.mask[py * g.mw + px]) return false;
-    }
+    var o = g.L - g.R * .75, ar = { x: g.bx + Math.cos(a) * o, y: g.by + Math.sin(a) * o, vx: Math.cos(a) * g.V, vy: Math.sin(a) * g.V };
+    var probe = function (q) {
+      if (q.y < g.ly - 10 || q.x < 0 || q.x > g.W) return 3;
+      var lx = q.x - g.lx, ly = q.y - g.ly;
+      if ((lx - cx) * (lx - cx) + (ly - cy) * (ly - cy) < r * r * 1.1) return 2;
+      return solid(g, lx | 0, ly | 0) ? 1 : 0;
+    };
+    for (var f = 0; f < 240; f++) { var res = fly(g, ar, 1 / 60, probe); if (res) return res === 2; }
     return false;
   }
+  B.clear = function (g, x, y) { return clear(g, x, y, g.tr); }; B.cover = function (g, x, y) { return cover(g, x, y, g.tr); };
   // Place a new bullseye on the letters, somewhere the bow can reach, away from the last one
   B.pick = function (g) {
     var r = g.tr, old = g.tg, best = null, bd = -1, fall = null;
-    for (var t = 0; t < 160; t++) {
+    for (var t = 0; t < 400; t++) {
       var cx = r + Math.random() * (g.mw - 2 * r), cy = r * .6 + Math.random() * (g.mh - r * 1.2);
-      if (!g.mask[(cy | 0) * g.mw + (cx | 0)] || cover(g, cx, cy, r) < .5) continue;
+      if (!g.mask[(cy | 0) * g.mw + (cx | 0)] || cover(g, cx, cy, r) < .8) continue;
       if (!fall) fall = { x: cx, y: cy };
       if (!clear(g, cx, cy, r)) continue;
       var dd = old ? Math.hypot(cx - old.x, cy - old.y) : 1;
       if (dd > bd) { bd = dd; best = { x: cx, y: cy }; }
       if (bd > g.lw * .25) break;
     }
+    // Nothing clear found: trace real full-power shots and sit the bullseye where one lands on the letters
+    for (t = 0; t < 240 && !best; t++) {
+      var a = -Math.PI + .2 + Math.random() * (Math.PI - .4), o = g.L - g.R * .75;
+      var x = g.bx + Math.cos(a) * o, y = g.by + Math.sin(a) * o, vx = Math.cos(a) * g.V, vy = Math.sin(a) * g.V, h = 2 / g.V;
+      for (var n = 0; n < 4000; n++) {
+        vy += g.G * h; x += vx * h; y += vy * h;
+        if (y < g.ly - 10 || x < 0 || x > g.W) break;
+        var px = (x - g.lx) | 0, py = (y - g.ly) | 0;
+        if (px < 0 || py < 0 || px >= g.mw || py >= g.mh || !g.mask[py * g.mw + px]) continue;
+        var sp = Math.hypot(vx, vy), qx = px + vx / sp * r * .75, qy = py + vy / sp * r * .75, qi = (qy | 0) * g.mw + (qx | 0);
+        if (qx > 0 && qy > 0 && qx < g.mw && qy < g.mh && g.mask[qi] && cover(g, qx, qy, r) > .55 && clear(g, qx, qy, r)) {
+          var d2 = old ? Math.hypot(qx - old.x, qy - old.y) : 1;
+          if (d2 > bd) { bd = d2; best = { x: qx, y: qy }; }
+        }
+        break;
+      }
+    }
+    // Last resort: the first spot a straight-up shot would land on
+    if (!best) for (t = 0; t < 120 && !best; t++) {
+      var cx2 = g.bx - g.lx + (Math.random() - .5) * g.lw * .9, cy2 = g.mh - 1;
+      while (cy2 > 0 && !(g.mask[(cy2 | 0) * g.mw + (cx2 | 0)])) cy2--;
+      if (cy2 > 0 && cover(g, cx2, cy2 - r * .6, r) > .55 && clear(g, cx2, cy2 - r * .6, r)) best = { x: cx2, y: cy2 - r * .6 };
+    }
+    if (!best && !g.rebuilt) {
+      // Nothing left the bow can reach: put up a fresh logo and carry on (+1,000)
+      B.fresh(g); g.rebuilt = true;
+      if (g.mode === 'play') { g.score += B.NEW_LOGO; g.flash = .35; g.pops.push({ x: g.W / 2, y: g.ly + g.lh / 2, s: 'NEW LOGO +' + fmt(B.NEW_LOGO), t: 0 }); }
+      for (var k = 0; k < g.arrows.length; k++) if (g.arrows[k].stuck) g.arrows[k].t = 2;
+      B.pick(g); g.rebuilt = false;
+      return;
+    }
     g.tg = best || fall; g.tgT = g.t;
   };
 
   B.pop = function (g, bull) {
-    var c = g.tg, dpr = g.dpr, R = g.tr * 1.15;
+    var c = g.tg, dpr = g.dpr, R = g.tr * 1.08;
     g.streak = Math.min(B.MAX_STREAK, g.streak + 1);
     var pts = B.PTS * g.streak + (bull ? B.BULL_PTS : 0) + (g.t - g.tgT < B.FAST ? B.FAST_PTS : 0);
     g.score += pts; g.flash = .35;
     // Burst the ink inside the circle into particles, then punch the hole
     var st = Math.max(2, Math.round(R / 7)), mw = g.mw;
-    for (var y = Math.max(0, c.y - R | 0); y < Math.min(g.mh, c.y + R + 1); y++) for (var x = Math.max(0, c.x - R | 0); x < Math.min(mw, c.x + R + 1); x++) {
+    var RM = R + 1.5; // hit mask hole is a touch bigger than the visible one, so no invisible ring is left
+    for (var y = Math.max(0, c.y - RM | 0); y < Math.min(g.mh, c.y + RM + 1); y++) for (var x = Math.max(0, c.x - RM | 0); x < Math.min(mw, c.x + RM + 1); x++) {
       var dx = x - c.x, dy = y - c.y;
-      if (dx * dx + dy * dy > R * R || !g.mask[y * mw + x]) continue;
+      if (dx * dx + dy * dy > RM * RM || !g.mask[y * mw + x]) continue;
       g.mask[y * mw + x] = 0;
       if (x % st || y % st) continue;
-      var a = Math.atan2(dy, dx) + (Math.random() - .5) * .9, sp = 140 + Math.random() * 260;
+      var a = Math.atan2(dy, dx) + (Math.random() - .5) * .9, sp = 60 + Math.random() * 160;
       g.parts.push({ x: g.lx + x, y: g.ly + y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 140, s: st, life: .45 + Math.random() * .4, t: 0, c: Math.random() < .6 ? B.COL.purp : B.COL.lav });
     }
     var hx = g.lc.getContext('2d');
@@ -162,7 +216,7 @@
       var ar = g.arrows[k];
       if (ar.stuck && Math.hypot(ar.x - g.lx - c.x, ar.y - g.ly - c.y) < R + 4) { ar.stuck = false; ar.fall = true; ar.vx = (Math.random() - .5) * 60; ar.vy = -40; }
     }
-    B.pick(g);
+    g.tg = null; g.next = .35; // short pause, then a new bullseye on what's left
   };
 
   B.end = function (g, mode) {
@@ -184,11 +238,16 @@
     var lx = ar.x - g.lx, ly = ar.y - g.ly;
     if (lx < -8 || ly < -8 || lx > g.lw + 8 || ly > g.lh + 8) return false;
     var c = g.tg, mx = lx | 0, my = ly | 0, inside = mx >= 0 && my >= 0 && mx < g.mw && my < g.mh;
-    if (c && g.mode === 'play') {
+    if (c && g.mode === 'play' && !ar.scored) {
       var d = Math.hypot(lx - c.x, ly - c.y);
-      if (d < g.tr * 1.15) { ar.scored = true; B.pop(g, d < g.tr * .35); return false; } // flies on through the hole it made
+      if (d < g.tr * 1.1) {
+        // Only the bullseye's own area blows; the arrow drops out of the hole it made
+        ar.scored = true; ar.fall = true; ar.vx *= .05; ar.vy = -60;
+        B.pop(g, d < g.tr * .35);
+        return true;
+      }
     }
-    if (inside && g.mask[my * g.mw + mx]) {
+    if (inside && solid(g, mx, my)) {
       ar.stuck = true; ar.t = 0;
       var sp = Math.hypot(ar.vx, ar.vy); ar.ux = ar.vx / sp; ar.uy = ar.vy / sp;
       ar.x += ar.ux * g.L * .12; ar.y += ar.uy * g.L * .12; ar.wob = 1;
@@ -208,16 +267,13 @@
     if (g.ang == null || g.snap) { g.ang = a; g.snap = false; } else g.ang += (a - g.ang) * Math.min(1, dt * 20);
     if (g.drawing) g.pull = Math.min(1, g.pull + dt / .5);
     g.reload -= dt; g.flash = Math.max(0, g.flash - dt); g.kick = Math.max(0, (g.kick || 0) - dt * 5);
+    if (g.next > 0) { g.next -= dt; if (g.next <= 0) B.pick(g); }
     if (g.mode === 'play') { g.left -= dt; if (g.left <= 0) { g.left = 0; B.end(g, 'over'); } }
     var W = g.W, H = g.H;
     for (var i = g.arrows.length - 1; i >= 0; i--) {
       var ar = g.arrows[i]; ar.t += dt;
       if (ar.stuck) { ar.wob = Math.max(0, ar.wob - dt * 4); if (ar.t > 2.2) g.arrows.splice(i, 1); continue; }
-      var sp = Math.hypot(ar.vx, ar.vy), n = Math.max(1, Math.ceil(sp * dt / 3)), h = dt / n, stop = false;
-      for (var k = 0; k < n && !stop; k++) {
-        ar.vy += g.G * h * (ar.fall ? 2 : 1); ar.x += ar.vx * h; ar.y += ar.vy * h;
-        if (!ar.fall) stop = hit(g, ar);
-      }
+      fly(g, ar, dt, ar.fall ? null : function (q) { return hit(g, q) ? 1 : 0; });
       if (!ar.stuck && (ar.x < -g.L || ar.x > W + g.L || ar.y < -g.L * 2 || ar.y > H + g.L)) {
         if (!ar.scored && !ar.fall && g.mode === 'play') g.streak = 0;
         g.arrows.splice(i, 1);
