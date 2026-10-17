@@ -26,7 +26,8 @@
   B.CRUMB = 22;                           // loose bits smaller than about this (css px, squared) drop off on their own
   B.WIN_BONUS = 5000;
   B.PTS = 10000;                          // points for smashing the whole logo (scaled by hit combo and fire)
-  B.PU_EVERY = 7;                         // seconds between flames zipping across (give or take 2s)
+  B.PU_EVERY = 7;                         // seconds between flames dropping (give or take 2s)
+  B.FACE = false;                         // true = the pebble is a little character (face + stick arms); or add data-bb-face to the footer
   B.FIRE_TIME = 8;                        // seconds the FIRE power-up lasts
   // FIRE power-up sprite (same pixel flame as the bricks game). O = ink outline, L = lime flame, V = lavender core
   B.FIRE = ['.....O.....', '....OLO....', '...OLLO.O..', '...OLLLOLO.', '..OLLLLLLO.', '.OLLLVLLLLO', '.OLLVVLLLLO', 'OLLVVVVLLLO', 'OLLVVVVVLLO', 'OLLVVVVVLLO', '.OLLVVVLLO.', '..OLLLLLO..', '...OOOOO...'];
@@ -61,7 +62,7 @@
     g.maxPull = Math.round(Math.max(64, Math.min(130, 110 * g.u)));
     g.forkH = Math.round(Math.max(60, Math.min(110, 90 * g.u)));
     g.fw = Math.round(Math.max(18, Math.min(34, 28 * g.u)));
-    g.br = Math.max(6, Math.round(9 * g.u));
+    g.br = g.face ? Math.max(12, Math.round(15 * g.u)) : Math.max(6, Math.round(9 * g.u));
     g.puP = Math.max(2, Math.round(2.2 * g.u));   // flame pixel size (kept small: it's a hard shot)
     var top = Math.round(g.fs * 3.4 + 6), gap = Math.max(phone ? 90 : 120, g.lh * 0.35);
     g.H = Math.round(top + g.lh + gap + g.maxPull + 18);
@@ -344,21 +345,20 @@
       g.puT -= dt;
       if (g.puT <= 0) {
         var L0 = g.L;
-        var dir = Math.random() < 0.5 ? 1 : -1, sp = Math.max(300, g.W * 0.5) * (0.85 + Math.random() * 0.4);
-        g.pu = { dir: dir, vx: dir * sp, x: dir > 0 ? -20 : g.W + 20, y0: L0.y + 10 + Math.random() * Math.max(10, g.forkTop - 70 - L0.y), y: 0, t: Math.random() * 6 };
+        g.pu = { x0: L0.x + L0.w * (0.06 + Math.random() * 0.88), x: 0, y: -20, vy: g.H * (0.5 + Math.random() * 0.25), t: Math.random() * 6 };
         g.puT = B.PU_EVERY + (Math.random() - 0.5) * 4;
       }
     }
     if (g.pu) {
-      var pu = g.pu; pu.t += dt; pu.x += pu.vx * dt;
-      pu.y = pu.y0 + Math.sin(pu.t * 6) * 22 * g.u + Math.sin(pu.t * 2.3) * 18 * g.u;   // zips across, bobbing
-      if (!g.rm && Math.random() < 0.6) g.parts.push({ x: pu.x - pu.dir * 8, y: pu.y + (Math.random() - 0.5) * 8, vx: -pu.vx * 0.1, vy: -20, life: 0.25, t: 0, c: B.COL.lime, s: 2 });
-      if ((pu.dir > 0 && pu.x > g.W + 30) || (pu.dir < 0 && pu.x < -30)) g.pu = null;
+      var pu = g.pu; pu.t += dt; pu.y += pu.vy * dt;                  // drops fast, top to bottom, with a little wobble
+      pu.x = pu.x0 + Math.sin(pu.t * 7) * 10 * g.u;
+      if (!g.rm && Math.random() < 0.6) g.parts.push({ x: pu.x + (Math.random() - 0.5) * 8, y: pu.y - 12, vx: 0, vy: -pu.vy * 0.15, life: 0.25, t: 0, c: B.COL.lime, s: 2 });
+      if (pu.y > g.H + 30) g.pu = null;
     }
     for (var pi = g.pops.length - 1; pi >= 0; pi--) { g.pops[pi].t += dt; if (g.pops[pi].t > 1) g.pops.splice(pi, 1); }
     var i, b;
     for (i = g.balls.length - 1; i >= 0; i--) {
-      b = g.balls[i];
+      b = g.balls[i]; b.t = (b.t || 0) + dt;
       var sp = Math.hypot(b.vx, b.vy), n = Math.min(20, Math.max(1, Math.ceil(sp * dt / (g.br * 0.7)))), h = dt / n;
       for (var s = 0; s < n; s++) {
         b.vy += g.grav * h; b.x += b.vx * h; b.y += b.vy * h;
@@ -415,13 +415,13 @@
     x.beginPath(); x.moveTo(lx, ft); x.quadraticCurveTo(lx, ft + g.forkH * 0.55, sx, ft + g.forkH * 0.6);
     x.quadraticCurveTo(rx, ft + g.forkH * 0.55, rx, ft); x.stroke();
     x.beginPath(); x.moveTo(sx, ft + g.forkH * 0.6); x.lineTo(sx, Math.min(g.H - 4, ft + g.forkH * 1.25)); x.lineWidth = Math.max(6, 9 * u); x.stroke();
+    if (g.face) { x.strokeStyle = C.purp; band(x, rx, ft, px + g.br * 0.6, py, Math.max(3, 4 * u)); }   // front band goes behind the character so his face stays clear
     if (g.loaded) {   // pebble in the pouch
       var r = g.br * (0.4 + 0.6 * easeOut(g.pop));
-      x.fillStyle = C.lime;
-      x.beginPath(); x.arc(px, py, r * (g.fire ? 1.25 : 1), 0, Math.PI * 2); x.fill();
+      if (g.face) B.guy(g, x, px, py, r, g.drag ? 'grit' : 'chill', g.t, Math.hypot(pull.x, pull.y) / g.maxPull);
+      else { x.fillStyle = C.lime; x.beginPath(); x.arc(px, py, r * (g.fire ? 1.25 : 1), 0, Math.PI * 2); x.fill(); }
     }
-    x.strokeStyle = C.purp;
-    band(x, rx, ft, px + g.br * 0.6, py, Math.max(3, 4 * u));            // front band
+    if (!g.face) { x.strokeStyle = C.purp; band(x, rx, ft, px + g.br * 0.6, py, Math.max(3, 4 * u)); }   // front band (in front of a plain pebble)
     x.fillStyle = C.ink;
     x.beginPath(); x.arc(lx, ft, Math.max(3, 4 * u), 0, Math.PI * 2); x.arc(rx, ft, Math.max(3, 4 * u), 0, Math.PI * 2); x.fill();
     // aim dots
@@ -436,8 +436,8 @@
     // pebbles in flight
     for (i = 0; i < g.balls.length; i++) {
       var b = g.balls[i];
-      x.fillStyle = C.lime;
-      x.beginPath(); x.arc(b.x, b.y, g.br * (b.fire ? 1.25 : 1), 0, Math.PI * 2); x.fill();
+      if (g.face) B.guy(g, x, b.x, b.y, g.br * (b.fire ? 1.15 : 1), 'cheer', b.t, 1);
+      else { x.fillStyle = C.lime; x.beginPath(); x.arc(b.x, b.y, g.br * (b.fire ? 1.25 : 1), 0, Math.PI * 2); x.fill(); }
     }
     if (g.pu) B.sprite(x, B.FIRE, g.pu.x, g.pu.y + (Math.sin(g.t * 9) > 0 ? 0 : -1), g.puP);
     // sparks
@@ -449,6 +449,54 @@
     x.globalAlpha = 1;
     x.restore();
     B.hud(g);
+  };
+  // The pebble as a character: lime ball, ink face and stick arms. Moods: chill (waiting), grit (being pulled), cheer (flying)
+  B.guy = function (g, x, cx, cy, r, mood, t, k) {
+    var C = B.COL, lw = Math.max(1.6, r * 0.13);
+    x.save(); x.lineCap = 'round'; x.lineJoin = 'round'; x.strokeStyle = C.ink; x.lineWidth = lw;
+    function arm(side, a1, a2) {   // shoulder -> elbow -> hand; angles in radians, 0 = pointing outwards
+      var sx = cx + side * r * 0.92, sy = cy + r * 0.2, L1 = r * 0.6, L2 = r * 0.55;
+      var ex = sx + side * Math.cos(a1) * L1, ey = sy + Math.sin(a1) * L1, hx = ex + side * Math.cos(a2) * L2, hy = ey + Math.sin(a2) * L2;
+      x.beginPath(); x.moveTo(sx, sy); x.lineTo(ex, ey); x.lineTo(hx, hy); x.stroke();
+    }
+    var shake = mood === 'grit' ? (Math.random() - 0.5) * r * 0.08 * k : 0;
+    cx += shake;
+    if (mood === 'chill') {          // arms hanging loose, a gentle sway
+      var sw = Math.sin(t * 2) * 0.08;
+      arm(-1, 1.15 + sw, 1.45 + sw); arm(1, 1.15 - sw, 1.45 - sw);
+    } else if (mood === 'grit') {    // gripping the bands up by the fork
+      var tr = Math.sin(t * 40) * 0.05 * k;
+      arm(-1, -0.7 + tr, -1.3 + tr); arm(1, -0.7 - tr, -1.3 - tr);
+    } else {                          // cheering: both arms up, waving
+      var wv = Math.sin(t * 16) * 0.35;
+      arm(-1, -1.0, -1.5 + wv); arm(1, -1.0, -1.5 - wv);
+    }
+    x.fillStyle = C.lime; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill();
+    var ex = r * 0.34, ey = cy - r * 0.16, er = r * 0.15;
+    x.fillStyle = C.ink;
+    if (mood === 'chill') {
+      var blink = (t % 3.2) < 0.12;
+      for (var s = -1; s <= 1; s += 2) {
+        x.beginPath();
+        if (blink) { x.moveTo(cx + s * ex - er, ey); x.lineTo(cx + s * ex + er, ey); x.stroke(); }
+        else { x.arc(cx + s * ex, ey, er, 0, Math.PI); x.fill(); }   // relaxed, half-closed
+      }
+      x.beginPath(); x.arc(cx, cy + r * 0.12, r * 0.28, 0.25 * Math.PI, 0.75 * Math.PI); x.stroke();   // easy smile
+    } else if (mood === 'grit') {
+      for (s = -1; s <= 1; s += 2) {   // screwed-up eyes: > <
+        x.beginPath(); x.moveTo(cx + s * ex - s * er, ey - er); x.lineTo(cx + s * ex + s * er * 0.6, ey); x.lineTo(cx + s * ex - s * er, ey + er); x.stroke();
+      }
+      var mw = r * (0.55 + 0.2 * k), mh = r * 0.26, my = cy + r * 0.38;   // gritted teeth
+      x.beginPath(); if (x.roundRect) x.roundRect(cx - mw / 2, my - mh / 2, mw, mh, mh * 0.3); else x.rect(cx - mw / 2, my - mh / 2, mw, mh); x.fill();
+      x.strokeStyle = C.lime; x.lineWidth = Math.max(1, lw * 0.6);
+      x.beginPath(); x.moveTo(cx - mw / 2 + lw, my); x.lineTo(cx + mw / 2 - lw, my);
+      for (var tq = 1; tq < 4; tq++) { var tx2 = cx - mw / 2 + mw * tq / 4; x.moveTo(tx2, my - mh / 2 + lw * 0.4); x.lineTo(tx2, my + mh / 2 - lw * 0.4); }
+      x.stroke();
+    } else {
+      for (s = -1; s <= 1; s += 2) { x.beginPath(); x.arc(cx + s * ex, ey - r * 0.04, er * 1.15, 0, Math.PI * 2); x.fill(); }   // wide-eyed
+      x.beginPath(); x.moveTo(cx - r * 0.38, cy + r * 0.14); x.arc(cx, cy + r * 0.14, r * 0.38, 0, Math.PI); x.closePath(); x.fill();   // big open grin
+    }
+    x.restore();
   };
   B.sprite = function (x, rows, cx, cy, P) {
     var c = { O: B.COL.ink, L: B.COL.lime, V: B.COL.lav }, w = rows[0].length, h = rows.length, ox = Math.round(cx - w * P / 2), oy = Math.round(cy - h * P / 2);
@@ -523,6 +571,7 @@
       drag: null, best: 0, loaded: true, reload: 0, pop: 1, shots: 0, shake: 0, t: 0, W: 0, pct: 0, fade: 1,
       touch: window.matchMedia && matchMedia('(hover: none)').matches, rm: window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches,
       font: getComputedStyle(document.body).fontFamily || 'sans-serif' };
+    g.face = !!(B.FACE || f.hasAttribute('data-bb-face'));
     try { g.best = +localStorage.getItem('bbSlingBest') || 0; } catch (e) {}
     B.size(g); B.input(g);
     if (g.L) g.fade = 1;
