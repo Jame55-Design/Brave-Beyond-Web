@@ -53,9 +53,10 @@
   function paint(g, cv, w, h, col) {
     cv.width = Math.ceil(w); cv.height = Math.ceil(h);
     var x = cv.getContext('2d'), k = w / g.bb[2];
-    x.clearRect(0, 0, cv.width, cv.height);
+    x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, cv.width, cv.height);
     x.scale(k, k); x.translate(-g.bb[0], -g.bb[1]); x.fillStyle = col;
     for (var i = 0; i < g.paths.length; i++) x.fill(g.paths[i]);
+    x.setTransform(1, 0, 0, 1, 0, 0); // back to plain pixels, so holes punched later land where they should
     return x;
   }
 
@@ -207,8 +208,8 @@
       g.parts.push({ x: g.lx + x, y: g.ly + y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 140, s: st, life: .45 + Math.random() * .4, t: 0, c: Math.random() < .6 ? B.COL.purp : B.COL.lav });
     }
     var hx = g.lc.getContext('2d');
-    hx.globalCompositeOperation = 'destination-out';
-    hx.beginPath(); hx.arc(c.x * dpr, c.y * dpr, (R + 1) * dpr, 0, 7); hx.fill();
+    hx.setTransform(1, 0, 0, 1, 0, 0); hx.globalCompositeOperation = 'destination-out';
+    hx.beginPath(); hx.arc(c.x * dpr, c.y * dpr, RM * dpr, 0, 7); hx.fill(); // same size as the hit map hole
     hx.globalCompositeOperation = 'source-over';
     g.rings.push({ x: g.lx + c.x, y: g.ly + c.y, r: g.tr, t: 0 });
     g.pops.push({ x: g.lx + c.x, y: g.ly + c.y - g.tr, s: (bull ? 'BULLSEYE +' : '+') + pts, t: 0 });
