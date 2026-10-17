@@ -187,6 +187,7 @@
       return;
     }
     g.tg = best || fall; g.tgT = g.t;
+    if (g.tg) g.tg.n = g.tgN = (g.tgN || 0) + 1;
   };
 
   B.pop = function (g, bull) {
@@ -229,7 +230,8 @@
     if (g.mode === 'idle') { g.mode = 'play'; g.left = B.TIME; g.tgT = g.t; }
     var a = g.ang, ux = Math.cos(a), uy = Math.sin(a), off = -g.R * .2 - g.pull * g.R * .55 + g.L;
     var sp = g.V * (.7 + .3 * g.pull);
-    g.arrows.push({ x: g.bx + ux * off, y: g.by + uy * off, vx: ux * sp, vy: uy * sp, t: 0 });
+    // Each arrow can only pop the bullseye that was up when it was fired, never one that appears while it's in the air
+    g.arrows.push({ x: g.bx + ux * off, y: g.by + uy * off, vx: ux * sp, vy: uy * sp, t: 0, tn: g.tg ? g.tg.n : -1 });
     g.pull = 0; g.reload = B.RELOAD; g.kick = 1;
   };
 
@@ -238,7 +240,7 @@
     var lx = ar.x - g.lx, ly = ar.y - g.ly;
     if (lx < -8 || ly < -8 || lx > g.lw + 8 || ly > g.lh + 8) return false;
     var c = g.tg, mx = lx | 0, my = ly | 0, inside = mx >= 0 && my >= 0 && mx < g.mw && my < g.mh;
-    if (c && g.mode === 'play' && !ar.scored) {
+    if (c && g.mode === 'play' && !ar.scored && c.n === ar.tn) {
       var d = Math.hypot(lx - c.x, ly - c.y);
       if (d < g.tr * 1.1) {
         // Only the bullseye's own area blows; the arrow drops out of the hole it made
