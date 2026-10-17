@@ -23,10 +23,10 @@
   B.PATHS = [];
   B.COL = { ink: '#212121', lime: '#CCFF00', purp: '#AE9AE4', lav: '#E9DBEC' };
   B.FOOT_VB = [0, -15, 1697.27, 410];    // footer logo viewBox (same as the invaders game)
-  B.WIN = 0.96;                           // once this much is gone the rest blows apart and you win
+  B.CRUMB = 22;                           // loose bits smaller than about this (css px, squared) drop off on their own
   B.WIN_BONUS = 5000;
   B.PTS = 10000;                          // points for smashing the whole logo (scaled by hit combo and fire)
-  B.PU_EVERY = 10;                        // seconds between falling flames (give or take 2s)
+  B.PU_EVERY = 7;                         // seconds between flames zipping across (give or take 2s)
   B.FIRE_TIME = 8;                        // seconds the FIRE power-up lasts
   // FIRE power-up sprite (same pixel flame as the bricks game). O = ink outline, L = lime flame, V = lavender core
   B.FIRE = ['.....O.....', '....OLO....', '...OLLO.O..', '...OLLLOLO.', '..OLLLLLLO.', '.OLLLVLLLLO', '.OLLVVLLLLO', 'OLLVVVVLLLO', 'OLLVVVVVLLO', 'OLLVVVVVLLO', '.OLLVVVLLO.', '..OLLLLLO..', '...OOOOO...'];
@@ -110,9 +110,9 @@
   };
   B.hitLogo = function (g, b) {
     if (B.solid(g, b.x, b.y)) return true;
-    for (var i = 0; i < 6; i++) {
-      var a = i * Math.PI / 3;
-      if (B.solid(g, b.x + Math.cos(a) * g.br * 0.8, b.y + Math.sin(a) * g.br * 0.8)) return true;
+    for (var i = 0; i < 12; i++) {
+      var a = i * Math.PI / 6, rr = (i & 1 ? 0.55 : 1) * g.br;
+      if (B.solid(g, b.x + Math.cos(a) * rr, b.y + Math.sin(a) * rr)) return true;
     }
     return false;
   };
@@ -171,28 +171,67 @@
     // score: share of the logo knocked out, x combo for each extra hit by the same pebble, x2 on fire
     var pts = Math.round((before - L.alive) / L.total * B.PTS) * (b.hits + 1) * (b.fire ? 2 : 1);
     if (pts > 0) { g.score += pts; B.pop(g, b.x, b.y - 14, '+' + pts); }
-    if (!g.win && g.pct >= B.WIN) B.finale(g);
+    var left = B.sweep(g);   // tiny loose crumbs and slivers fall away; win only once nothing at all is left
+    if (!left) B.finale(g);
+    else { L.alive = B.count(L); g.pct = Math.min(0.999, 1 - L.alive / L.total); }
     // sparks + a little shake
     B.burst(g, b.x, b.y, g.rm ? 6 : 14, e);
     if (!g.rm) g.shake = Math.max(g.shake, 5 * e);
     while (g.pieces.length > B.MAX_PIECES * 2) g.pieces.shift();
     return made;
   };
-  // Win: whatever crumbs are left blow apart, so the logo is completely gone
-  B.finale = function (g) {
-    var L = g.L, k = L.k, cs = Math.max(14, Math.round(22 * g.u)), x, y;
-    for (y = 0; y < L.h; y += cs) for (x = 0; x < L.w; x += cs) {
-      var hit = false;
-      for (var yy = y; yy < y + cs && yy < L.h && !hit; yy += 2) for (var xx = x; xx < x + cs && xx < L.w; xx += 2)
-        if (L.m[((yy * k) | 0) * L.cw + ((xx * k) | 0)] > 20) { hit = true; break; }
-      if (hit) B.cutShard(g, [{ x: x, y: y }, { x: x + cs, y: y }, { x: x + cs, y: y + cs }, { x: x, y: y + cs }], L.w / 2, L.h, { vx: 0, vy: -600 * g.u }, 1, 2);
+  // Crumb sweep: find every separate bit of logo left (2px grid); bits too small or thin to aim at drop off and fall.
+  // Returns how many grid cells of logo are still standing.
+  B.sweep = function (g) {
+    var L = g.L, k = L.k, gw = Math.ceil(L.cw / 2), gh = Math.ceil(L.ch / 2), m = L.m, cw = L.cw, ch = L.ch;
+    var on = new Uint8Array(gw * gh), lab = new Int32Array(gw * gh), x, y, i;
+    for (y = 0; y < gh; y++) for (x = 0; x < gw; x++) {
+      var px = x * 2, py = y * 2, o = py * cw + px;
+      if (m[o] > 20 || (px + 1 < cw && m[o + 1] > 20) || (py + 1 < ch && (m[o + cw] > 20 || (px + 1 < cw && m[o + cw + 1] > 20)))) on[y * gw + x] = 1;
     }
+    var q = new Int32Array(gw * gh), n = 0, left = 0, cell = 2 / k, minA = B.CRUMB * B.CRUMB * g.u * g.u, cut = [];
+    for (i = 0; i < gw * gh; i++) {
+      if (!on[i] || lab[i]) continue;
+      n++; var h = 0, t = 0, x0 = gw, x1 = 0, y0 = gh, y1 = 0; q[t++] = i; lab[i] = n;
+      while (h < t) {
+        var c = q[h++], cx = c % gw, cy = (c / gw) | 0;
+        if (cx < x0) x0 = cx; if (cx > x1) x1 = cx; if (cy < y0) y0 = cy; if (cy > y1) y1 = cy;
+        if (cx > 0 && on[c - 1] && !lab[c - 1]) { lab[c - 1] = n; q[t++] = c - 1; }
+        if (cx < gw - 1 && on[c + 1] && !lab[c + 1]) { lab[c + 1] = n; q[t++] = c + 1; }
+        if (cy > 0 && on[c - gw] && !lab[c - gw]) { lab[c - gw] = n; q[t++] = c - gw; }
+        if (cy < gh - 1 && on[c + gw] && !lab[c + gw]) { lab[c + gw] = n; q[t++] = c + gw; }
+      }
+      var area = t * cell * cell, span = Math.max(x1 - x0 + 1, y1 - y0 + 1) * cell;
+      if (area < minA || area / span < 3.5 * g.u) cut.push({ n: n, x0: x0, y0: y0, x1: x1, y1: y1 });
+      else left += t;
+    }
+    for (i = 0; i < cut.length; i++) B.dropCrumb(g, cut[i], lab, gw);
+    return left;
+  };
+  B.dropCrumb = function (g, c, lab, gw) {
+    var L = g.L, k = L.k, X = c.x0 * 2, Y = c.y0 * 2, w = Math.min(L.cw - X, (c.x1 - c.x0 + 1) * 2), h = Math.min(L.ch - Y, (c.y1 - c.y0 + 1) * 2);
+    var img = L.ctx.getImageData(X, Y, w, h), d = img.data, keep = new Uint8ClampedArray(d.length);
+    for (var yy = 0; yy < h; yy++) for (var xx = 0; xx < w; xx++) {
+      var j = (yy * w + xx) * 4;
+      if (lab[(((Y + yy) >> 1)) * gw + ((X + xx) >> 1)] === c.n) {
+        keep[j] = d[j]; keep[j + 1] = d[j + 1]; keep[j + 2] = d[j + 2]; keep[j + 3] = d[j + 3];
+        d[j + 3] = 0; L.m[(Y + yy) * L.cw + X + xx] = 0;
+      }
+    }
+    L.ctx.putImageData(img, X, Y);
+    var pc = document.createElement('canvas'); pc.width = w; pc.height = h;
+    pc.getContext('2d').putImageData(new ImageData(keep, w, h), 0, 0);
+    g.pieces.push({ c: pc, w: w / k, h: h / k, x: L.x + (X + w / 2) / k, y: L.y + (Y + h / 2) / k,
+      vx: (Math.random() - 0.5) * 60 * g.u, vy: -Math.random() * 40 * g.u, a: 0, va: (Math.random() - 0.5) * 6 });
+  };
+  // Win: the logo is completely gone
+  B.finale = function (g) {
+    var L = g.L;
     L.ctx.clearRect(0, 0, L.cw, L.ch); L.m.fill(0); L.alive = 0; g.pct = 1;
-    g.score += B.WIN_BONUS; g.win = g.t; g.balls = []; g.pu = null; g.fire = 0;
+    g.score += B.WIN_BONUS; g.win = g.t; g.pu = null; g.fire = 0;
     B.pop(g, g.W / 2, L.y + L.h * 0.45 - 60, '+' + B.WIN_BONUS);
     if (g.score > g.best) { g.best = g.score; try { localStorage.setItem('bbSlingBest', g.best); } catch (e) {} }
-    B.burst(g, g.sx, L.y + L.h / 2, g.rm ? 12 : 50, 1);
-    if (!g.rm) g.shake = 8;
+    B.burst(g, g.sx, L.y + L.h / 2, g.rm ? 12 : 40, 1);
   };
   B.pop = function (g, x, y, txt) { g.pops.push({ x: x, y: y, t: 0, s: txt }); };
   B.cutShard = function (g, poly, ix, iy, b, e, boost) {
@@ -305,13 +344,16 @@
       g.puT -= dt;
       if (g.puT <= 0) {
         var L0 = g.L;
-        g.pu = { x0: L0.x + L0.w * (0.12 + Math.random() * 0.76), x: 0, y: L0.y - 10, t: Math.random() * 6 };
+        var dir = Math.random() < 0.5 ? 1 : -1, sp = Math.max(300, g.W * 0.5) * (0.85 + Math.random() * 0.4);
+        g.pu = { dir: dir, vx: dir * sp, x: dir > 0 ? -20 : g.W + 20, y0: L0.y + 10 + Math.random() * Math.max(10, g.forkTop - 70 - L0.y), y: 0, t: Math.random() * 6 };
         g.puT = B.PU_EVERY + (Math.random() - 0.5) * 4;
       }
     }
     if (g.pu) {
-      var pu = g.pu; pu.t += dt; pu.y += g.H * 0.06 * dt; pu.x = pu.x0 + Math.sin(pu.t * 1.6) * 26 * g.u;
-      if (pu.y > g.forkTop - 20) g.pu = null;
+      var pu = g.pu; pu.t += dt; pu.x += pu.vx * dt;
+      pu.y = pu.y0 + Math.sin(pu.t * 6) * 22 * g.u + Math.sin(pu.t * 2.3) * 18 * g.u;   // zips across, bobbing
+      if (!g.rm && Math.random() < 0.6) g.parts.push({ x: pu.x - pu.dir * 8, y: pu.y + (Math.random() - 0.5) * 8, vx: -pu.vx * 0.1, vy: -20, life: 0.25, t: 0, c: B.COL.lime, s: 2 });
+      if ((pu.dir > 0 && pu.x > g.W + 30) || (pu.dir < 0 && pu.x < -30)) g.pu = null;
     }
     for (var pi = g.pops.length - 1; pi >= 0; pi--) { g.pops[pi].t += dt; if (g.pops[pi].t > 1) g.pops.splice(pi, 1); }
     var i, b;
