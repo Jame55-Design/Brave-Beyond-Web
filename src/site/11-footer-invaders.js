@@ -2,7 +2,7 @@
 // Shots chip away at the pixelated Brave Beyond logo on their way up to the invaders.
 // A black propeller plane towing the Brave Beyond logo flies over about every 15 seconds: hit it for 100 points.
 // Clear 5 waves of blobs and the FINAL WAVE is hydras (James's pixel hydra from the bricks game): each takes
-// 3 hits and fires from all three heads. Clear it to win: +100K and GET THE FUCK IN! with pixel flames.
+// 3 hits and fires from all three heads. Clear it to win: +100K and GET THE F*$£ IN! with pixel flames.
 // Lose all 3 lives and it says GIT GUD. Big pixel letters use the bricks game's chunky font (window.BBB).
 // Pages: set in B.SEL below (Barba namespace + .bb-footer).
 
@@ -438,7 +438,7 @@
     x.globalAlpha = 1;
     // big pixel words
     if (g.mode === 'over') B.bigText(g, x, [['GIT GUD', 1]], g.ot);
-    else if (g.win) B.bigText(g, x, [['+100K', 1.5], ['GET THE FUCK IN!', 1]], g.win.t);
+    else if (g.win) B.bigText(g, x, [['+100K', 1.5], ['GET THE F*$\u00a3 IN!', 1]], g.win.t);
     else if (g.hyd && g.intro > 0 && g.mode === 'play') B.bigText(g, x, [['FINAL WAVE', 1]], 2.2 - g.intro);
     // HUD
     x.font = '500 ' + g.fs + 'px ' + g.font; x.fillStyle = K.ink; x.textBaseline = 'middle';

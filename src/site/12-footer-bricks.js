@@ -5,7 +5,7 @@
 // Power-ups drop from the top about every 10 seconds while playing; catch them with the paddle:
 //   FIRE (pixel flame)  - the ball becomes a fireball and cuts straight through every brick it touches for a few seconds
 //   HYDRA (three heads) - the ball splits into 6
-// 5 lives. Clearing the whole logo scores +100K and shows GET THE FUCK IN! in purple pixel letters.
+// 5 lives. Clearing the whole logo scores +100K and shows GET THE F*$£ IN! in purple pixel letters.
 // Losing every life shows GIT GUD in the same letters, with the logo faded behind it.
 // Pages: set in B.SEL / B.PATHS below (Barba namespace or URL path + .bb-footer).
 
@@ -260,6 +260,9 @@
     '6': ['.###.', '#....', '#....', '####.', '#...#', '#...#', '.###.'],
     '+': ['.....', '..#..', '..#..', '#####', '..#..', '..#..', '.....'],
     '!': ['#', '#', '#', '#', '#', '.', '#'],
+    '*': ['.....', '#.#.#', '.###.', '#####', '.###.', '#.#.#', '.....'],
+    '$': ['..#..', '.####', '#.#..', '.###.', '..#.#', '####.', '..#..'],
+    '\u00a3': ['..##.', '.#..#', '.#...', '####.', '.#...', '.#...', '#####'],
     ' ': ['..', '..', '..', '..', '..', '..', '..']
   };
   // Draw a sprite; map turns each letter into a colour
@@ -509,10 +512,10 @@
     // pick-up label: pixel text, rises and fades
     g.pops.forEach(function (q) { x.globalAlpha = 1 - q.t; B.ptext(x, q.txt, q.x, q.y - q.t * 30, ppx, K.lime, 0, 0); });
     x.globalAlpha = 1;
-    // logo cleared: +100K and GET THE FUCK IN! in chunky purple pixel letters, laid out to fit between the top
+    // logo cleared: +100K and GET THE F*$£ IN! in chunky purple pixel letters, laid out to fit between the top
     // line and the play-again message, bobbing in a wave
     if (g.win) {
-      var line2 = 'GET THE FUCK IN!', top = g.ceil + 12, avail = (g.py - 72) - top;
+      var line2 = 'GET THE F*$\u00a3 IN!', top = g.ceil + 12, avail = (g.py - 72) - top;
       var px2 = Math.max(2, Math.floor(Math.min(W * (W < 600 ? .9 : .62) / B.textW(line2, 1), avail / 27)));
       var px1 = Math.max(3, Math.min(Math.round(px2 * 1.5), Math.floor(W * .9 / B.textW('+100K', 1))));
       var blockH = 9 * px1 + 4 * px2 + 9 * px2, y0 = top + Math.max(0, (avail - blockH) / 2);
