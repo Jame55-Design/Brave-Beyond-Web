@@ -18,6 +18,8 @@
     '.bbcat-stage{order:0;align-self:stretch;margin:0 -5vw;position:relative}' +
     '.bbcat-stage canvas{display:block;width:100%;cursor:url("data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'35\' height=\'15\' shape-rendering=\'crispEdges\'><g fill=\'%23E9A04A\'><rect x=\'5\' width=\'15\' height=\'5\'/><rect y=\'5\' width=\'35\' height=\'5\'/><rect x=\'5\' y=\'10\' width=\'15\' height=\'5\'/><rect x=\'30\' width=\'5\' height=\'15\'/></g><rect x=\'5\' y=\'5\' width=\'5\' height=\'5\' fill=\'%23212121\'/></svg>") 2 7,pointer;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}' +
     '.bb-footer.bbcat-on .bbft-ig{order:1;margin:2vw 0 0}' +
+    // hide the site's lime custom cursor while the fish cursor is over the game
+    'body.bbcat-hover .custom-cursor{opacity:0!important;visibility:hidden!important}' +
     '@media (max-width:479px){.bb-footer.bbcat-on{padding-top:24px}.bb-footer.bbcat-on .bbft-ig{margin:16px 0 0}}';
   document.head.appendChild(s);
   K.SEL = '[data-barba-namespace="contact"] .bb-footer';
@@ -145,8 +147,9 @@
     g.W = W;
     g.fs = Math.max(11, Math.min(16, Math.round(W / 96)));   // HUD text, same scale as the other footer games
     g.hy = Math.round(g.fs * 1.6);
+    // gameH sets the box/cat size; the footer is twice that tall, the extra is open space above the boxes
     var gameH = W < 560 ? 250 : 340;
-    g.H = g.hy + Math.round(g.fs * 1.4) + gameH;
+    g.H = g.hy + Math.round(g.fs * 1.4) + gameH * 2;
     var dpr = Math.min(2, window.devicePixelRatio || 1);
     g.cv.width = W * dpr; g.cv.height = g.H * dpr; g.cv.style.height = g.H + 'px';
     g.ctx.setTransform(dpr, 0, 0, dpr, 0, 0); g.ctx.imageSmoothingEnabled = false;
@@ -262,6 +265,11 @@
       var lucky = h.type === 'lucky', mult = Math.min(4, 1 + Math.floor((g.combo - 1) / 4)), pts = (lucky ? 50 : 10) * mult;
       g.score += pts; g.pop = 0.18;
       var z = Math.max(2, Math.round(g.P * (lucky ? 1.1 : 0.8)));
+      // stepping up a combo level (x2, x3, x4) gets a big pop in the open space above the boxes
+      if (mult > 1 && (g.combo - 1) % 4 === 0) {
+        var bz = Math.max(4, Math.round(g.P * 1.6));
+        g.fx.push({ kind: 'big', text: 'x' + mult + ' COMBO', col: K.C.ink, x: g.W / 2, y: Math.round((g.hy + g.fs + g.rimY - 1.1 * g.s) / 2), vx: 0, vy: 0, g: 0, life: 1.3, max: 1.3, z: bz });
+      }
       g.fx.push({ kind: 'text', text: '+' + pts, sub: mult > 1 ? 'x' + mult + ' COMBO' : '', col: lucky ? K.C.gold : K.C.lime, x: h.x, y: Math.max(g.hy + g.fs + 5 * z, K.headY(g, h) - 0.95 * g.s), vx: 0, vy: -30, g: 0, life: 1.1, max: 1.1, z: z });
     });
   };
@@ -353,7 +361,10 @@
     g.holes.forEach(function (h) { box(g, h); });
     g.fx.forEach(function (f) {
       var t = 1 - f.life / f.max;
-      if (f.kind === 'text') {
+      if (f.kind === 'big') {
+        var bz = g.rm ? f.z : t < 0.08 ? Math.round(f.z * 0.6) : t < 0.16 ? Math.round(f.z * 1.25) : f.z;
+        if (t < 0.85 || g.rm || Math.floor(t * 30) % 2) text(x, f.text, f.x, f.y, bz, f.col);
+      } else if (f.kind === 'text') {
         var z = g.rm || t > 0.2 ? f.z : t < 0.1 ? Math.max(1, f.z - 1) : f.z + 1;
         text(x, f.text, f.x, f.y, z, f.col);
         if (f.sub) text(x, f.sub, f.x, f.y + 6 * f.z, Math.max(1, Math.round(f.z / 2)), f.col);
@@ -394,6 +405,8 @@
       rm: window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches,
       font: getComputedStyle(document.body).fontFamily || 'sans-serif' };
     K.input(g); K.size(g);
+    cv.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') document.body.classList.add('bbcat-hover'); });
+    cv.addEventListener('pointerleave', function () { document.body.classList.remove('bbcat-hover'); });
     // open with two cats already peeking so the footer shows the game straight away
     if (g.holes) { var a = g.holes[0], b = g.holes[2]; a.type = 'black'; a.phase = 'up'; a.p = 1; a.t = 1.6; b.type = g.pool[4]; b.phase = 'up'; b.p = 1; b.t = 2.2; }
     var raf = 0, last = performance.now(), dead = false;
@@ -408,7 +421,7 @@
       raf = requestAnimationFrame(loop);
     }
     raf = requestAnimationFrame(loop);
-    g.stop = function () { dead = true; cancelAnimationFrame(raf); if (ro) ro.disconnect(); };
+    g.stop = function () { document.body.classList.remove('bbcat-hover'); dead = true; cancelAnimationFrame(raf); if (ro) ro.disconnect(); };
     K.g = g;
   };
   K.mount();
