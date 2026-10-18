@@ -94,6 +94,7 @@
     var d = mx.getImageData(0, 0, mw, mh).data, m = new Uint8Array(mw * mh);
     for (var i = 0; i < mw * mh; i++) m[i] = d[i * 4 + 3] > 100 ? 1 : 0;
     g.mask = m; g.mw = mw; g.mh = mh;
+    g.ink0 = 0; for (i = 0; i < mw * mh; i++) g.ink0 += m[i];
   };
 
   B.reset = function (g, mode) {
@@ -146,51 +147,29 @@
     return false;
   }
   B.clear = function (g, x, y) { return clear(g, x, y, g.tr); }; B.cover = function (g, x, y) { return cover(g, x, y, g.tr); };
-  // Place a new bullseye on the letters, somewhere the bow can reach, away from the last one
+  // Place a new bullseye on whatever is left of the logo, preferring chunky bits away from the last one.
+  // A fresh logo only goes up once the old one is completely gone.
   B.pick = function (g) {
-    var r = g.tr, old = g.tg, best = null, bd = -1, fall = null;
-    for (var t = 0; t < 400; t++) {
-      var cx = r + Math.random() * (g.mw - 2 * r), cy = r * .6 + Math.random() * (g.mh - r * 1.2);
-      if (!g.mask[(cy | 0) * g.mw + (cx | 0)] || cover(g, cx, cy, r) < .8) continue;
-      if (!fall) fall = { x: cx, y: cy };
-      if (!clear(g, cx, cy, r)) continue;
-      var dd = old ? Math.hypot(cx - old.x, cy - old.y) : 1;
-      if (dd > bd) { bd = dd; best = { x: cx, y: cy }; }
-      if (bd > g.lw * .25) break;
-    }
-    // Nothing clear found: trace real full-power shots and sit the bullseye where one lands on the letters
-    for (t = 0; t < 240 && !best; t++) {
-      var a = -Math.PI + .2 + Math.random() * (Math.PI - .4), o = g.L - g.R * .75;
-      var x = g.bx + Math.cos(a) * o, y = g.by + Math.sin(a) * o, vx = Math.cos(a) * g.V, vy = Math.sin(a) * g.V, h = 2 / g.V;
-      for (var n = 0; n < 4000; n++) {
-        vy += g.G * h; x += vx * h; y += vy * h;
-        if (y < g.ly - 10 || x < 0 || x > g.W) break;
-        var px = (x - g.lx) | 0, py = (y - g.ly) | 0;
-        if (px < 0 || py < 0 || px >= g.mw || py >= g.mh || !g.mask[py * g.mw + px]) continue;
-        var sp = Math.hypot(vx, vy), qx = px + vx / sp * r * .75, qy = py + vy / sp * r * .75, qi = (qy | 0) * g.mw + (qx | 0);
-        if (qx > 0 && qy > 0 && qx < g.mw && qy < g.mh && g.mask[qi] && cover(g, qx, qy, r) > .55 && clear(g, qx, qy, r)) {
-          var d2 = old ? Math.hypot(qx - old.x, qy - old.y) : 1;
-          if (d2 > bd) { bd = d2; best = { x: qx, y: qy }; }
-        }
-        break;
-      }
-    }
-    // Last resort: the first spot a straight-up shot would land on
-    if (!best) for (t = 0; t < 120 && !best; t++) {
-      var cx2 = g.bx - g.lx + (Math.random() - .5) * g.lw * .9, cy2 = g.mh - 1;
-      while (cy2 > 0 && !(g.mask[(cy2 | 0) * g.mw + (cx2 | 0)])) cy2--;
-      if (cy2 > 0 && cover(g, cx2, cy2 - r * .6, r) > .55 && clear(g, cx2, cy2 - r * .6, r)) best = { x: cx2, y: cy2 - r * .6 };
-    }
-    if (!best && !g.rebuilt) {
-      // Nothing left the bow can reach: put up a fresh logo and carry on (+1,000)
-      B.fresh(g); g.rebuilt = true;
+    var r = g.tr, old = g.tg, pts = [], m = g.mask, w = g.mw, st = 2;
+    for (var y = 0; y < g.mh; y += st) for (var x = (y / st) % 2; x < w; x += st) if (m[y * w + x]) pts.push(x, y);
+    var ink = pts.length / 2;
+    if (ink < 8) { // nothing visible left (a few stray pixels at most)
+      // Logo gone: put up a fresh one (+1,000)
+      B.fresh(g);
       if (g.mode === 'play') { g.score += B.NEW_LOGO; g.flash = .35; g.pops.push({ x: g.W / 2, y: g.ly + g.lh / 2, s: 'NEW LOGO +' + fmt(B.NEW_LOGO), t: 0 }); }
-      for (var k = 0; k < g.arrows.length; k++) if (g.arrows[k].stuck) g.arrows[k].t = 2;
-      B.pick(g); g.rebuilt = false;
-      return;
+      return B.pick(g);
     }
-    g.tg = best || fall; g.tgT = g.t;
-    if (g.tg) g.tg.n = g.tgN = (g.tgN || 0) + 1;
+    var best = null, bs = -1, tries = Math.min(80, ink);
+    for (var t = 0; t < tries; t++) {
+      var j = ((Math.random() * ink) | 0) * 2, cx = pts[j], cy = pts[j + 1];
+      if (!clear(g, cx, cy, r)) continue;
+      var cv = cover(g, cx, cy, r), far = old ? Math.min(1, Math.hypot(cx - old.x, cy - old.y) / (g.lw * .3)) : 1;
+      var sc = cv + far * .35;
+      if (sc > bs) { bs = sc; best = { x: cx, y: cy }; }
+    }
+    if (!best) { j = ((Math.random() * ink) | 0) * 2; best = { x: pts[j], y: pts[j + 1] }; }
+    g.tg = best; g.tgT = g.t;
+    g.tg.n = g.tgN = (g.tgN || 0) + 1;
   };
 
   B.pop = function (g, bull) {
