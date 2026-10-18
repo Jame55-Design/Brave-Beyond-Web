@@ -268,7 +268,7 @@
       // stepping up a combo level (x2, x3, x4) gets a big pop in the open space above the boxes
       if (mult > 1 && (g.combo - 1) % 4 === 0) {
         var bz = Math.max(4, Math.round(g.P * 1.6));
-        g.fx.push({ kind: 'big', text: 'x' + mult + ' COMBO', col: K.C.ink, x: g.W / 2, y: Math.round((g.hy + g.fs + g.rimY - 1.1 * g.s) / 2), vx: 0, vy: 0, g: 0, life: 1.3, max: 1.3, z: bz });
+        g.fx.push({ kind: 'big', text: 'x' + mult + ' COMBO', col: K.C.green, x: g.W / 2, y: Math.round((g.hy + g.fs + g.rimY - 1.1 * g.s) / 2), vx: 0, vy: 0, g: 0, life: 1.3, max: 1.3, z: bz });
       }
       g.fx.push({ kind: 'text', text: '+' + pts, sub: mult > 1 ? 'x' + mult + ' COMBO' : '', col: lucky ? K.C.gold : K.C.lime, x: h.x, y: Math.max(g.hy + g.fs + 5 * z, K.headY(g, h) - 0.95 * g.s), vx: 0, vy: -30, g: 0, life: 1.1, max: 1.1, z: z });
     });
