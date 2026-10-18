@@ -2,7 +2,8 @@
 // A small purple bullseye sits on the Brave Beyond logo. Shoot it and it pops, punching a round hole in the letters.
 // Hold to draw the bow (harder, flatter shot), release to fire. A quick tap/click still fires.
 // Points: 100 x streak (up to x5) per pop, +100 for a dead-centre BULLSEYE, +50 for hitting within 1.5s of it appearing.
-// Arrows that hit the logo anywhere else stick in it and break your streak.
+// Arrows never stick: they fly straight past the letters. A shot that misses the bullseye breaks your streak.
+// A hit blows out a big round chunk of the logo around the bullseye (B.BLAST).
 // 45-second round, starts on the first shot.
 // Reads the logo paths from the footer SVG at runtime (.bbft-lm .bbft-l), like the invaders game.
 // Pages: set in B.SEL / B.PATHS below (Barba namespace or URL path + .bb-footer).
@@ -29,6 +30,7 @@
   B.BULL_PTS = 100;     // dead-centre bonus
   B.NEW_LOGO = 1000;    // bonus when the logo is shot away and a fresh one goes up
   B.TARGET = .11;       // bullseye radius as a share of the logo height
+  B.BLAST = 2.2;        // hole blown out by a hit, as a multiple of the bullseye radius
   B.RELOAD = .22;       // seconds between arrows
   B.VB = [0, -15, 1697.27, 410]; // fallback viewBox for the footer logo
 
@@ -138,7 +140,7 @@
       if (q.y < g.ly - 10 || q.x < 0 || q.x > g.W) return 3;
       var lx = q.x - g.lx, ly = q.y - g.ly;
       if ((lx - cx) * (lx - cx) + (ly - cy) * (ly - cy) < r * r * 1.1) return 2;
-      return solid(g, lx | 0, ly | 0) ? 1 : 0;
+      return 0; // arrows fly through letters, so nothing blocks the shot
     };
     for (var f = 0; f < 240; f++) { var res = fly(g, ar, 1 / 60, probe); if (res) return res === 2; }
     return false;
@@ -192,7 +194,7 @@
   };
 
   B.pop = function (g, bull) {
-    var c = g.tg, dpr = g.dpr, R = g.tr * 1.08;
+    var c = g.tg, dpr = g.dpr, R = g.tr * B.BLAST;
     g.streak = Math.min(B.MAX_STREAK, g.streak + 1);
     var pts = B.PTS * g.streak + (bull ? B.BULL_PTS : 0) + (g.t - g.tgT < B.FAST ? B.FAST_PTS : 0);
     g.score += pts; g.flash = .35;
@@ -211,8 +213,8 @@
     hx.setTransform(1, 0, 0, 1, 0, 0); hx.globalCompositeOperation = 'destination-out';
     hx.beginPath(); hx.arc(c.x * dpr, c.y * dpr, RM * dpr, 0, 7); hx.fill(); // same size as the hit map hole
     hx.globalCompositeOperation = 'source-over';
-    g.rings.push({ x: g.lx + c.x, y: g.ly + c.y, r: g.tr, t: 0 });
-    g.pops.push({ x: g.lx + c.x, y: g.ly + c.y - g.tr, s: (bull ? 'BULLSEYE +' : '+') + pts, t: 0 });
+    g.rings.push({ x: g.lx + c.x, y: g.ly + c.y, r: R * .6, t: 0 });
+    g.pops.push({ x: g.lx + c.x, y: g.ly + c.y - R * .7, s: (bull ? 'BULLSEYE +' : '+') + pts, t: 0 });
     // Arrows stuck inside the hole drop out
     for (var k = 0; k < g.arrows.length; k++) {
       var ar = g.arrows[k];
@@ -243,21 +245,9 @@
     var c = g.tg, mx = lx | 0, my = ly | 0, inside = mx >= 0 && my >= 0 && mx < g.mw && my < g.mh;
     if (c && g.mode === 'play' && !ar.scored && c.n === ar.tn) {
       var d = Math.hypot(lx - c.x, ly - c.y);
-      if (d < g.tr * 1.1) {
-        // Only the bullseye's own area blows; the arrow drops out of the hole it made
-        ar.scored = true; ar.fall = true; ar.vx *= .05; ar.vy = -60;
-        B.pop(g, d < g.tr * .35);
-        return true;
-      }
+      if (d < g.tr * 1.1) { ar.scored = true; B.pop(g, d < g.tr * .35); } // pop, and the arrow flies on
     }
-    if (inside && solid(g, mx, my)) {
-      ar.stuck = true; ar.t = 0;
-      var sp = Math.hypot(ar.vx, ar.vy); ar.ux = ar.vx / sp; ar.uy = ar.vy / sp;
-      ar.x += ar.ux * g.L * .12; ar.y += ar.uy * g.L * .12; ar.wob = 1;
-      if (!ar.scored) g.streak = 0;
-      return true;
-    }
-    return false;
+    return false; // arrows never stick in the letters
   }
 
   B.update = function (g, dt) {
