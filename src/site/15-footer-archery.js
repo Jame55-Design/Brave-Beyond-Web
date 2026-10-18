@@ -1,7 +1,7 @@
 // BB Footer Archery: bow and arrow game in the footer.
 // A small purple bullseye sits on the Brave Beyond logo. Shoot it and it pops, punching a round hole in the letters.
 // Hold to draw the bow (harder, flatter shot), release to fire. A quick tap/click still fires.
-// Points: 100 x streak (up to x5) per pop, +100 for a dead-centre BULLSEYE, +50 for hitting within 1.5s of it appearing.
+// Points: 100 x streak per pop (no cap: the streak keeps climbing until you miss), +100 for a dead-centre BULLSEYE, +50 for hitting within 1.5s of it appearing.
 // Arrows never stick: they fly straight past the letters. A shot that misses the bullseye breaks your streak.
 // A hit blows out a big round chunk of the logo around the bullseye (B.BLAST).
 // 45-second round, starts on the first shot.
@@ -24,7 +24,6 @@
   B.COL = { ink: '#212121', purp: '#AE9AE4', lav: '#E9DBEC', lime: '#CCFF00' };
   B.TIME = 45;          // seconds per round
   B.PTS = 100;          // per pop, times the streak
-  B.MAX_STREAK = 5;
   B.FAST = 1.5;         // pop within this many seconds of it lighting up...
   B.FAST_PTS = 50;      // ...for this bonus
   B.BULL_PTS = 100;     // dead-centre bonus
@@ -174,7 +173,7 @@
 
   B.pop = function (g, bull) {
     var c = g.tg, dpr = g.dpr, R = g.tr * B.BLAST;
-    g.streak = Math.min(B.MAX_STREAK, g.streak + 1);
+    g.streak++;
     var pts = B.PTS * g.streak + (bull ? B.BULL_PTS : 0) + (g.t - g.tgT < B.FAST ? B.FAST_PTS : 0);
     g.score += pts; g.flash = .35;
     // Burst the ink inside the circle into particles, then punch the hole
