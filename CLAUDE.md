@@ -38,3 +38,9 @@ James's studio site. Built in Webflow, with custom JS served from this repo via 
 - Power-ups drop from the top about every 10s while playing (B.PU_EVERY), drawn as pixel sprites: FIRE flame (ball becomes a lime fireball that cuts through bricks, B.THRU_TIME s) and HYDRA (each ball splits into 6, capped at B.MAX_BALLS). The hydra is James's own Brave_Hydra.svg sampled to an 88x85 pixel grid (B.HYDRA); tongues are letter-staged per tongue (B.TONGUES) so they flick out and in. Each head (B.HEADS: eye centre + neck direction) is cut out along its neck and wiggles by a pixel on its own; body and head layers are cached to offscreen canvases.
 - Extra-life ELIXIR (pixel potion) drops about every 30s on its own timer (B.LIFE_EVERY), away from anything already falling; +1 life up to B.MAX_LIVES (9).
 - 5 lives (B.LIVES). Clearing the logo adds +100K (B.WIN_BONUS) and shows GET THE FUCK IN! in chunky purps pixel letters (B.FONT 5x7, drawn 2px wide) while pixel flames rain down everywhere (fewer on phones).
+
+## Footer cats (src/site/15-footer-cats.js)
+- "Cat Noms" pixel whack-a-mole (feed fish biscuits) on the Contact footer (K.SEL / K.PATHS). 30s rounds, combos to x4, golden lucky cat (K.LUCKY).
+- Box logo reuses BBB.LOGO from 12-footer-bricks.js. Detects a Purps footer: Lilac boxes, no Purps cats, Purps markings swap to Mint, adds the Main Green tiger (Battle Cat nod).
+- Boxes never spread wider than K.MAX_SPAN (960px). Mouse becomes the pixel fish over the game.
+- Test: BBC.update(BBC.g, 1/60); BBC.draw(BBC.g).

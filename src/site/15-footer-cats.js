@@ -2,7 +2,9 @@
 // tap/click one to drop it a fish biscuit before it ducks back in. 30 second rounds, combos up to x4,
 // and a rare golden lucky cat (glows and sparkles, worth 50).
 // Brand palette: Brave Dark, Purps, Lilac, Pink, Mint and Cream cats with Cream eyes. No lime on the cats.
-// On a Purps footer the boxes are Lilac and the Purps cats sit out so nothing blends into the background.
+// On a Purps footer the boxes are Lilac, the Purps cats sit out, any Purps markings swap to Mint so nothing
+// blends into the background, and the Main Green tiger with Brave Dark stripes joins in (a nod to Battle Cat).
+// The mouse turns into the pixel fish biscuit over the game. Boxes never spread wider than K.MAX_SPAN.
 // Box logo = the stacked logo from 12-footer-bricks.js (BBB.LOGO), pixelated with its gaps opened.
 // Instagram, Privacy Policy and the rights line stay under the game, like the other footer games.
 // Pages: set in K.SEL / K.PATHS below (Barba namespace or URL path + .bb-footer).
@@ -14,7 +16,7 @@
     '.bb-footer.bbcat-on{padding-top:4vw}' +
     '.bb-footer.bbcat-on .bbft-lm{display:none}' +
     '.bbcat-stage{order:0;align-self:stretch;margin:0 -5vw;position:relative}' +
-    '.bbcat-stage canvas{display:block;width:100%;cursor:pointer;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}' +
+    '.bbcat-stage canvas{display:block;width:100%;cursor:url("data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'35\' height=\'15\' shape-rendering=\'crispEdges\'><g fill=\'%23E9A04A\'><rect x=\'5\' width=\'15\' height=\'5\'/><rect y=\'5\' width=\'35\' height=\'5\'/><rect x=\'5\' y=\'10\' width=\'15\' height=\'5\'/><rect x=\'30\' width=\'5\' height=\'15\'/></g><rect x=\'5\' y=\'5\' width=\'5\' height=\'5\' fill=\'%23212121\'/></svg>") 2 7,pointer;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}' +
     '.bb-footer.bbcat-on .bbft-ig{order:1;margin:2vw 0 0}' +
     '@media (max-width:479px){.bb-footer.bbcat-on{padding-top:24px}.bb-footer.bbcat-on .bbft-ig{margin:16px 0 0}}';
   document.head.appendChild(s);
@@ -22,9 +24,10 @@
   K.PATHS = ['/contact'];
   K.ROUND = 30;
   K.LUCKY = 0.11;         // chance a cat is the golden one while playing
+  K.MAX_SPAN = 960;       // widest the four boxes spread (px) so the cats stay reachable on big screens
   K.LOGO_W = 1415.38; K.LOGO_H = 572.45;
 
-  var C = { ink: '#212121', cream: '#F4E9D6', purps: '#AE9AE4', lilac: '#D0C6E9', pink: '#E8CAE9', mint: '#66C9B0',
+  var C = { green: '#07A87E', ink: '#212121', cream: '#F4E9D6', purps: '#AE9AE4', lilac: '#D0C6E9', pink: '#E8CAE9', mint: '#66C9B0',
     lime: '#CCFF00', gold: '#FFE36E', white: '#FFFFFF', fish: '#E9A04A' };
   K.C = C;
   K.TYPES = {
@@ -34,6 +37,7 @@
     tabby: { fur: C.lilac, nose: C.purps, closed: C.ink, eye: C.cream, mark: C.purps, pat: 'tabby' },
     pink: { fur: C.pink, nose: C.purps, closed: C.ink, eye: C.cream },
     mint: { fur: C.mint, nose: C.pink, closed: C.ink, eye: C.cream },
+    tiger: { fur: C.green, nose: C.pink, closed: C.ink, eye: C.cream, mark: C.ink, pat: 'tiger' },
     calico: { fur: C.cream, nose: C.pink, closed: C.ink, eye: C.white, a: C.purps, b: C.ink, pat: 'calico' },
     lucky: { fur: '#F6C945', nose: '#C9654F', closed: C.ink, mark: '#E2483D', pat: 'lucky' }
   };
@@ -44,7 +48,7 @@
   };
   K.POOLS = {
     purple: ['black', 'black', 'black', 'purps', 'purps', 'purps', 'lilac', 'tabby', 'pink', 'mint', 'calico'],
-    lilac: ['black', 'black', 'black', 'black', 'lilac', 'lilac', 'tabby', 'tabby', 'pink', 'mint', 'mint', 'calico']
+    lilac: ['black', 'black', 'black', 'black', 'tiger', 'tiger', 'lilac', 'tabby', 'pink', 'mint', 'mint', 'calico']
   };
 
   // sprites: one char = one game pixel
@@ -87,6 +91,9 @@
       for (y = 0; y < 5; y++) for (x = 11 + Math.floor(y / 2); x < 16; x++) set(x, y, 'B');
     }
     if (T.pat === 'tabby') { [5, 7, 8, 10].forEach(function (x) { set(x, 4, 'M'); set(x, 5, 'M'); }); [0, 1, 14, 15].forEach(function (x) { set(x, 10, 'M'); }); }
+    if (T.pat === 'tiger') {
+      [[5, 4], [5, 5], [7, 4], [8, 4], [7, 5], [8, 5], [10, 4], [10, 5], [0, 9], [1, 9], [0, 11], [1, 11], [14, 9], [15, 9], [14, 11], [15, 11]].forEach(function (c) { set(c[0], c[1], 'M'); });
+    }
     if (T.pat === 'lucky') { set(7, 4, 'M'); set(8, 4, 'M'); }
     return g;
   };
@@ -138,13 +145,15 @@
     g.W = W;
     g.fs = Math.max(11, Math.min(16, Math.round(W / 96)));   // HUD text, same scale as the other footer games
     g.hy = Math.round(g.fs * 1.6);
-    var gameH = W < 560 ? 210 : 270;
+    var gameH = W < 560 ? 250 : 340;
     g.H = g.hy + Math.round(g.fs * 1.4) + gameH;
     var dpr = Math.min(2, window.devicePixelRatio || 1);
     g.cv.width = W * dpr; g.cv.height = g.H * dpr; g.cv.style.height = g.H + 'px';
     g.ctx.setTransform(dpr, 0, 0, dpr, 0, 0); g.ctx.imageSmoothingEnabled = false;
-    var pad = W < 560 ? 16 : Math.round(W * 0.05), lane = (W - pad * 2) / 4;
-    g.P = Math.max(2, Math.floor(Math.min(lane * 0.9 / K.BW, gameH * 0.62 / (K.BH + K.CH))));
+    var span = Math.min(W - (W < 560 ? 32 : Math.round(W * 0.1)), K.MAX_SPAN), pad = Math.round((W - span) / 2), lane = span / 4;
+    g.span = span;
+    // leave room for the side flaps so neighbouring boxes never overlap (phones let the flaps just touch)
+    g.P = Math.max(2, Math.floor(Math.min(lane / (K.BW + (W < 560 ? 3 : 7)), gameH * 0.62 / (K.BH + K.CH))));
     var P = g.P;
     g.s = K.CW * P / 0.92; g.bw = K.BW * P; g.bh = K.BH * P;
     g.floorY = Math.floor((g.H - 6) / P) * P - P; g.rimY = g.floorY - g.bh;
@@ -164,7 +173,7 @@
     var prog = play ? 1 - g.time / K.ROUND : 0;
     h.type = Math.random() < (play ? K.LUCKY : 0.06) ? 'lucky' : g.pool[Math.random() * g.pool.length | 0];
     // wider screens mean longer mouse travel between boxes, so cats stay up longer (phones 1x, desktop up to ~1.9x)
-    var reach = Math.max(1, Math.min(1.9, g.W / 520));
+    var reach = Math.max(1, Math.min(1.7, g.span / 520));
     var up = play ? (1.1 - 0.45 * prog) * reach : 1.7 * reach;
     if (h.type === 'lucky') up *= 0.7;
     h.phase = 'up'; h.t = up; h.ht = 0;
@@ -176,7 +185,7 @@
     g.fx.push({ kind: 'ring', x: h.x, y: hy - 0.15 * s, vx: 0, vy: 0, g: 0, life: 0.4, max: 0.4, col: lucky ? K.C.gold : K.C.mint });
     for (i = 0; i < (lucky ? 9 : 7); i++) {
       a = -Math.PI / 2 + (Math.random() - .5) * 2.2; v = 120 + Math.random() * 120;
-      g.fx.push({ kind: 'heart', x: h.x, y: hy - 0.3 * s, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 160, life: 0.7 + Math.random() * 0.3, max: 1, col: i % 2 ? K.C.pink : (lucky ? K.C.gold : K.C.cream) });
+      g.fx.push({ kind: 'heart', x: h.x, y: hy - 0.3 * s, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 160, life: 0.7 + Math.random() * 0.3, max: 1, col: lucky ? (i % 2 ? K.C.gold : K.C.cream) : [K.C.cream, K.C.pink, K.C.mint][i % 3] });
     }
     if (lucky) for (i = 0; i < 20; i++) {
       a = Math.random() * Math.PI * 2; v = 150 + Math.random() * 220;
@@ -191,7 +200,7 @@
     if (g.spawnT <= 0) {
       K.spawn(g);
       var prog = g.mode === 'play' ? 1 - g.time / K.ROUND : 0;
-      g.spawnT = g.mode === 'play' ? (0.75 - 0.38 * prog) * (0.7 + Math.random() * 0.6) * Math.max(1, Math.min(1.35, g.W / 700)) : 1.1 + Math.random() * 0.9;
+      g.spawnT = g.mode === 'play' ? (0.75 - 0.38 * prog) * (0.7 + Math.random() * 0.6) * Math.max(1, Math.min(1.3, g.span / 700)) : 1.1 + Math.random() * 0.9;
       if (g.mode === 'play' && prog > 0.4 && Math.random() < 0.35) K.spawn(g);
     }
     g.holes.forEach(function (h) {
@@ -276,6 +285,7 @@
     var x = g.ctx, P = g.P, T = K.TYPES[h.type], fed = h.phase === 'hit', happy = fed && h.ht > 0.15;
     var x0 = h.x - K.CW * P / 2, y0 = Math.round((K.headY(g, h) - 9 * P) / P) * P;
     var map = { F: T.fur, W: T.eye || K.C.white, P: K.C.ink, N: T.nose, A: T.a, B: T.b, M: T.mark };
+    if (g.theme === 'lilac') for (var k in map) if (map[k] === K.C.purps) map[k] = K.C.mint;
     if (happy || h.blink < 0) { map.W = T.fur; map.P = T.fur; }
     if (h.type === 'lucky') sprite(x, K.PAWUP, x0 + K.CW * P, y0 + 4 * P - (g.rm ? 0 : (Math.floor(g.clock * 5) % 2) * P), { F: T.fur }, P);
     sprite(x, K.GRIDS[h.type], x0, y0, map, P);
