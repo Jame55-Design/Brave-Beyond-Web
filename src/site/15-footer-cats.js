@@ -80,6 +80,16 @@
     'O': ['.XXX.', 'X...X', 'X...X', 'X...X', 'X...X', 'X...X', '.XXX.'],
     'M': ['X...X', 'XX.XX', 'X.X.X', 'X.X.X', 'X...X', 'X...X', 'X...X'],
     'B': ['XXXX.', 'X...X', 'X...X', 'XXXX.', 'X...X', 'X...X', 'XXXX.'],
+    'T': ['XXXXX', '..X..', '..X..', '..X..', '..X..', '..X..', '..X..'],
+    'I': ['.XXX.', '..X..', '..X..', '..X..', '..X..', '..X..', '.XXX.'],
+    'E': ['XXXXX', 'X....', 'X....', 'XXXX.', 'X....', 'X....', 'XXXXX'],
+    'S': ['.XXXX', 'X....', 'X....', '.XXX.', '....X', '....X', 'XXXX.'],
+    'U': ['X...X', 'X...X', 'X...X', 'X...X', 'X...X', 'X...X', '.XXX.'],
+    'P': ['XXXX.', 'X...X', 'X...X', 'XXXX.', 'X....', 'X....', 'X....'],
+    'R': ['XXXX.', 'X...X', 'X...X', 'XXXX.', 'X.X..', 'X..X.', 'X...X'],
+    'N': ['X...X', 'XX..X', 'X.X.X', 'X..XX', 'X...X', 'X...X', 'X...X'],
+    'W': ['X...X', 'X...X', 'X...X', 'X.X.X', 'X.X.X', 'XX.XX', 'X...X'],
+    "'": ['..X..', '..X..', '.X...', '.....', '.....', '.....', '.....'],
     ' ': ['.....', '.....', '.....', '.....', '.....', '.....', '.....']
   };
   K.CW = 16; K.CH = K.CAT.length; K.BW = 26; K.BH = 15;
@@ -199,8 +209,9 @@
   K.update = function (g, dt) {
     g.clock += dt;
     if (g.mode === 'play') { g.time = Math.max(0, g.time - dt); if (g.time <= 0) K.end(g); }
+    if (g.mode === 'over') g.overT += dt;
     g.spawnT -= dt;
-    if (g.spawnT <= 0) {
+    if (g.spawnT <= 0 && g.mode !== 'over') {
       K.spawn(g);
       var prog = g.mode === 'play' ? 1 - g.time / K.ROUND : 0;
       g.spawnT = g.mode === 'play' ? (0.75 - 0.38 * prog) * (0.7 + Math.random() * 0.6) * Math.max(1, Math.min(1.3, g.span / 700)) : 1.1 + Math.random() * 0.9;
@@ -236,7 +247,9 @@
   K.end = function (g) {
     g.mode = 'over'; g.newBest = g.score > g.best && g.score > 0;
     if (g.score > g.best) { g.best = g.score; try { localStorage.setItem('bbCatsBest', g.best); } catch (e) {} }
-    g.spawnT = 1.5;
+    g.overT = 0;
+    // every cat ducks back in; the time's-up screen stays until Play again is clicked
+    g.holes.forEach(function (h) { if (h.phase === 'up') h.phase = 'down'; });
   };
 
   K.hit = function (g, px, py) {
@@ -253,7 +266,8 @@
     g.cv.addEventListener('pointerdown', function (e) {
       var r = g.cv.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
       // HUD play pill
-      if (g.btn && px >= g.btn.x && px <= g.btn.x + g.btn.w && py >= g.btn.y && py <= g.btn.y + g.btn.h) { K.start(g); return; }
+      if (g.btn && px >= g.btn.x && px <= g.btn.x + g.btn.w && py >= g.btn.y && py <= g.btn.y + g.btn.h) { if (g.mode !== 'over' || g.overT > 0.6) K.start(g); return; }
+      if (g.mode === 'over') return;
       var h = K.hit(g, px, py);
       if (!h) {
         if (py > g.hy + g.fs) g.fx.push({ kind: 'fish', x: px - 3.5 * g.P, y: py, vx: (Math.random() - .5) * 60, vy: -140, g: 900, life: 0.6, max: 0.6 });
@@ -350,12 +364,12 @@
     x.font = '500 ' + g.fs + 'px ' + g.font;
     var left = g.W < 560 ? 16 : Math.round(g.W * 0.05), right = g.W - left;
     var hud = g.mode === 'play' ? 'SCORE ' + g.score + '   TIME ' + Math.ceil(g.time) + '   BEST ' + g.best
-      : g.mode === 'over' ? (g.newBest ? 'NEW BEST ' : 'SCORE ') + g.score + '   BEST ' + g.best
+      : g.mode === 'over' ? 'BEST ' + g.best
         : 'FEED THE CATS   BEST ' + g.best;
     if (g.pop > 0 && g.mode === 'play') { x.font = '700 ' + g.fs + 'px ' + g.font; }
     x.fillText(hud, left, g.hy);
     g.btn = null;
-    if (g.mode !== 'play') pill(g, g.mode === 'over' ? 'Play again' : 'Play', right, g.hy);
+    if (g.mode === 'idle') pill(g, 'Play', right, g.hy);
     // floor rule
     rect(x, K.C.ink, 0, g.floorY + P, g.W, 1.5);
     g.holes.forEach(function (h) { box(g, h); });
@@ -378,6 +392,25 @@
       } else if (f.kind === 'fish') sprite(x, K.FISH, Math.round(f.x / P) * P, Math.round(f.y / P) * P, { X: K.C.fish, E: K.C.ink }, P);
       else if (f.kind === 'heart') sprite(x, K.HEART, Math.round(f.x / P) * P, Math.round(f.y / P) * P, { X: f.col }, Math.max(2, Math.round(P * 0.75)));
     });
+    // TIME'S UP screen in the open space above the boxes
+    if (g.mode === 'over') {
+      var top = g.hy + g.fs * 2, bottom = g.rimY - 1.2 * g.s, mid = (top + bottom) / 2;
+      var hz = Math.max(4, Math.round(P * 1.6)), sz = Math.max(3, Math.round(P * 0.9));
+      var k = g.rm ? 1 : Math.min(1, g.overT / 0.25), hzA = Math.max(2, Math.round(hz * (0.6 + 0.4 * k)));
+      var bh = Math.round(g.fs * 3.6), gap = Math.round(hz * 2.2);
+      var y1 = Math.round(mid - (hz * 7 + gap + sz * 7 + gap + bh) / 2 + hz * 3.5);
+      text(x, "TIME'S UP", g.W / 2, y1, hzA, K.C.pink);
+      var y2 = y1 + hz * 3.5 + gap + sz * 3.5;
+      text(x, (g.newBest ? 'NEW BEST ' : 'SCORE ') + g.score, g.W / 2, y2, sz, K.C.ink);
+      // big centred Play again button
+      x.font = '700 ' + Math.round(g.fs * 1.6) + 'px ' + g.font;
+      var label = 'Play again', bw = x.measureText(label).width + g.fs * 4, bx = g.W / 2 - bw / 2, by = y2 + sz * 3.5 + gap;
+      x.globalAlpha = g.overT > 0.6 || g.rm ? 1 : 0.5;
+      x.fillStyle = K.C.ink; x.beginPath(); if (x.roundRect) x.roundRect(bx, by, bw, bh, bh / 2); else x.rect(bx, by, bw, bh); x.fill();
+      x.fillStyle = K.C.lime; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(label, g.W / 2, by + bh / 2 + 1);
+      x.globalAlpha = 1;
+      g.btn = { x: bx, y: by, w: bw, h: bh };
+    }
   };
 })();
 
@@ -401,7 +434,7 @@
     if (!st) { st = document.createElement('div'); st.className = 'bbcat-stage'; st.innerHTML = '<canvas aria-label="Mini game: feed the cats a fish biscuit as they pop out of the boxes"></canvas>'; f.insertBefore(st, f.firstChild); }
     var cv = st.querySelector('canvas'), best = 0;
     try { best = +localStorage.getItem('bbCatsBest') || 0; } catch (e) {}
-    var g = { st: st, cv: cv, ctx: cv.getContext('2d'), W: 0, best: best, score: 0, time: K.ROUND, combo: 0, mode: 'idle', spawnT: 0.6, clock: 0, fx: [], pop: 0,
+    var g = { st: st, cv: cv, ctx: cv.getContext('2d'), W: 0, overT: 0, best: best, score: 0, time: K.ROUND, combo: 0, mode: 'idle', spawnT: 0.6, clock: 0, fx: [], pop: 0,
       rm: window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches,
       font: getComputedStyle(document.body).fontFamily || 'sans-serif' };
     K.input(g); K.size(g);

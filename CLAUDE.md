@@ -43,4 +43,5 @@ James's studio site. Built in Webflow, with custom JS served from this repo via 
 - "Cat Noms" pixel whack-a-mole (feed fish biscuits) on the Contact footer (K.SEL / K.PATHS). 30s rounds, combos to x4, golden lucky cat (K.LUCKY).
 - Box logo reuses BBB.LOGO from 12-footer-bricks.js. Detects a Purps footer: Lilac boxes, no Purps cats, Purps markings swap to Mint, adds the Main Green tiger (Battle Cat nod).
 - Boxes never spread wider than K.MAX_SPAN (960px). Footer is twice gameH tall (open space above boxes). Mouse becomes the pixel fish over the game and the site's .custom-cursor hides. Stepping up a combo level pops a big Pink (#E8CAE9) 'xN COMBO' in the middle.
+- When time runs out: cats duck in, no new ones, big Pink TIME'S UP + score (or NEW BEST) and a centred Play again button (active after 0.6s). Cats can't be tapped on that screen.
 - Test: BBC.update(BBC.g, 1/60); BBC.draw(BBC.g).
