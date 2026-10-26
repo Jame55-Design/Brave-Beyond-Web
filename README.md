@@ -20,9 +20,8 @@ Always pin to a commit or tag, never `@main`. jsDelivr caches `@main` for up to 
 
 Current release:
 - `bb-head.js`: commit `1ab765e11d13450d53168edcff4cb03c6a774b47` (BB Head Bundle 1.0.8, live: Blog links hidden in all menus via src/head/08-hide-blog-links.js; delete that file to bring Blog back)
-- `bb-site.js`: commit `19a8355f73b581c12904d45ac224568bcb6d03c6` (BB Site Bundle 1.9.7, staging: nav monogram right edge rebuilt to match the favicon art (src/site/16-nav-monogram.js); squiggle buttons paint their fill under the border so no seam shows)
-- Live site still on BB Site Bundle 1.9.6 (`05c2056`) until published live
-- Previous live: head 1.0.7 (`a913f9e`), site 1.8.2 (`b69a861`)
+- `bb-site.js`: commit `19a8355f73b581c12904d45ac224568bcb6d03c6` (BB Site Bundle 1.9.7, live: nav monogram right edge rebuilt to match the favicon art (src/site/16-nav-monogram.js); squiggle buttons paint their fill under the border so no seam shows)
+- Previous live: head 1.0.7 (`a913f9e`), site 1.9.6 (`05c2056`)
 
 ## Rolling back
 
