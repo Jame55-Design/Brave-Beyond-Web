@@ -51,19 +51,26 @@
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
 
+  // Frame mode (window.BBH_FRAME = { w, h, bg }): the game lays itself out in a fixed-size frame (e.g. a 1080 x 1350
+  // Instagram post), shown scaled to fit, paints its own background and draws the footer links row along the bottom,
+  // so recording the canvas captures exactly what you see. Without it the game sizes itself to the footer as normal.
   H.size = function (g) {
-    var W = Math.round(g.st.getBoundingClientRect().width);
-    if (!W || W === g.W) return;
-    g.W = W;
-    g.fs = Math.max(11, Math.min(16, Math.round(W / 96)));
-    g.hy = Math.round(g.fs * 1.6);
-    g.phone = W < 560;
-    g.H = g.phone ? 400 : Math.round(clamp(W * 0.36, 440, 560));
-    var dpr = Math.min(2, window.devicePixelRatio || 1);
-    g.cv.width = W * dpr; g.cv.height = g.H * dpr; g.cv.style.height = g.H + 'px';
+    var F = window.BBH_FRAME, rw = Math.round(g.st.getBoundingClientRect().width);
+    if (!rw) return;
+    if (F) { g.k = F.w / rw; g.cv.style.height = Math.round(rw * F.h / F.w) + 'px'; if (g.W === F.w && g.H === F.h) return; }
+    else { g.k = 1; if (rw === g.W) return; }
+    var W = g.W = F ? F.w : rw;
+    g.frame = F || null;
+    g.fs = F ? Math.round(W / 40) : Math.max(11, Math.min(16, Math.round(W / 96)));
+    g.hy = Math.round(g.fs * (F ? 2.6 : 1.6));
+    g.phone = !F && W < 560;
+    g.H = F ? F.h : g.phone ? 400 : Math.round(clamp(W * 0.36, 440, 560));
+    var dpr = F ? 1 : Math.min(2, window.devicePixelRatio || 1);
+    g.cv.width = W * dpr; g.cv.height = g.H * dpr; if (!F) g.cv.style.height = g.H + 'px';
     g.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    var u = g.u = clamp(Math.min(W / 1200, g.H / 440), 0.62, 1.25);
-    g.floorY = g.H - Math.round(10 * u);
+    var u = g.u = F ? 1.2 * W / 1080 : clamp(Math.min(W / 1200, g.H / 440), 0.62, 1.25);
+    g.footH = F ? Math.round(g.fs * 4) : 0;
+    g.floorY = g.H - g.footH - Math.round(10 * u);
     g.top = g.hy + g.fs * 2;
     g.r = Math.max(12, 17 * u);
     g.G = 1500 * u;
@@ -72,7 +79,7 @@
     g.pouch = { x: g.sx, y: g.forkY + 4 * u };
     g.maxPull = 92 * u;
     g.vmax = Math.sqrt(g.G * ((W * 0.98 - g.sx) * 1.3 + (g.floorY - g.top) * 0.8));
-    var list = g.phone ? H.HOOPS_PHONE : H.HOOPS, playH = g.floorY - g.top - 70 * u;
+    var list = g.phone ? H.HOOPS_PHONE : H.HOOPS, playH = (g.floorY - g.top - 70 * u) * (F ? 0.8 : 1);
     var old = g.hoops || [];
     g.hoops = list.map(function (d, i) {
       var rw = g.r * (g.phone ? 3.4 : 3.2);
@@ -108,7 +115,7 @@
   // ---- input --------------------------------------------------------------------------------------
   H.input = function (g) {
     var cv = g.cv;
-    function pt(e) { var r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+    function pt(e) { var r = cv.getBoundingClientRect(), k = g.k || 1; return { x: (e.clientX - r.left) * k, y: (e.clientY - r.top) * k }; }
     function nearBall(p) { var b = g.b; return !!b && Math.hypot(p.x - b.x, p.y - b.y) < Math.max(g.r * 2.6, 34); }
     // stop the page scrolling only when a touch starts on the ball, so the footer still scrolls on phones
     cv.addEventListener('touchstart', function (e) {
@@ -536,6 +543,7 @@
   H.draw = function (g) {
     var x = g.ctx, W = g.W, u = g.u, i;
     x.clearRect(0, 0, W, g.H);
+    if (g.frame) { x.fillStyle = g.frame.bg || '#07A87E'; x.fillRect(0, 0, W, g.H); H.drawFoot(g); }
     // HUD
     x.textBaseline = 'alphabetic'; x.fillStyle = C.ink;
     x.font = '700 ' + g.fs + 'px ' + g.font; x.textAlign = 'left';
@@ -599,6 +607,22 @@
       else x.fillText('Pull the ball back and let go', g.sx - 30 * u, g.forkY - 48 * u + Math.sin(g.clock * 3) * 2 * u);
     }
     if (g.mode === 'over') H.drawOver(g);
+  };
+
+  // frame mode only: the footer's links row (ink rule, Instagram / Privacy Policy / rights line), like the site
+  H.drawFoot = function (g) {
+    var x = g.ctx, W = g.W, pad = Math.round(W * 0.05), y0 = g.H - g.footH, lw = Math.max(1.5, W / 720);
+    x.fillStyle = C.ink;
+    x.fillRect(0, 0, W, lw);
+    x.fillRect(pad, y0, W - pad * 2, lw);
+    x.font = '500 ' + Math.round(g.fs * 0.85) + 'px ' + g.font; x.textBaseline = 'middle';
+    var y = y0 + g.footH * 0.48;
+    var rights = '\u00A9 ' + new Date().getFullYear() + ' Brave Beyond. All rights reserved.';
+    var l = x.measureText('Instagram').width, r = x.measureText(rights).width;
+    x.textAlign = 'left'; x.fillText('Instagram', pad, y);
+    x.textAlign = 'center'; x.fillText('Privacy Policy', (pad + l + W - pad - r) / 2, y);   // spaced between, like the site
+    x.textAlign = 'right'; x.fillText(rights, W - pad, y);
+    x.textBaseline = 'alphabetic';
   };
 
   H.drawOver = function (g) {
