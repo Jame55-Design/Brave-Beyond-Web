@@ -36,6 +36,18 @@
   H.FLAME = ['.....O.....', '....OLO....', '...OLLO.O..', '...OLLLOLO.', '..OLLLLLLO.', '.OLLLVLLLLO', '.OLLVVLLLLO', 'OLLVVVVLLLO', 'OLLVVVVVLLO', 'OLLVVVVVLLO', '.OLLVVVLLO.', '..OLLLLLO..', '...OOOOO...'];
   var C = { ink: '#212121', lime: '#CCFF00', lav: '#E9DBEC', purps: '#AE9AE4', pink: '#E8CAE9', cream: '#F4E9D6', mint: '#66C9B0' };
   H.C = C;
+  // Colour sets: the green footer (home, goodies) and the Purps footer (contact, privacy), with the same swaps as the
+  // other purple-footer games so nothing blends into the background.
+  H.THEMES = {
+    green:  { bg: '#07A87E', rim: C.purps, pop: C.lav, fire: C.lime, flash: C.lav, conf: [C.purps, C.lav, C.lime, C.pink] },
+    purple: { bg: '#AE9AE4', rim: '#07A87E', pop: C.lime, fire: C.lime, flash: C.lime, conf: ['#07A87E', C.lime, C.lav, C.ink] }
+  };
+  H.theme = function (g) {
+    if (g.frame) return H.THEMES[g.frame.theme] || H.THEMES.green;
+    var bg = '', el = g.st.parentNode;
+    try { bg = getComputedStyle(el).backgroundColor; } catch (e) {}
+    return /174,\s*154,\s*228/.test(bg) ? H.THEMES.purple : H.THEMES.green;
+  };
   // Hoops: x as a share of the width, height above the floor as a share of the play height, points.
   H.HOOPS = [
     { fx: 0.40, fh: 0.28, pts: 10 },
@@ -61,6 +73,7 @@
     else { g.k = 1; if (rw === g.W) return; }
     var W = g.W = F ? F.w : rw;
     g.frame = F || null;
+    g.pal = H.theme(g);
     g.fs = F ? Math.round(W / 40) : Math.max(11, Math.min(16, Math.round(W / 96)));
     g.hy = Math.round(g.fs * (F ? 2.6 : 1.6));
     g.phone = !F && W < 560;
@@ -69,7 +82,7 @@
     g.cv.width = W * dpr; g.cv.height = g.H * dpr; if (!F) g.cv.style.height = g.H + 'px';
     g.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     var u = g.u = F ? 1.2 * W / 1080 : clamp(Math.min(W / 1200, g.H / 440), 0.62, 1.25);
-    g.footH = F ? Math.round(g.fs * 4) : 0;
+    g.footH = F ? H.footH(W) : 0;
     g.floorY = g.H - g.footH - Math.round(10 * u);
     g.top = g.hy + g.fs * 2;
     g.r = Math.max(12, 17 * u);
@@ -244,7 +257,7 @@
     if (!g.onFire && g.streak >= H.FIRE_AT) { g.onFire = true; g.fireMsg = 2.2; g.fireRun = 0; }
     if (!g.rm) for (var i = 0; i < (g.phone ? 10 : 18); i++) {
       var a = -Math.PI / 2 + (Math.random() - 0.5) * 2.2, sp = (180 + Math.random() * 260) * g.u;
-      g.confetti.push({ x: h.x, y: h.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, t: 0, c: [C.lime, C.purps, C.pink, C.lav][i % 4], s: (3 + Math.random() * 3) * g.u, rot: Math.random() * 6 });
+      g.confetti.push({ x: h.x, y: h.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, t: 0, c: g.pal.conf[i % 4], s: (3 + Math.random() * 3) * g.u, rot: Math.random() * 6 });
     }
   };
 
@@ -333,7 +346,7 @@
     // bracket from board to rim
     line(x, h.rx, h.y, h.bx, h.y, 3 * u, C.ink);
     // back half of the rim
-    x.lineWidth = 4 * u; x.strokeStyle = h.pts >= 50 ? C.lime : C.purps;
+    x.lineWidth = 4 * u; x.strokeStyle = h.pts >= 50 ? C.lime : g.pal.rim;
     x.beginPath(); x.ellipse(h.x, h.y, h.rw / 2, h.rw * 0.11, 0, Math.PI, Math.PI * 2); x.stroke();
   };
 
@@ -357,7 +370,7 @@
     x.moveTo(h.x - bw + sw, by); x.lineTo(h.x + bw + sw, by);
     x.stroke();
     // front half of the rim
-    x.lineWidth = 4 * u; x.strokeStyle = h.pts >= 50 ? C.lime : C.purps; x.lineCap = 'round';
+    x.lineWidth = 4 * u; x.strokeStyle = h.pts >= 50 ? C.lime : g.pal.rim; x.lineCap = 'round';
     x.beginPath(); x.ellipse(h.x, h.y, hw, h.rw * 0.11, 0, 0, Math.PI); x.stroke();
     x.lineCap = 'butt';
   };
@@ -543,12 +556,12 @@
   H.draw = function (g) {
     var x = g.ctx, W = g.W, u = g.u, i;
     x.clearRect(0, 0, W, g.H);
-    if (g.frame) { x.fillStyle = g.frame.bg || '#07A87E'; x.fillRect(0, 0, W, g.H); H.drawFoot(g); }
+    if (g.frame) { x.fillStyle = g.pal.bg; x.fillRect(0, 0, W, g.H); H.drawFoot(g); }
     // HUD
     x.textBaseline = 'alphabetic'; x.fillStyle = C.ink;
     x.font = '700 ' + g.fs + 'px ' + g.font; x.textAlign = 'left';
     var pad = Math.max(16, Math.round(W * 0.05));
-    x.fillStyle = g.flash > 0 ? C.lime : C.ink;
+    x.fillStyle = g.flash > 0 ? g.pal.flash : C.ink;
     x.fillText('SCORE ' + g.score, pad, g.hy);
     x.fillStyle = C.ink; x.font = '500 ' + g.fs + 'px ' + g.font;
     var sw = x.measureText('SCORE 0000').width + g.fs * 1.5;
@@ -558,7 +571,7 @@
       if (i < g.left) { x.fillStyle = C.lime; x.fill(); }
       x.lineWidth = 1.5; x.strokeStyle = C.ink; x.stroke();
     }
-    if (g.onFire && !g.phone && Math.floor(g.clock * 6) % 2) { x.textAlign = 'left'; x.fillStyle = C.lime; x.font = '700 ' + g.fs + 'px ' + g.font; x.fillText('ON FIRE x' + H.FIRE_X, pad + sw + H.BALLS * g.fs * 0.8 + g.fs, g.hy); }
+    if (g.onFire && !g.phone && Math.floor(g.clock * 6) % 2) { x.textAlign = 'left'; x.fillStyle = g.pal.fire; x.font = '700 ' + g.fs + 'px ' + g.font; x.fillText('ON FIRE x' + H.FIRE_X, pad + sw + H.BALLS * g.fs * 0.8 + g.fs, g.hy); }
     x.textAlign = 'right'; x.fillStyle = C.ink; x.font = '500 ' + g.fs + 'px ' + g.font;
     x.fillText('BEST ' + g.best, W - pad, g.hy);
     // floor rule
@@ -588,7 +601,7 @@
       var e = 2.2 - g.fireMsg, sc = e < 0.18 ? 1.6 - (e / 0.18) * 0.6 : 1, big = Math.round(Math.min(g.fs * 3.4, W / 9));
       x.save(); x.translate(W / 2, g.top + (g.floorY - g.top) * 0.3); x.scale(sc, sc);
       x.globalAlpha = g.fireMsg < 0.4 ? g.fireMsg / 0.4 : 1;
-      x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = C.lime;
+      x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = g.pal.fire;
       x.font = '700 ' + big + 'px ' + g.font; x.fillText('YOU\u2019RE ON FIRE!', 0, 0);
       x.restore(); x.globalAlpha = 1; x.textBaseline = 'alphabetic';
     }
@@ -597,7 +610,7 @@
     for (i = 0; i < g.fx.length; i++) {
       var f = g.fx[i]; if (f.t < 0) continue;
       x.globalAlpha = f.t < 0.8 ? 1 : 1 - (f.t - 0.8) / 0.3;
-      x.fillStyle = C.lime; x.fillText(f.text, f.x, f.y - f.t * 40 * u);
+      x.fillStyle = g.pal.pop; x.fillText(f.text, f.x, f.y - f.t * 40 * u);
     }
     x.globalAlpha = 1;
     // first-time hint
@@ -610,18 +623,39 @@
   };
 
   // frame mode only: the footer's links row (ink rule, Instagram / Privacy Policy / rights line), like the site
+  // frame mode only: the site's footer bottom, drawn as it looks on the live site (centred): round outline Instagram
+  // button, PRIVACY POLICY / COOKIE SETTINGS ink pills, then the rights line. Sized like the phone footer at 2x.
+  H.FOOT_K = 2;
+  H.footH = function (W) { var k = H.FOOT_K * W / 1080; return Math.round((44 + 18 + 14 + 9 + 17 + 22 + 16) * k); };
   H.drawFoot = function (g) {
-    var x = g.ctx, W = g.W, pad = Math.round(W * 0.05), y0 = g.H - g.footH, lw = Math.max(1.5, W / 720);
-    x.fillStyle = C.ink;
-    x.fillRect(0, 0, W, lw);
-    x.fillRect(pad, y0, W - pad * 2, lw);
-    x.font = '500 ' + Math.round(g.fs * 0.85) + 'px ' + g.font; x.textBaseline = 'middle';
-    var y = y0 + g.footH * 0.48;
-    var rights = '\u00A9 ' + new Date().getFullYear() + ' Brave Beyond. All rights reserved.';
-    var l = x.measureText('Instagram').width, r = x.measureText(rights).width;
-    x.textAlign = 'left'; x.fillText('Instagram', pad, y);
-    x.textAlign = 'center'; x.fillText('Privacy Policy', (pad + l + W - pad - r) / 2, y);   // spaced between, like the site
-    x.textAlign = 'right'; x.fillText(rights, W - pad, y);
+    var x = g.ctx, W = g.W, k = H.FOOT_K * W / 1080, cx = W / 2, y = g.H - g.footH + 16 * k;
+    // Instagram button: 44px circle, 1px ink outline, camera glyph
+    var R = 22 * k;
+    x.strokeStyle = C.ink; x.lineWidth = Math.max(1, 1 * k);
+    x.beginPath(); x.arc(cx, y + R, R - x.lineWidth / 2, 0, Math.PI * 2); x.stroke();
+    var gs = 18 * k, gx = cx - gs / 2, gy = y + R - gs / 2;
+    x.lineWidth = 1.6 * k;
+    x.beginPath(); if (x.roundRect) x.roundRect(gx + 1.5 * k, gy + 1.5 * k, gs - 3 * k, gs - 3 * k, 4.5 * k); else x.rect(gx + 1.5 * k, gy + 1.5 * k, gs - 3 * k, gs - 3 * k); x.stroke();
+    x.beginPath(); x.arc(cx, y + R, 3.6 * k, 0, Math.PI * 2); x.stroke();
+    x.fillStyle = C.ink; x.beginPath(); x.arc(cx + 4.6 * k, y + R - 4.6 * k, 1.1 * k, 0, Math.PI * 2); x.fill();
+    // pills: ink, #F4F4F4 uppercase 9px text, letter-spaced
+    y += 44 * k + 18 * k;
+    var labels = ['PRIVACY POLICY', 'COOKIE SETTINGS'], ph = 14 * k, gap = 6 * k, padX = 6.5 * k, fs = 9 * k;
+    x.font = '500 ' + fs + 'px ' + g.font;
+    var ls = 0.54 * k, ws = labels.map(function (t) { return x.measureText(t).width + ls * (t.length - 1) + padX * 2; });
+    var px = cx - (ws[0] + gap + ws[1]) / 2;
+    x.textBaseline = 'middle'; x.textAlign = 'left';
+    for (var i = 0; i < 2; i++) {
+      x.fillStyle = C.ink; x.beginPath(); if (x.roundRect) x.roundRect(px, y, ws[i], ph, 2 * k); else x.rect(px, y, ws[i], ph); x.fill();
+      x.fillStyle = '#F4F4F4';
+      var tx = px + padX, t = labels[i];
+      for (var j = 0; j < t.length; j++) { x.fillText(t[j], tx, y + ph / 2 + 0.5 * k); tx += x.measureText(t[j]).width + ls; }
+      px += ws[i] + gap;
+    }
+    // rights line
+    y += ph + 9 * k;
+    x.fillStyle = C.ink; x.font = '500 ' + 12 * k + 'px ' + g.font; x.textAlign = 'center';
+    x.fillText('All rights reserved Brave Beyond ' + new Date().getFullYear(), cx, y + 8.5 * k);
     x.textBaseline = 'alphabetic';
   };
 
