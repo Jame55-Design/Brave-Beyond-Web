@@ -19,6 +19,7 @@
       'display:inline-flex;align-items:center;gap:10px;height:40px;padding:0 18px;background:transparent;color:#212121;border:1px solid #212121;border-radius:80px;' +
       'font-family:inherit;font-weight:600;font-size:13px;line-height:1;letter-spacing:.01em;text-transform:uppercase;-webkit-user-select:none;user-select:none}' +
     '.bbarc-btn:focus-visible{outline:2px solid #CCFF00;outline-offset:3px}' +
+    '.bbarc-btn{transition:transform .14s cubic-bezier(.3,.7,.4,1)}.bbarc-btn.bbarc-press{transform:scale(.94)}' +
     '.bbarc-ic{display:inline-flex;flex:none;width:12px;height:12px;overflow:hidden;transition:width .3s,margin .3s,opacity .2s}' +
     '.bbarc-ic svg{display:block;flex:none;width:12px;height:12px}' +
     '.bbarc-ic-l{width:0;margin-right:-10px;opacity:0}' +
@@ -81,8 +82,39 @@
 
   // after a press the squiggle fill clears again (the squiggle script only clears on mouseout, which never comes on
   // phones or while the pointer is still on the button); it refills the next time the pointer comes over it
+  // A press plays out instead of jumping: the squiggle fills the button (phones get no hover, so the press starts
+  // it), the current game fades out, the next fades in, then the button clears. Reduced motion: straight swap.
+  A.FILL_MS = 450; A.OUT_MS = 180; A.IN_MS = 300;
+  A.go = function () {
+    if (A.busy || !A.btn) return;
+    var rm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches, f = A.f;
+    A.busy = A.block = true;
+    A.fill();   // keyboard, or a tap with no hover: start the squiggle
+    var wait = rm ? 0 : Math.max(120, A.FILL_MS - (performance.now() - A.btn._fillT));
+    setTimeout(function () {
+      var old = A.cur && f && f.querySelector(A.cur.stage);
+      if (old && !rm) { old.style.transition = 'opacity ' + A.OUT_MS + 'ms ease'; old.style.opacity = '0'; }
+      setTimeout(function () {
+        if (A.f !== f) { A.busy = A.block = false; return; }   // the page changed meanwhile
+        A.next();
+        var st = A.cur && f.querySelector(A.cur.stage);
+        if (st && !rm) {
+          st.style.opacity = '0'; st.style.transition = 'opacity ' + A.IN_MS + 'ms ease';
+          requestAnimationFrame(function () { requestAnimationFrame(function () { st.style.opacity = '1'; }); });
+        }
+        setTimeout(function () { A.busy = A.block = false; A.unfill(); }, rm ? 0 : 200);
+      }, old && !rm ? A.OUT_MS : 0);
+    }, wait);
+  };
+
+  A.fill = function () {
+    if (!A.btn || A.btn._fillT) return;
+    A.btn._fillT = performance.now();
+    try { A.btn.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, relatedTarget: document.body })); } catch (e) {}
+  };
   A.unfill = function () {
     if (!A.btn) return;
+    A.btn._fillT = 0;
     try { A.btn.dispatchEvent(new MouseEvent('mouseout', { bubbles: true, relatedTarget: document.body })); } catch (e) {}
   };
 
@@ -94,6 +126,7 @@
 
   A.mount = function () {
     A.clear();
+    A.busy = A.block = false;
     if (A.bar && A.bar.parentNode) A.bar.parentNode.removeChild(A.bar);
     A.f = footer();
     if (!A.f) return;
@@ -104,7 +137,20 @@
     var star = function (c) { return '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="' + c + '" d="M12 0C12.7 6.5 17.5 11.3 24 12C17.5 12.7 12.7 17.5 12 24C11.3 17.5 6.5 12.7 0 12C6.5 11.3 11.3 6.5 12 0Z"/></svg>'; };
     bar.innerHTML = '<button type="button" class="bbarc-btn" data-squiggle><span class="bbarc-ic bbarc-ic-l">' + star('#F4F4F4') + '</span><span class="bbarc-tx">Next game</span><span class="bbarc-ic bbarc-ic-r">' + star('#212121') + '</span></button>';
     A.btn = bar.firstChild;
-    A.btn.addEventListener('click', function () { A.next(); A.unfill(); });
+    A.btn.addEventListener('mouseover', function () { if (!A.btn._fillT) A.btn._fillT = performance.now(); });
+    // while a press plays out, real mouseouts (phones send one straight after a tap) don't reach the squiggle script
+    A.btn.addEventListener('mouseout', function (e) {
+      if (A.block && e.isTrusted) { e.stopPropagation(); return; }
+      if (!A.btn.contains(e.relatedTarget)) A.btn._fillT = 0;
+    }, true);
+    var press = function (on) { A.btn.classList.toggle('bbarc-press', on); };
+    A.btn.addEventListener('pointerdown', function (e) {
+      press(true);
+      if (e.pointerType !== 'mouse' && !A.busy) { A.block = true; A.fill(); }   // touch: the fill starts under the finger
+    });
+    ['pointerup', 'pointerleave'].forEach(function (ev) { A.btn.addEventListener(ev, function () { press(false); }); });
+    A.btn.addEventListener('pointercancel', function () { press(false); if (!A.busy) { A.block = false; A.unfill(); } });
+    A.btn.addEventListener('click', function () { A.go(); });
     A.f.insertBefore(bar, A.f.firstChild);
     A.start(A.pageGame(A.t));
     A.label();

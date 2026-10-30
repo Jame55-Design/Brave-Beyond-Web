@@ -42,14 +42,14 @@ James's studio site. Built in Webflow, with custom JS served from this repo via 
 ## Footer cats (src/site/15-footer-cats.js)
 - "Cat Noms" pixel whack-a-mole (feed fish biscuits) on the Contact footer (K.SEL / K.PATHS). 30s rounds, combos to x4, golden lucky cat (K.LUCKY).
 - Box logo reuses BBB.LOGO from 12-footer-bricks.js. Detects a Purps footer: Lilac boxes, no Purps cats, Purps markings swap to Mint, adds the Main Green tiger (Battle Cat nod).
-- Boxes never spread wider than K.MAX_SPAN (960px). Footer is twice gameH tall (open space above boxes). Mouse becomes the pixel fish over the game and the site's .custom-cursor hides. Stepping up a combo level pops a big Pink (#E8CAE9) 'xN COMBO' in the middle.
+- Boxes never spread wider than K.MAX_SPAN (960px). Canvas is K.SKY (1.4) x gameH tall, open space above the boxes; kept close to the other games' heights. Mouse becomes the pixel fish over the game and the site's .custom-cursor hides. Stepping up a combo level pops a big Pink (#E8CAE9) 'xN COMBO' in the middle.
 - When time runs out: cats duck in, no new ones, big Pink TIME'S UP + score (or NEW BEST) and a centred Play again button (active after 0.6s). Cats can't be tapped on that screen.
 - Test: BBC.update(BBC.g, 1/60); BBC.draw(BBC.g).
 
 ## Footer arcade (src/site/18-footer-arcade.js)
 - Every footer can play every footer game. Games no longer start themselves: each registers on window.BBARCADE ({ id, name, themes, ns, paths, cls, stage, mount(footer, theme), stop }) and the arcade starts one.
 - Page defaults: invaders on home + goodies, bricks on services, cats on contact (from each game's ns / paths). Other pages keep the logo + hearts with a PLAY A GAME pill.
-- NEXT GAME button styled like the site's squiggle buttons (outline pill + sparkle, data-squiggle so 02-squiggle-buttons.js fills it on hover) sits at the top of the footer and cycles the games that have a colour set for the footer background.
+- NEXT GAME button styled like the site's squiggle buttons (outline pill + sparkle, data-squiggle so 02-squiggle-buttons.js fills it on hover) sits at the top of the footer and cycles the games that have a colour set for the footer background. A press plays out (A.go): button dips, squiggle fills, old game fades out, next fades in, button clears.
 - Footer colour = first painted background behind the footer: Purps -> 'purple', anything else -> 'green'. Every game has both sets (invaders/bricks: Purps bits swap to Main Green, blob bullets and the bricks ball go ink; cats: 'lilac' set; hoops: H.THEMES).
 - Only one game runs at a time; switching calls stop(), removes the game's stage and its -on class. Bricks removes its window key listeners on stop.
 - Hoops (17) has no page default yet (ns: []). High balls fly on over the button (a .bbhp-sky canvas above the stage) and bounce off the top of the footer. Its stand-alone preview / recorder page sets window.BBH_PREVIEW and window.BBH_FRAME.

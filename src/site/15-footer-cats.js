@@ -26,6 +26,7 @@
   K.PATHS = ['/contact'];
   K.ROUND = 30;
   K.LUCKY = 0.11;         // chance a cat is the golden one while playing
+  K.SKY = 1.4;           // canvas height as a multiple of gameH (was 2: too tall next to the other games)
   K.MAX_SPAN = 960;       // widest the four boxes spread (px) so the cats stay reachable on big screens
   K.LOGO_W = 1415.38; K.LOGO_H = 572.45;
 
@@ -157,9 +158,10 @@
     g.W = W;
     g.fs = Math.max(11, Math.min(16, Math.round(W / 96)));   // HUD text, same scale as the other footer games
     g.hy = Math.round(g.fs * 1.6);
-    // gameH sets the box/cat size; the footer is twice that tall, the extra is open space above the boxes
+    // gameH sets the box/cat size; the canvas is 1.4x that tall so it sits in line with the other footer games,
+    // leaving open space above the boxes for the combo pop and the TIME'S UP screen
     var gameH = W < 560 ? 250 : 340;
-    g.H = g.hy + Math.round(g.fs * 1.4) + gameH * 2;
+    g.H = g.hy + Math.round(g.fs * 1.4) + Math.round(gameH * K.SKY);
     var dpr = Math.min(2, window.devicePixelRatio || 1);
     g.cv.width = W * dpr; g.cv.height = g.H * dpr; g.cv.style.height = g.H + 'px';
     g.ctx.setTransform(dpr, 0, 0, dpr, 0, 0); g.ctx.imageSmoothingEnabled = false;
