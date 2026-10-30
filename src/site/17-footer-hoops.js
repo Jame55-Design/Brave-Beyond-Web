@@ -5,7 +5,7 @@
 // The ball is the Sling footer's character (lime, solid ink face, stick arms) with legs added: it hangs loose,
 // grits its teeth as you pull, flails its arms and legs in flight, goes dizzy off the rim, cheers when it scores
 // and slumps when it misses. Score 3 in a row and YOU'RE ON FIRE: the ball becomes the Brave Beyond pixel fireball
-// and every basket counts double until a ball misses. 15 balls a round, and the next ball loads while the last is still flying, best score saved in this browser.
+// and every basket counts double until a ball misses. 20 balls a round, and the next ball loads while the last is still flying, best score saved in this browser.
 // Instagram, Privacy Policy and the rights line stay under the game, like the other footer games.
 // Pages: set in H.SEL / H.PATHS below (Barba namespace or URL path + .bb-footer). Not on any page yet.
 
@@ -22,7 +22,7 @@
   document.head.appendChild(s);
   H.SEL = '[data-barba-namespace="hoops"] .bb-footer';
   H.PATHS = [];
-  H.BALLS = 15;          // balls per round
+  H.BALLS = 20;          // balls per round
   H.RELOAD = 0.45;       // seconds before the next ball pops into the sling (the last one can still be flying)
   H.SWISH = 2;           // multiplier for a clean shot
   H.FIRE_AT = 3;         // baskets in a row to catch fire (a nod to the old 90s arcade basketball games)
