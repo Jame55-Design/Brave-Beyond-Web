@@ -49,8 +49,8 @@ James's studio site. Built in Webflow, with custom JS served from this repo via 
 ## Footer arcade (src/site/18-footer-arcade.js)
 - Every footer can play every footer game. Games no longer start themselves: each registers on window.BBARCADE ({ id, name, themes, ns, paths, cls, stage, mount(footer, theme), stop }) and the arcade starts one.
 - Page defaults: invaders on home + goodies, bricks on services, cats on contact (from each game's ns / paths). Other pages keep the logo + hearts with a PLAY A GAME pill.
-- NEXT GAME pill (ink, #F4F4F4 uppercase, like the footer pills) sits at the top of the footer and cycles the games that have a colour set for the footer background.
+- NEXT GAME button styled like the site's squiggle buttons (outline pill + sparkle, data-squiggle so 02-squiggle-buttons.js fills it on hover) sits at the top of the footer and cycles the games that have a colour set for the footer background.
 - Footer colour = first painted background behind the footer: Purps -> 'purple', anything else -> 'green'. Every game has both sets (invaders/bricks: Purps bits swap to Main Green, blob bullets and the bricks ball go ink; cats: 'lilac' set; hoops: H.THEMES).
 - Only one game runs at a time; switching calls stop(), removes the game's stage and its -on class. Bricks removes its window key listeners on stop.
-- Hoops (17) has no page default yet (ns: []). Its stand-alone preview / recorder page sets window.BBH_PREVIEW and window.BBH_FRAME.
+- Hoops (17) has no page default yet (ns: []). High balls fly on over the button (a .bbhp-sky canvas above the stage) and bounce off the top of the footer. Its stand-alone preview / recorder page sets window.BBH_PREVIEW and window.BBH_FRAME.
 

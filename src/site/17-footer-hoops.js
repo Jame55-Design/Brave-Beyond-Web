@@ -18,6 +18,8 @@
     '.bb-footer.bbhp-on .bbft-lm{display:none}' +
     '.bbhp-stage{order:0;align-self:stretch;margin:0 -5vw;position:relative}' +
     '.bbhp-stage canvas{display:block;width:100%;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}' +
+    // sky layer: the strip between the top of the footer and the game, where only high balls are drawn, on top of the arcade button
+    '.bbhp-stage canvas.bbhp-sky{position:absolute;left:0;bottom:100%;pointer-events:none;z-index:3}' +
     '.bb-footer.bbhp-on .bbft-ig{order:1;margin:2vw 0 0}' +
     '@media (max-width:479px){.bb-footer.bbhp-on{padding-top:24px}.bb-footer.bbhp-on .bbft-ig{margin:16px 0 0}}';
   document.head.appendChild(s);
@@ -235,6 +237,8 @@
     // side walls
     if (b.x > g.W - r && b.vx > 0) { b.x = g.W - r; b.vx *= -0.5; }
     if (b.x < r && b.vx < 0) { b.x = r; b.vx *= -0.5; }
+    // ceiling: the top of the footer (or of the video frame), so a big fling bounces back instead of vanishing
+    if (b.y < g.ceil + r && b.vy < 0) { b.y = g.ceil + r; b.vy *= -0.45; }
     for (var i = 0; i < g.hoops.length; i++) {
       var h = g.hoops[i];
       // rim ends
@@ -632,6 +636,27 @@
     }
     if (g.mode === 'over') H.drawOver(g);
     if (g.frame) H.drawCursor(g);
+    if (g.sky) H.drawSky(g);
+  };
+
+  // high balls keep flying above the game, over the footer's top padding and the arcade button, up to the footer's top edge
+  H.syncSky = function (g, f) {
+    var c = g.sky; if (!c) { g.ceil = 0; return; }
+    var h = Math.max(0, Math.round(g.st.getBoundingClientRect().top - f.getBoundingClientRect().top));
+    g.ceil = -h;
+    if (h === g.skyH && c.width === Math.round(g.W * g.skyD)) return;
+    var d = g.skyD = Math.min(2, window.devicePixelRatio || 1);
+    g.skyH = h; c.width = Math.round(g.W * d); c.height = Math.max(1, Math.round(h * d)); c.style.height = h + 'px';
+  };
+  H.drawSky = function (g) {
+    var c = g.sky, x = c.getContext('2d'), list = g.fly.concat(g.b ? [g.b] : []), main = g.ctx, any = false;
+    x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, c.width, c.height);
+    for (var i = 0; i < list.length; i++) if (list[i].y < g.r * 3) any = true;
+    if (!any || !g.skyH) return;
+    x.setTransform(g.skyD, 0, 0, g.skyD, 0, g.skyH * g.skyD);   // same coordinates as the game, shifted down by the sky
+    g.ctx = x;
+    for (i = 0; i < list.length; i++) if (list[i].y < g.r * 3) { x.globalAlpha = Math.max(0, list[i].fade == null ? 1 : list[i].fade); H.drawBall(g, list[i]); }
+    x.globalAlpha = 1; g.ctx = main;
   };
 
   // frame mode only: the footer's links row (ink rule, Instagram / Privacy Policy / rights line), like the site
@@ -719,9 +744,10 @@
     f.classList.add('bbhp-on');
     var st = f.querySelector('.bbhp-stage');
     if (!st) { st = document.createElement('div'); st.className = 'bbhp-stage'; st.innerHTML = '<canvas aria-label="Mini game: pull the ball back in the slingshot and fling it into the hoops"></canvas>'; f.insertBefore(st, f.firstChild); }
-    var cv = st.querySelector('canvas'), best = 0;
+    var cv = st.querySelector('canvas'), best = 0, sky = null;
+    if (!window.BBH_FRAME && !st.querySelector('.bbhp-sky')) { sky = document.createElement('canvas'); sky.className = 'bbhp-sky'; sky.setAttribute('aria-hidden', 'true'); st.appendChild(sky); }
     try { best = +localStorage.getItem('bbHoopsBest') || 0; } catch (e) {}
-    var g = { st: st, cv: cv, ctx: cv.getContext('2d'), W: 0, best: best, clock: 0, fx: [], confetti: [], streak: 0, flash: 0, snap: 0, mT: 0, mx: 0, my: 0,
+    var g = { st: st, cv: cv, sky: sky, ceil: 0, skyH: 0, skyD: 1, ctx: cv.getContext('2d'), W: 0, best: best, clock: 0, fx: [], confetti: [], streak: 0, flash: 0, snap: 0, mT: 0, mx: 0, my: 0,
       rm: window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches,
       font: getComputedStyle(document.body).fontFamily || 'sans-serif',
       fly: [], parts: [], reload: 0, b: null, themeName: theme || null };
@@ -734,7 +760,7 @@
       var dt = Math.min(.05, (now - last) / 1000); last = now;
       if (!g.W) H.size(g);
       var r = st.getBoundingClientRect(), vh = window.innerHeight || document.documentElement.clientHeight;
-      if (g.W && r.bottom > 0 && r.top < vh && r.width > 0) { H.update(g, dt); H.draw(g); }
+      if (g.W && r.bottom > 0 && r.top < vh && r.width > 0) { H.syncSky(g, f); H.update(g, dt); H.draw(g); }
       raf = requestAnimationFrame(loop);
     }
     raf = requestAnimationFrame(loop);

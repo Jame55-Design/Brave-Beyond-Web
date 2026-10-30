@@ -10,17 +10,22 @@
 (function () {
   var A = window.BBA = window.BBA || {};
   var s = document.createElement('style');
+  // The button matches the site's squiggle buttons (.button): ink outline pill, uppercase, sparkle on the right.
+  // data-squiggle hands it to 02-squiggle-buttons.js, so on hover the ink squiggle draws in and fills it, the text
+  // turns Purps (.sq-on) and the sparkle jumps to the left in white, like the site's buttons.
   s.textContent =
     '.bbarc-bar{order:-1;align-self:center;display:flex;justify-content:center;margin:0 0 1.2vw;position:relative;z-index:2}' +
-    '.bbarc-btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:.6em;background:#212121;color:#F4F4F4;' +
-      'font-family:inherit;font-weight:500;font-size:11px;line-height:1;letter-spacing:.06em;text-transform:uppercase;padding:7px 11px;border-radius:3px;' +
-      '-webkit-user-select:none;user-select:none;transition:color .15s}' +
-    '.bbarc-btn:hover{color:#CCFF00}' +
-    '.bbarc-btn:focus-visible{outline:2px solid #CCFF00;outline-offset:2px}' +
-    '.bbarc-btn .bbarc-ar{display:inline-block;transition:transform .2s}' +
-    '.bbarc-btn:hover .bbarc-ar{transform:translateX(3px)}' +
-    '@media (max-width:479px){.bbarc-bar{margin:0 0 12px}}' +
-    '@media (prefers-reduced-motion:reduce){.bbarc-btn,.bbarc-btn .bbarc-ar{transition:none}}';
+    '.bbarc-btn{-webkit-appearance:none;appearance:none;margin:0;box-sizing:border-box;position:relative;isolation:isolate;overflow:hidden;cursor:pointer;' +
+      'display:inline-flex;align-items:center;gap:10px;height:40px;padding:0 18px;background:transparent;color:#212121;border:1px solid #212121;border-radius:80px;' +
+      'font-family:inherit;font-weight:600;font-size:13px;line-height:1;letter-spacing:.01em;text-transform:uppercase;-webkit-user-select:none;user-select:none}' +
+    '.bbarc-btn:focus-visible{outline:2px solid #CCFF00;outline-offset:3px}' +
+    '.bbarc-ic{display:inline-flex;flex:none;width:12px;height:12px;overflow:hidden;transition:width .3s,margin .3s,opacity .2s}' +
+    '.bbarc-ic svg{display:block;flex:none;width:12px;height:12px}' +
+    '.bbarc-ic-l{width:0;margin-right:-10px;opacity:0}' +
+    '.bbarc-btn.sq-on .bbarc-ic-l{width:12px;margin-right:0;opacity:1}' +
+    '.bbarc-btn.sq-on .bbarc-ic-r{width:0;margin-left:-10px;opacity:0}' +
+    '@media (max-width:479px){.bbarc-bar{margin:0 0 12px}.bbarc-btn{height:36px;font-size:12px;padding:0 15px}}' +
+    '@media (prefers-reduced-motion:reduce){.bbarc-ic{transition:none}}';
   document.head.appendChild(s);
 
   A.PURPS = [174, 154, 228];
@@ -76,7 +81,7 @@
 
   A.label = function () {
     if (!A.btn) return;
-    A.btn.firstChild.textContent = A.cur ? 'Next game' : 'Play a game';
+    A.btn.querySelector('.bbarc-tx').textContent = A.cur ? 'Next game' : 'Play a game';
     A.btn.setAttribute('aria-label', A.cur ? 'Switch footer game (playing ' + A.cur.name + ')' : 'Play a footer game');
   };
 
@@ -89,7 +94,8 @@
     if (!A.games(A.t).length) return;
     var bar = A.bar = document.createElement('div');
     bar.className = 'bbarc-bar';
-    bar.innerHTML = '<button type="button" class="bbarc-btn"><span>Next game</span><span class="bbarc-ar" aria-hidden="true">→</span></button>';
+    var star = function (c) { return '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="' + c + '" d="M12 0C12.7 6.5 17.5 11.3 24 12C17.5 12.7 12.7 17.5 12 24C11.3 17.5 6.5 12.7 0 12C6.5 11.3 11.3 6.5 12 0Z"/></svg>'; };
+    bar.innerHTML = '<button type="button" class="bbarc-btn" data-squiggle><span class="bbarc-ic bbarc-ic-l">' + star('#F4F4F4') + '</span><span class="bbarc-tx">Next game</span><span class="bbarc-ic bbarc-ic-r">' + star('#212121') + '</span></button>';
     A.btn = bar.firstChild;
     A.btn.addEventListener('click', function () { A.next(); });
     A.f.insertBefore(bar, A.f.firstChild);
