@@ -19,7 +19,7 @@ Custom code for bravebeyond.com. Webflow loads two bundles from this repo throug
 Always pin to a commit or tag, never `@main`. jsDelivr caches `@main` for up to 12 hours and Webflow checks each file against a fixed integrity hash, so a changing file would be blocked.
 
 Current release:
-- `bb-head.js`: commit `e55272ca00a3cff1ff53913803912059a8943841` (BB Head Bundle 1.0.10, live: cookie consent banner + Google Analytics G-GGV0NKKR7H + "Cookie Settings" footer pill, all in src/head/09-cookie-consent.js). Live is still 1.0.8 (`1ab765e`, Blog links hidden in all menus via src/head/08-hide-blog-links.js; delete that file to bring Blog back)
+- `bb-head.js`: commit `e55272ca00a3cff1ff53913803912059a8943841` (BB Head Bundle 1.0.10, live: cookie consent banner + Google Analytics G-GGV0NKKR7H + "Cookie Settings" footer pill, all in src/head/09-cookie-consent.js). Previous head 1.0.8 (`1ab765e`). Blog links hidden in all menus via src/head/08-hide-blog-links.js; delete that file to bring Blog back)
 - `bb-site.js`: commit `19a8355f73b581c12904d45ac224568bcb6d03c6` (BB Site Bundle 1.9.7, live: nav monogram right edge rebuilt to match the favicon art (src/site/16-nav-monogram.js); squiggle buttons paint their fill under the border so no seam shows)
 - Previous live: head 1.0.7 (`a913f9e`), site 1.9.6 (`05c2056`)
 
