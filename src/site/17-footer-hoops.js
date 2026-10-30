@@ -70,7 +70,7 @@
   H.size = function (g) {
     var F = window.BBH_FRAME, rw = Math.round(g.st.getBoundingClientRect().width);
     if (!rw) return;
-    var css = F ? (F.css || 720) : rw;
+    var css = F ? (F.css || 540) : rw;
     if (F) { g.k = css / rw; g.cv.style.height = Math.round(rw * F.h / F.w) + 'px'; if (g.W === css && g.frame === F) return; }
     else { g.k = 1; if (rw === g.W) return; }
     var W = g.W = css;
@@ -78,7 +78,7 @@
     g.pal = H.theme(g);
     g.fs = Math.max(11, Math.min(16, Math.round(W / 96)));
     g.hy = Math.round(g.fs * 1.6);
-    g.phone = W < 560;
+    g.phone = !F && W < 560;   // the recorder always uses the full four-hoop layout
     var band = g.phone ? 400 : Math.round(clamp(W * 0.36, 440, 560));   // the game's height on the site at this width
     var dpr = F ? F.w / css : Math.min(2, window.devicePixelRatio || 1);
     g.H = F ? Math.round(F.h / dpr) : band;
@@ -660,7 +660,7 @@
     // rights line
     y += ph + 9 * k;
     x.fillStyle = C.ink; x.font = '500 ' + 12 * k + 'px ' + g.font; x.textAlign = 'center';
-    x.fillText('All rights reserved Brave Beyond ' + new Date().getFullYear(), cx, y + 8.5 * k);
+    x.fillText('All rights reserved \u00A9 ' + new Date().getFullYear() + ' Brave Beyond', cx, y + 8.5 * k);
     x.textBaseline = 'alphabetic';
   };
 
