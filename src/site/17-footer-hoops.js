@@ -4,7 +4,8 @@
 // they are (10 / 20 / 30 / 50); the top hoop bobs up and down. Clean shots (no rim or board) are a SWISH x2.
 // The ball is the Sling footer's character (lime, solid ink face, stick arms) with legs added: it hangs loose,
 // grits its teeth as you pull, flails its arms and legs in flight, goes dizzy off the rim, cheers when it scores
-// and slumps when it misses. 15 balls a round, and the next ball loads while the last is still flying, best score saved in this browser.
+// and slumps when it misses. Score 3 in a row and YOU'RE ON FIRE: the ball becomes the Brave Beyond pixel fireball
+// and every basket counts double until a ball misses. 15 balls a round, and the next ball loads while the last is still flying, best score saved in this browser.
 // Instagram, Privacy Policy and the rights line stay under the game, like the other footer games.
 // Pages: set in H.SEL / H.PATHS below (Barba namespace or URL path + .bb-footer). Not on any page yet.
 
@@ -24,6 +25,10 @@
   H.BALLS = 15;          // balls per round
   H.RELOAD = 0.45;       // seconds before the next ball pops into the sling (the last one can still be flying)
   H.SWISH = 2;           // multiplier for a clean shot
+  H.FIRE_AT = 3;         // baskets in a row to catch fire (a nod to the old 90s arcade basketball games)
+  H.FIRE_X = 2;          // points multiplier while on fire
+  // Brave Beyond pixel flame (same as the bricks game). O = ink outline, L = lime flame, V = lavender core
+  H.FLAME = ['.....O.....', '....OLO....', '...OLLO.O..', '...OLLLOLO.', '..OLLLLLLO.', '.OLLLVLLLLO', '.OLLVVLLLLO', 'OLLVVVVLLLO', 'OLLVVVVVLLO', 'OLLVVVVVLLO', '.OLLVVVLLO.', '..OLLLLLO..', '...OOOOO...'];
   var C = { ink: '#212121', lime: '#CCFF00', lav: '#E9DBEC', purps: '#AE9AE4', pink: '#E8CAE9', cream: '#F4E9D6', mint: '#66C9B0' };
   H.C = C;
   // Hoops: x as a share of the width, height above the floor as a share of the play height, points.
@@ -161,7 +166,7 @@
   };
 
   H.reset = function (g) {
-    g.score = 0; g.left = H.BALLS; g.mode = 'ready'; g.overT = 0; g.streak = 0; g.fx = []; g.confetti = []; g.fly = [];
+    g.score = 0; g.left = H.BALLS; g.mode = 'ready'; g.overT = 0; g.streak = 0; g.onFire = false; g.fireMsg = 0; g.fx = []; g.confetti = []; g.fly = []; g.parts = [];
     g.b = null; H.toPouch(g);
   };
 
@@ -216,12 +221,12 @@
   H.scored = function (g, b, h) {
     var swish = !b.touched, pts = h.pts * (swish ? H.SWISH : 1);
     b.scored++; g.streak++;
-    if (g.streak >= 3) pts += 10 * (g.streak - 2);
+    if (g.onFire) pts *= H.FIRE_X;
     g.score += pts; g.flash = 0.5;
     b.mood = 'happy'; b.moodT = 0;
     h.sw = 1;
     g.fx.push({ x: h.x, y: h.y - 28 * g.u, t: 0, text: (swish ? 'SWISH +' : '+') + pts });
-    if (g.streak >= 3) g.fx.push({ x: h.x, y: h.y - 50 * g.u, t: -0.15, text: g.streak + ' IN A ROW' });
+    if (!g.onFire && g.streak >= H.FIRE_AT) { g.onFire = true; g.fireMsg = 2.2; }
     if (!g.rm) for (var i = 0; i < (g.phone ? 10 : 18); i++) {
       var a = -Math.PI / 2 + (Math.random() - 0.5) * 2.2, sp = (180 + Math.random() * 260) * g.u;
       g.confetti.push({ x: h.x, y: h.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, t: 0, c: [C.lime, C.purps, C.pink, C.lav][i % 4], s: (3 + Math.random() * 3) * g.u, rot: Math.random() * 6 });
@@ -235,6 +240,19 @@
     if (g.flash > 0) g.flash -= dt;
     if (g.mT > 0) g.mT -= dt;
     if (g.mode === 'over') g.overT += dt;
+    if (g.fireMsg > 0) g.fireMsg -= dt;
+    // fireball trail: lime and lavender pixel sparks
+    if (g.onFire && !g.rm) {
+      var on = g.fly.concat(g.b ? [g.b] : []);
+      for (var q = 0; q < on.length; q++) if (on[q].fade > 0.5 && Math.random() < (on[q].held ? 0.25 : 0.7)) {
+        var ob = on[q];
+        g.parts.push({ x: ob.x + (Math.random() - 0.5) * g.r, y: ob.y + (Math.random() - 0.5) * g.r, vx: -ob.vx * 0.08 + (Math.random() - 0.5) * 40, vy: -ob.vy * 0.08 - 50 * g.u, t: 0, life: 0.25 + Math.random() * 0.25, c: Math.random() < 0.6 ? C.lime : C.lav, s: Math.max(2, Math.round(2.6 * g.u)) });
+      }
+    }
+    for (var pi = g.parts.length - 1; pi >= 0; pi--) {
+      var pp = g.parts[pi]; pp.t += dt; pp.x += pp.vx * dt; pp.y += pp.vy * dt;
+      if (pp.t > pp.life) g.parts.splice(pi, 1);
+    }
     for (var i = 0; i < g.hoops.length; i++) if (g.hoops[i].sw > 0) g.hoops[i].sw = Math.max(0, g.hoops[i].sw - dt * 1.4);
     // the ball in the sling (or the next one loading)
     var b = g.b;
@@ -263,7 +281,10 @@
       b.rest = onFloor && slow ? b.rest + dt : 0;
       if (b.rest > 0.6 || b.fly > 9) b.fade -= dt * 3.5;     // settles, then fades away
       if (b.fade <= 0) {
-        if (!b.scored) g.streak = 0;
+        if (!b.scored) {
+          g.streak = 0;
+          if (g.onFire) { g.onFire = false; g.fx.push({ x: b.x, y: b.y - 30 * g.u, t: 0, text: 'FIRE\u2019S OUT' }); }
+        }
         g.fly.splice(j, 1);
       }
     }
@@ -463,6 +484,7 @@
     var x = g.ctx, r = g.r * (b.held ? (0.4 + 0.6 * easeBack(b.pop)) : 1);
     var sp = Math.hypot(b.vx, b.vy);
     x.save(); x.translate(b.x, b.y);
+    if (g.onFire) H.drawFlame(g, b, r, sp);
     // stretch along the flight path, squash on impact
     if (!b.held && sp > 200) {
       var st = 1 + Math.min(0.12, sp / 9000), a = Math.atan2(b.vy, b.vx);
@@ -473,6 +495,19 @@
     }
     if (b.sq > 0) { x.rotate(b.sqa); x.scale(1 - b.sq, 1 + b.sq * 0.8); x.rotate(-b.sqa); }
     H.drawGuy(x, r, b.mood, g.clock, b.pull || 0);
+    x.restore();
+  };
+  // the Brave Beyond pixel flame wrapped round the ball, trailing behind it and flickering
+  H.drawFlame = function (g, b, r, sp) {
+    var x = g.ctx, rows = H.FLAME, w = rows[0].length, h = rows.length, P = Math.max(2, Math.round(r / 3.6));
+    var flip = Math.floor(g.clock * 12) % 2, grow = 1 + Math.sin(g.clock * 23) * 0.06;
+    var a = (!b.held && sp > 60) ? Math.atan2(-b.vy, -b.vx) + Math.PI / 2 : 0;   // tip points away from travel
+    x.save(); x.rotate(a); x.scale(1, grow);
+    var ox = -w * P / 2, oy = -h * P + r * 1.05, col = { O: C.ink, L: C.lime, V: C.lav };
+    for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) {
+      var ch = rows[j][flip ? w - 1 - i : i];
+      if (col[ch]) { x.fillStyle = col[ch]; x.fillRect(Math.round(ox + i * P), Math.round(oy + j * P), P, P); }
+    }
     x.restore();
   };
   function easeBack(t) { var c = 1.9; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); }
@@ -494,6 +529,7 @@
       if (i < g.left) { x.fillStyle = C.lime; x.fill(); }
       x.lineWidth = 1.5; x.strokeStyle = C.ink; x.stroke();
     }
+    if (g.onFire && !g.phone && Math.floor(g.clock * 6) % 2) { x.textAlign = 'left'; x.fillStyle = C.lime; x.font = '700 ' + g.fs + 'px ' + g.font; x.fillText('ON FIRE x' + H.FIRE_X, pad + sw + H.BALLS * g.fs * 0.8 + g.fs, g.hy); }
     x.textAlign = 'right'; x.fillStyle = C.ink; x.font = '500 ' + g.fs + 'px ' + g.font;
     x.fillText('BEST ' + g.best, W - pad, g.hy);
     // floor rule
@@ -512,6 +548,21 @@
       x.fillStyle = c.c; x.fillRect(-c.s / 2, -c.s / 4, c.s, c.s / 2); x.restore();
     }
     x.globalAlpha = 1;
+    // fire sparks
+    for (i = 0; i < g.parts.length; i++) {
+      var q = g.parts[i]; x.globalAlpha = Math.max(0, 1 - q.t / q.life); x.fillStyle = q.c;
+      x.fillRect(Math.round(q.x), Math.round(q.y), q.s, q.s);
+    }
+    x.globalAlpha = 1;
+    // YOU'RE ON FIRE! slams in, holds, then fades
+    if (g.fireMsg > 0) {
+      var e = 2.2 - g.fireMsg, sc = e < 0.18 ? 1.6 - (e / 0.18) * 0.6 : 1, big = Math.round(Math.min(g.fs * 3.4, W / 9));
+      x.save(); x.translate(W / 2, g.top + (g.floorY - g.top) * 0.3); x.scale(sc, sc);
+      x.globalAlpha = g.fireMsg < 0.4 ? g.fireMsg / 0.4 : 1;
+      x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = C.lime;
+      x.font = '700 ' + big + 'px ' + g.font; x.fillText('YOU\u2019RE ON FIRE!', 0, 0);
+      x.restore(); x.globalAlpha = 1; x.textBaseline = 'alphabetic';
+    }
     // score pop-ups
     x.textAlign = 'center'; x.font = '700 ' + Math.round(g.fs * 1.25) + 'px ' + g.font;
     for (i = 0; i < g.fx.length; i++) {
@@ -568,7 +619,7 @@
     var g = { st: st, cv: cv, ctx: cv.getContext('2d'), W: 0, best: best, clock: 0, fx: [], confetti: [], streak: 0, flash: 0, snap: 0, mT: 0, mx: 0, my: 0,
       rm: window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches,
       font: getComputedStyle(document.body).fontFamily || 'sans-serif',
-      fly: [], reload: 0, b: null };
+      fly: [], parts: [], reload: 0, b: null };
     H.size(g); H.reset(g); H.input(g);
     var raf = 0, last = performance.now(), dead = false;
     var ro = window.ResizeObserver ? new ResizeObserver(function () { H.size(g); }) : null;
