@@ -44,8 +44,13 @@
   };
   H.theme = function (g) {
     if (g.frame) return H.THEMES[g.frame.theme] || H.THEMES.green;
+    if (g.themeName) return H.THEMES[g.themeName] || H.THEMES.green;
     var bg = '', el = g.st.parentNode;
-    try { bg = getComputedStyle(el).backgroundColor; } catch (e) {}
+    while (el && el !== document.documentElement) {   // first painted background behind the footer
+      try { bg = getComputedStyle(el).backgroundColor; } catch (e) { bg = ''; }
+      if (bg && bg !== 'transparent' && !/rgba\(.*,\s*0\)$/.test(bg)) break;
+      el = el.parentElement;
+    }
     return /174,\s*154,\s*228/.test(bg) ? H.THEMES.purple : H.THEMES.green;
   };
   // Hoops: x as a share of the width, height above the floor as a share of the play height, points.
@@ -707,10 +712,10 @@
     var cs = document.querySelectorAll('[data-barba="container"]'), c = cs[cs.length - 1];
     return (c && c.querySelector('.bb-footer')) || document.querySelector('.bb-footer');
   }
-  H.mount = function () {
+  H.mount = function (f0, theme) {
     if (H.g) { H.g.stop(); H.g = null; }
-    var f = footer();
-    if (!f) return;
+    var f = f0 || footer();
+    if (!f) return false;
     f.classList.add('bbhp-on');
     var st = f.querySelector('.bbhp-stage');
     if (!st) { st = document.createElement('div'); st.className = 'bbhp-stage'; st.innerHTML = '<canvas aria-label="Mini game: pull the ball back in the slingshot and fling it into the hoops"></canvas>'; f.insertBefore(st, f.firstChild); }
@@ -719,7 +724,7 @@
     var g = { st: st, cv: cv, ctx: cv.getContext('2d'), W: 0, best: best, clock: 0, fx: [], confetti: [], streak: 0, flash: 0, snap: 0, mT: 0, mx: 0, my: 0,
       rm: window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches,
       font: getComputedStyle(document.body).fontFamily || 'sans-serif',
-      fly: [], parts: [], reload: 0, b: null };
+      fly: [], parts: [], reload: 0, b: null, themeName: theme || null };
     H.size(g); H.reset(g); H.input(g);
     var raf = 0, last = performance.now(), dead = false;
     var ro = window.ResizeObserver ? new ResizeObserver(function () { H.size(g); }) : null;
@@ -735,12 +740,11 @@
     raf = requestAnimationFrame(loop);
     g.stop = function () { dead = true; cancelAnimationFrame(raf); if (ro) ro.disconnect(); };
     H.g = g;
+    return true;
   };
-  H.mount();
-  (function hook() {
-    if (window.BBH_PREVIEW) return;
-    if (!window.barba || !barba.hooks) return setTimeout(hook, 100);
-    barba.hooks.before(function () { if (H.g) { H.g.stop(); H.g = null; } });
-    barba.hooks.after(function () { H.mount(); });
-  })();
+  if (window.BBH_PREVIEW) H.mount();   // the stand-alone preview / recorder page
+  // on the site it's started by the footer arcade (18-footer-arcade.js)
+  (window.BBARCADE = window.BBARCADE || []).push({ id: 'hoops', name: 'Hoops', themes: ['green', 'purple'],
+    ns: [], paths: H.PATHS, cls: 'bbhp-on', stage: '.bbhp-stage',
+    mount: function (f, t) { return H.mount(f, t); }, stop: function () { if (H.g) { H.g.stop(); H.g = null; } } });
 })();

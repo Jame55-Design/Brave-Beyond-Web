@@ -1,0 +1,107 @@
+// BB Footer Arcade: every footer can play every footer game.
+// Each game file registers itself on window.BBARCADE ({ id, name, themes, ns, paths, cls, stage, mount, stop })
+// instead of starting itself. This file starts the right one for the page, and puts a small NEXT GAME pill at the
+// top of the footer that swaps to the next game. Only games with a colour set for this footer's background are in
+// the rotation (green footer: green sets, Purps footer: purple sets), and each game is started in that colour set.
+// Only one game runs at a time; switching stops the old one, removes its canvas and hands the footer back.
+// Page defaults: a game whose ns / paths list this page starts there (invaders on home and goodies, bricks on
+// services, cats on contact). Every other page keeps the logo with footer hearts until PLAY A GAME is pressed.
+
+(function () {
+  var A = window.BBA = window.BBA || {};
+  var s = document.createElement('style');
+  s.textContent =
+    '.bbarc-bar{order:-1;align-self:center;display:flex;justify-content:center;margin:0 0 1.2vw;position:relative;z-index:2}' +
+    '.bbarc-btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:.6em;background:#212121;color:#F4F4F4;' +
+      'font-family:inherit;font-weight:500;font-size:11px;line-height:1;letter-spacing:.06em;text-transform:uppercase;padding:7px 11px;border-radius:3px;' +
+      '-webkit-user-select:none;user-select:none;transition:color .15s}' +
+    '.bbarc-btn:hover{color:#CCFF00}' +
+    '.bbarc-btn:focus-visible{outline:2px solid #CCFF00;outline-offset:2px}' +
+    '.bbarc-btn .bbarc-ar{display:inline-block;transition:transform .2s}' +
+    '.bbarc-btn:hover .bbarc-ar{transform:translateX(3px)}' +
+    '@media (max-width:479px){.bbarc-bar{margin:0 0 12px}}' +
+    '@media (prefers-reduced-motion:reduce){.bbarc-btn,.bbarc-btn .bbarc-ar{transition:none}}';
+  document.head.appendChild(s);
+
+  A.PURPS = [174, 154, 228];
+
+  function container() { var cs = document.querySelectorAll('[data-barba="container"]'); return cs[cs.length - 1] || null; }
+  function footer() { var c = container(); return (c && c.querySelector('.bb-footer')) || document.querySelector('.bb-footer'); }
+
+  // footer colour: the first painted background behind it, Purps -> 'purple', anything else -> 'green'
+  A.theme = function (f) {
+    var el = f, bg = '';
+    while (el && el !== document.documentElement) {
+      bg = getComputedStyle(el).backgroundColor;
+      if (bg && bg !== 'transparent' && !/rgba\(.*,\s*0\)$/.test(bg)) break;
+      el = el.parentElement;
+    }
+    var m = (bg || '').match(/\d+/g) || [];
+    if (m.length < 3) return 'green';
+    var d = Math.abs(m[0] - A.PURPS[0]) + Math.abs(m[1] - A.PURPS[1]) + Math.abs(m[2] - A.PURPS[2]);
+    return d < 60 ? 'purple' : 'green';
+  };
+
+  A.games = function (t) { return (window.BBARCADE || []).filter(function (g) { return g.themes.indexOf(t) >= 0; }); };
+
+  A.pageGame = function (t) {
+    var c = container(), ns = c ? c.getAttribute('data-barba-namespace') : '';
+    var path = location.pathname.replace(/\/+$/, '') || '/';
+    return A.games(t).filter(function (g) { return (ns && g.ns.indexOf(ns) >= 0) || (g.paths || []).indexOf(path) >= 0; })[0] || null;
+  };
+
+  A.clear = function () {
+    var g = A.cur, f = A.f;
+    A.cur = null;
+    if (!g) return;
+    try { g.stop(); } catch (e) {}
+    if (f) { f.classList.remove(g.cls); var st = f.querySelector(g.stage); if (st) st.remove(); }
+  };
+
+  A.start = function (g) {
+    A.clear();
+    if (!g || !A.f) return false;
+    var ok = false;
+    try { ok = g.mount(A.f, A.t) !== false; } catch (e) { console.error('[bb] arcade', g.id, e); }
+    if (!ok) { A.cur = g; A.clear(); return false; }
+    A.cur = g;
+    A.label();
+    return true;
+  };
+
+  A.next = function () {
+    var list = A.games(A.t), i = A.cur ? list.indexOf(A.cur) : -1;
+    for (var k = 1; k <= list.length; k++) if (A.start(list[(i + k) % list.length])) return;
+  };
+
+  A.label = function () {
+    if (!A.btn) return;
+    A.btn.firstChild.textContent = A.cur ? 'Next game' : 'Play a game';
+    A.btn.setAttribute('aria-label', A.cur ? 'Switch footer game (playing ' + A.cur.name + ')' : 'Play a footer game');
+  };
+
+  A.mount = function () {
+    A.clear();
+    if (A.bar && A.bar.parentNode) A.bar.parentNode.removeChild(A.bar);
+    A.f = footer();
+    if (!A.f) return;
+    A.t = A.theme(A.f);
+    if (!A.games(A.t).length) return;
+    var bar = A.bar = document.createElement('div');
+    bar.className = 'bbarc-bar';
+    bar.innerHTML = '<button type="button" class="bbarc-btn"><span>Next game</span><span class="bbarc-ar" aria-hidden="true">→</span></button>';
+    A.btn = bar.firstChild;
+    A.btn.addEventListener('click', function () { A.next(); });
+    A.f.insertBefore(bar, A.f.firstChild);
+    A.start(A.pageGame(A.t));
+    A.label();
+  };
+
+  A.mount();
+  (function hook() {
+    if (window.BBA_PREVIEW) return;
+    if (!window.barba || !barba.hooks) return setTimeout(hook, 100);
+    barba.hooks.before(function () { A.clear(); });
+    barba.hooks.after(function () { A.mount(); });
+  })();
+})();

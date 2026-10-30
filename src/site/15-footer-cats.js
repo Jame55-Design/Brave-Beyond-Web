@@ -170,7 +170,7 @@
     var P = g.P;
     g.s = K.CW * P / 0.92; g.bw = K.BW * P; g.bh = K.BH * P;
     g.floorY = Math.floor((g.H - 6) / P) * P - P; g.rimY = g.floorY - g.bh;
-    g.theme = K.theme(g); g.box = K.BOXES[g.theme]; g.pool = K.POOLS[g.theme];
+    g.theme = g.forceTheme || K.theme(g); g.box = K.BOXES[g.theme]; g.pool = K.POOLS[g.theme];
     K.buildLogo(g);
     var old = g.holes || []; g.holes = [];
     for (var i = 0; i < 4; i++) {
@@ -425,10 +425,10 @@
     var cs = document.querySelectorAll('[data-barba="container"]'), c = cs[cs.length - 1];
     return (c && c.querySelector('.bb-footer')) || document.querySelector('.bb-footer');
   }
-  K.mount = function () {
+  K.mount = function (f0, theme) {
     if (K.g) { K.g.stop(); K.g = null; }
-    var f = footer();
-    if (!f || !(window.BBB && window.BBB.LOGO)) return;
+    var f = f0 || footer();
+    if (!f || !(window.BBB && window.BBB.LOGO)) return false;
     f.classList.add('bbcat-on');
     var st = f.querySelector('.bbcat-stage');
     if (!st) { st = document.createElement('div'); st.className = 'bbcat-stage'; st.innerHTML = '<canvas aria-label="Mini game: feed the cats a fish biscuit as they pop out of the boxes"></canvas>'; f.insertBefore(st, f.firstChild); }
@@ -437,6 +437,8 @@
     var g = { st: st, cv: cv, ctx: cv.getContext('2d'), W: 0, overT: 0, best: best, score: 0, time: K.ROUND, combo: 0, mode: 'idle', spawnT: 0.6, clock: 0, fx: [], pop: 0,
       rm: window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches,
       font: getComputedStyle(document.body).fontFamily || 'sans-serif' };
+    // the arcade passes the footer colour: 'lilac' is the Purps-footer set, 'purple' the green-footer set
+    if (theme) g.forceTheme = theme === 'purple' ? 'lilac' : 'purple';
     K.input(g); K.size(g);
     cv.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') document.body.classList.add('bbcat-hover'); });
     cv.addEventListener('pointerleave', function () { document.body.classList.remove('bbcat-hover'); });
@@ -456,11 +458,10 @@
     raf = requestAnimationFrame(loop);
     g.stop = function () { document.body.classList.remove('bbcat-hover'); dead = true; cancelAnimationFrame(raf); if (ro) ro.disconnect(); };
     K.g = g;
+    return true;
   };
-  K.mount();
-  (function hook() {
-    if (!window.barba || !barba.hooks) return setTimeout(hook, 100);
-    barba.hooks.before(function () { if (K.g) { K.g.stop(); K.g = null; } });
-    barba.hooks.after(function () { K.mount(); });
-  })();
+  // started by the footer arcade (18-footer-arcade.js)
+  (window.BBARCADE = window.BBARCADE || []).push({ id: 'cats', name: 'Cat Noms', themes: ['green', 'purple'],
+    ns: ['contact'], paths: K.PATHS, cls: 'bbcat-on', stage: '.bbcat-stage',
+    mount: function (f, t) { return K.mount(f, t); }, stop: function () { if (K.g) { K.g.stop(); K.g = null; } } });
 })();

@@ -22,7 +22,13 @@
   document.head.appendChild(s);
   B.SEL = '[data-barba-namespace="services"] .bb-footer';
   B.PATHS = ['/services'];
-  B.COL = { ink: '#212121', lime: '#CCFF00', lav: '#E9DBEC', purp: '#AE9AE4' };
+  // Colour sets. On the Purps footer anything Purps swaps to Main Green so it doesn't vanish, and the ball goes ink.
+  B.PALS = {
+    green:  { ink: '#212121', lime: '#CCFF00', lav: '#E9DBEC', purp: '#AE9AE4', ball: '#E9DBEC' },
+    purple: { ink: '#212121', lime: '#CCFF00', lav: '#E9DBEC', purp: '#07A87E', ball: '#212121' }
+  };
+  B.COL = B.PALS.green;
+  B.setTheme = function (t) { B.COL = B.PALS[t] || B.PALS.green; };
   B.LIVES = 5;
   B.WIN_BONUS = 100000;
   B.PU_EVERY = 10;     // seconds between power-up drops (give or take 1.5s)
@@ -178,7 +184,8 @@
   // Build once per pixel size: a body layer, one layer per head, and each tongue's pixels (tied to its head)
   B.hydraParts = function (px) {
     B._hp = B._hp || {};
-    if (B._hp[px]) return B._hp[px];
+    var key = px + B.COL.purp;   // one cache per pixel size and colour set
+    if (B._hp[key]) return B._hp[key];
     var K = B.COL, map = { X: K.ink, P: K.purp, V: '#E8CAE9', E: K.lime }, w = B.HYDRA[0].length, h = B.HYDRA.length;
     function layer() { var c = document.createElement('canvas'), x = c.getContext && c.getContext('2d'); if (!x) return null; c.width = w * px; c.height = h * px; return { c: c, x: x }; }
     var body = layer(), heads = [layer(), layer(), layer()], tongues = [[], [], []], tHead = [0, 0, 0], list = [];
@@ -199,7 +206,7 @@
     });
     var parts = { body: body, heads: heads, tongues: tongues, tHead: tHead, list: list };
     if (body) list.forEach(function (p) { p[0].x.fillStyle = p[3]; p[0].x.fillRect(p[1] * px, p[2] * px, px, px); });
-    return (B._hp[px] = parts);
+    return (B._hp[key] = parts);
   };
   B.drawHydra = function (x, left, top, px, t, off) {
     var P = B.hydraParts(px), o = [];
@@ -499,7 +506,7 @@
     x.fillStyle = K.ink; x.fillRect(Math.round(p.x - p.w / 2), g.py, Math.round(p.w), 8);
     x.globalAlpha = 1;
     // balls: lavender; lime fireballs while FIRE is on (flickers in its last second)
-    x.fillStyle = g.thru > 0 && (g.thru > 1 || Math.floor(g.t * 10) % 2) ? K.lime : K.lav;
+    x.fillStyle = g.thru > 0 && (g.thru > 1 || Math.floor(g.t * 10) % 2) ? K.lime : K.ball;
     g.balls.forEach(function (b) { x.fillRect(Math.round(b.x - b.r), Math.round(b.y - b.r), b.r * 2, b.r * 2); });
     // falling power-ups: pixel flame (flickers) and pixel hydra (heads bob)
     var ppx = B.puPx(g), fr = Math.floor(g.t * 6) % 2;
@@ -571,12 +578,15 @@
     cv.addEventListener('pointercancel', function () { drag = null; });
     // stop sideways drags on the game from swiping the page; vertical scrolling still works (touch-action: pan-y)
     cv.addEventListener('touchmove', function (e) { if (drag && drag.moved) e.preventDefault(); }, { passive: false });
-    window.addEventListener('keydown', function (e) {
+    // keys live on window, so they're removed again when the game stops (the footer arcade swaps games)
+    g.kd = function (e) {
       if (!g.vis || !g.focus) return;
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); g.moved = true; }
       g.keys[e.key] = true; if (e.key === ' ') B.launch(g);
-    });
-    window.addEventListener('keyup', function (e) { g.keys[e.key] = false; });
+    };
+    g.ku = function (e) { g.keys[e.key] = false; };
+    window.addEventListener('keydown', g.kd);
+    window.addEventListener('keyup', g.ku);
     cv.addEventListener('pointerenter', function () { g.focus = true; });
   };
 })();
@@ -592,10 +602,11 @@
     var cs = document.querySelectorAll('[data-barba="container"]'), c = cs[cs.length - 1];
     return (c && c.querySelector('.bb-footer')) || document.querySelector('.bb-footer');
   }
-  B.mount = function () {
+  B.mount = function (f0, theme) {
     if (B.g) { B.g.stop(); B.g = null; }
-    var f = footer();
-    if (!f) return;
+    var f = f0 || footer();
+    if (!f) return false;
+    B.setTheme(theme);
     f.classList.add('bbbrk-on');
     var st = f.querySelector('.bbbrk-stage');
     if (!st) { st = document.createElement('div'); st.className = 'bbbrk-stage'; st.innerHTML = '<canvas aria-label="Mini game: break the Brave Beyond logo brick by brick"></canvas>'; f.insertBefore(st, f.firstChild); }
@@ -618,13 +629,15 @@
       raf = requestAnimationFrame(loop);
     }
     raf = requestAnimationFrame(loop);
-    g.stop = function () { dead = true; cancelAnimationFrame(raf); if (ro) ro.disconnect(); };
+    g.stop = function () {
+      dead = true; g.vis = g.focus = false; cancelAnimationFrame(raf); if (ro) ro.disconnect();
+      window.removeEventListener('keydown', g.kd); window.removeEventListener('keyup', g.ku);
+    };
     B.g = g;
+    return true;
   };
-  B.mount();
-  (function hook() {
-    if (!window.barba || !barba.hooks) return setTimeout(hook, 100);
-    barba.hooks.before(function () { if (B.g) { B.g.stop(); B.g = null; } });
-    barba.hooks.after(function () { B.mount(); });
-  })();
+  // started by the footer arcade (18-footer-arcade.js)
+  (window.BBARCADE = window.BBARCADE || []).push({ id: 'bricks', name: 'Bricks', themes: ['green', 'purple'],
+    ns: ['services'], paths: B.PATHS, cls: 'bbbrk-on', stage: '.bbbrk-stage',
+    mount: function (f, t) { return B.mount(f, t); }, stop: function () { if (B.g) { B.g.stop(); B.g = null; } } });
 })();

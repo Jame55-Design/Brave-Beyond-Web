@@ -20,11 +20,22 @@
     '@media (max-width:479px){.bb-footer.bbinv-on{padding-top:32px}.bb-footer .bbft-ig{margin:16px 0 0}}';
   document.head.appendChild(s);
   B.SEL = '[data-barba-namespace="home"] .bb-footer,[data-barba-namespace="goodies"] .bb-footer';
-  B.COL = { g: '#07A87E', ink: '#212121', lime: '#CCFF00', lav: '#E9DBEC', pts: '#CCFF00', purp: '#AE9AE4' };
+  // Colour sets. On the Purps footer the middle row of blobs and anything Purps go Main Green, and blob bullets go ink.
+  B.PALS = {
+    green:  { g: '#07A87E', ink: '#212121', lime: '#CCFF00', lav: '#E9DBEC', pts: '#CCFF00', purp: '#AE9AE4', ebul: '#E9DBEC' },
+    purple: { g: '#07A87E', ink: '#212121', lime: '#CCFF00', lav: '#E9DBEC', pts: '#CCFF00', purp: '#07A87E', ebul: '#212121' }
+  };
+  B.ROWS = { green: ['#CCFF00', '#D0C6E9', '#E9DBEC'], purple: ['#CCFF00', '#07A87E', '#E9DBEC'] };
+  B.COL = B.PALS.green;
+  B.setTheme = function (t) {
+    t = B.PALS[t] ? t : 'green';
+    B.COL = B.PALS[t]; B.ROWC = B.ROWS[t];
+    if (window.BBB && window.BBB.setTheme) window.BBB.setTheme(t);   // the final-wave hydras come from the bricks game
+  };
   B.WAVES = 5;          // blob waves before the hydra wave
   B.HYDRA_HP = 3;       // hits per hydra
   B.WIN_BONUS = 100000;
-  B.ROWC = ['#CCFF00', '#D0C6E9', '#E9DBEC']; // alien colour per row, top to bottom
+  B.ROWC = B.ROWS.green; // alien colour per row, top to bottom
   B.BLOB = [
     // Cyclops blob: one big eye, wobbly frill
     ['..XXXX..', '.XXXXXX.', 'XXX..XXX', 'XXXXXXXX', 'XXXXXXXX', 'X.X.X.X.'],
@@ -412,7 +423,7 @@
     x.globalAlpha = 1;
     x.fillStyle = K.ink; g.b.forEach(function (b) { x.fillRect(Math.round(b.x - 1), Math.round(b.y), 3, 12); });
     g.e.forEach(function (e) {
-      x.fillStyle = e.hy ? K.lime : K.lav; var z = Math.floor(e.y / 6) % 2 ? 2 : -2; x.fillRect(Math.round(e.x - 1 + z), Math.round(e.y - 10), 3, 5); x.fillRect(Math.round(e.x - 1 - z), Math.round(e.y - 5), 3, 5); });
+      x.fillStyle = e.hy ? K.lime : K.ebul; var z = Math.floor(e.y / 6) % 2 ? 2 : -2; x.fillRect(Math.round(e.x - 1 + z), Math.round(e.y - 10), 3, 5); x.fillRect(Math.round(e.x - 1 - z), Math.round(e.y - 5), 3, 5); });
     g.parts.forEach(function (p) { x.globalAlpha = Math.max(0, Math.min(1, p.life * 1.6)); x.fillStyle = p.c; x.fillRect(Math.round(p.x), Math.round(p.y), p.s, p.s); });
     x.globalAlpha = 1;
     // won: flickering pixel flames, behind everything below the HUD
@@ -460,12 +471,13 @@
 // mount on the home and free goodies footers (also after Barba page transitions)
 (function () {
   var B = window.BBI = window.BBI || {};
-  B.mount = function () {
+  B.mount = function (f0, theme) {
     if (B.g) { B.g.stop(); B.g = null; }
-    var f = document.querySelector(B.SEL);
-    if (!f) return;
+    var f = f0 || document.querySelector(B.SEL);
+    if (!f) return false;
     var paths = [].map.call(f.querySelectorAll('.bbft-lm .bbft-l'), function (p) { return p.getAttribute('data-bb-d') || p.getAttribute('d'); });
-    if (!paths.length) return;
+    if (!paths.length) return false;
+    B.setTheme(theme);
     f.classList.add('bbinv-on');
     var st = f.querySelector('.bbinv-stage');
     if (!st) { st = document.createElement('div'); st.className = 'bbinv-stage'; st.innerHTML = '<canvas aria-label="Mini game: shoot the invaders through the Brave Beyond logo"></canvas>'; f.insertBefore(st, f.firstChild); }
@@ -490,14 +502,10 @@
     raf = requestAnimationFrame(loop);
     g.stop = function () { dead = true; cancelAnimationFrame(raf); if (ro) ro.disconnect(); };
     B.g = g;
+    return true;
   };
-  (function wait(n) {
-    if ((B.part || 0) < 5) return n < 100 ? setTimeout(function () { wait(n + 1); }, 50) : 0;
-    B.mount();
-    (function hook() {
-      if (!window.barba || !barba.hooks) return setTimeout(hook, 100);
-      barba.hooks.before(function () { if (B.g) { B.g.stop(); B.g = null; } });
-      barba.hooks.after(function () { B.mount(); });
-    })();
-  })(0);
+  // started by the footer arcade (18-footer-arcade.js)
+  (window.BBARCADE = window.BBARCADE || []).push({ id: 'invaders', name: 'Invaders', themes: ['green', 'purple'],
+    ns: ['home', 'goodies'], paths: [], cls: 'bbinv-on', stage: '.bbinv-stage',
+    mount: function (f, t) { return B.mount(f, t); }, stop: function () { if (B.g) { B.g.stop(); B.g = null; } } });
 })();
