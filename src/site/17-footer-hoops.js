@@ -579,11 +579,15 @@
     if (g.onFire && !g.phone && Math.floor(g.clock * 6) % 2) { x.textAlign = 'left'; x.fillStyle = g.pal.fire; x.font = '700 ' + g.fs + 'px ' + g.font; x.fillText('ON FIRE x' + H.FIRE_X, pad + sw + H.BALLS * g.fs * 0.8 + g.fs, g.hy); }
     x.textAlign = 'right'; x.fillStyle = C.ink; x.font = '500 ' + g.fs + 'px ' + g.font;
     x.fillText('BEST ' + g.best, W - pad, g.hy);
+    if (g.frame) H.drawNav(g);   // the logo sits back with the score bar, so the ball flies in front of it
     // floor rule
     x.fillStyle = C.ink; x.fillRect(0, g.floorY, W, 1.5);
     for (i = 0; i < g.hoops.length; i++) H.drawHoopBack(g, g.hoops[i]);
     H.drawSling(g, 'back');
     H.drawAim(g);
+    for (i = 0; i < g.fly.length; i++) { x.globalAlpha = Math.max(0, g.fly[i].fade); H.drawBall(g, g.fly[i]); }
+    x.globalAlpha = 1;
+    if (g.b) H.drawBall(g, g.b);
     H.drawSling(g, 'front');
     for (i = 0; i < g.hoops.length; i++) H.drawHoopFront(g, g.hoops[i]);
     // confetti
@@ -622,11 +626,6 @@
       else x.fillText('Pull the ball back and let go', g.sx - 30 * u, g.forkY - 48 * u + Math.sin(g.clock * 3) * 2 * u);
     }
     if (g.mode === 'over') H.drawOver(g);
-    if (g.frame) H.drawNav(g);
-    // the ball always flies in front of everything: hoops, nets, sling, text and the logo
-    for (i = 0; i < g.fly.length; i++) { x.globalAlpha = Math.max(0, g.fly[i].fade); H.drawBall(g, g.fly[i]); }
-    x.globalAlpha = 1;
-    if (g.b) H.drawBall(g, g.b);
     if (g.frame) H.drawCursor(g);
   };
 
