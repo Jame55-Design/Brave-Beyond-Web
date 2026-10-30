@@ -62,10 +62,11 @@
     { fx: 0.73, fh: 0.38, pts: 30 },
     { fx: 0.89, fh: 0.68, pts: 50, bob: 1 }
   ];
-  H.HOOPS_PHONE = [
-    { fx: 0.50, fh: 0.30, pts: 10 },
-    { fx: 0.70, fh: 0.58, pts: 20 },
-    { fx: 0.88, fh: 0.36, pts: 30, bob: 1 }
+  H.HOOPS_PHONE = [   // phones get all four too, packed closer together
+    { fx: 0.40, fh: 0.26, pts: 10 },
+    { fx: 0.56, fh: 0.56, pts: 20 },
+    { fx: 0.72, fh: 0.34, pts: 30 },
+    { fx: 0.88, fh: 0.66, pts: 50, bob: 1 }
   ];
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
@@ -106,7 +107,7 @@
     var list = g.phone ? H.HOOPS_PHONE : H.HOOPS, playH = band - Math.round(10 * u) - g.top - 70 * u;
     var old = g.hoops || [];
     g.hoops = list.map(function (d, i) {
-      var rw = g.r * (g.phone ? 3.4 : 3.2);
+      var rw = g.r * (g.phone ? 3.1 : 3.2);
       return { pts: d.pts, bob: d.bob, x: Math.round(W * d.fx), baseY: g.floorY - 40 * u - d.fh * playH, y: 0, rw: rw, rr: 3.5 * u, sw: old[i] ? old[i].sw : 0 };
     });
     // keep the far hoop's backboard inside the canvas
@@ -536,7 +537,7 @@
   };
 
   H.drawBall = function (g, b) {
-    var x = g.ctx, r = g.r * (b.held ? (0.4 + 0.6 * easeBack(b.pop)) : 1);
+    var x = g.ctx, r = g.r * (b.held ? Math.max(0.2, 0.4 + 0.6 * easeBack(clamp(b.pop, 0, 1))) : 1);
     var sp = Math.hypot(b.vx, b.vy);
     x.save(); x.translate(b.x, b.y);
     if (g.onFire) H.drawFlame(g, b, r, sp);
@@ -757,7 +758,7 @@
     if (ro) ro.observe(st);
     function loop(now) {
       if (dead || !cv.isConnected) return;
-      var dt = Math.min(.05, (now - last) / 1000); last = now;
+      var dt = Math.max(0, Math.min(.05, (now - last) / 1000)); last = now;   // never negative (a frame stamp can predate mount)
       if (!g.W) H.size(g);
       var r = st.getBoundingClientRect(), vh = window.innerHeight || document.documentElement.clientHeight;
       if (g.W && r.bottom > 0 && r.top < vh && r.width > 0) { H.syncSky(g, f); H.update(g, dt); H.draw(g); }

@@ -449,7 +449,7 @@
     if (ro) ro.observe(st);
     function loop(now) {
       if (dead || !cv.isConnected) return;
-      var dt = Math.min(.05, (now - last) / 1000); last = now;
+      var dt = Math.max(0, Math.min(.05, (now - last) / 1000)); last = now;   // never negative (a frame stamp can predate mount)
       if (!g.W) K.size(g);
       var r = st.getBoundingClientRect(), vh = window.innerHeight || document.documentElement.clientHeight;
       if (g.W && r.bottom > 0 && r.top < vh && r.width > 0) { K.update(g, dt); K.draw(g); }
