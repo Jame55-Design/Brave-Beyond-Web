@@ -53,8 +53,9 @@
   var saved = read();
   if (saved && saved.analytics) loadGA();
 
+  // z-index 99990 keeps the banner just under the custom cursor (.custom-cursor is 99999)
   var css = ''
-    + '.bbcc{position:fixed;z-index:99999;left:16px;bottom:16px;width:min(400px,calc(100vw - 32px));background:#212121;color:#F5F1EA;'
+    + '.bbcc{position:fixed;z-index:99990;left:16px;bottom:16px;width:min(400px,calc(100vw - 32px));background:#212121;color:#F5F1EA;'
     + 'border-radius:14px;padding:22px 22px 18px;font-family:"Space Grotesk",system-ui,sans-serif;font-size:14px;line-height:1.5;'
     + 'transform:translateY(16px);opacity:0;transition:transform .3s ease,opacity .3s ease}'
     + '.bbcc.is-in{transform:none;opacity:1}'
