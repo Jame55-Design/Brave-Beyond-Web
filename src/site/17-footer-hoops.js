@@ -4,7 +4,7 @@
 // they are (10 / 20 / 30 / 50); the top hoop bobs up and down. Clean shots (no rim or board) are a SWISH x2.
 // The ball is the Sling footer's character (lime, solid ink face, stick arms) with legs added: it hangs loose,
 // grits its teeth as you pull, flails its arms and legs in flight, goes dizzy off the rim, cheers when it scores
-// and slumps when it misses. 10 balls a round, best score saved in this browser.
+// and slumps when it misses. 15 balls a round, and the next ball loads while the last is still flying, best score saved in this browser.
 // Instagram, Privacy Policy and the rights line stay under the game, like the other footer games.
 // Pages: set in H.SEL / H.PATHS below (Barba namespace or URL path + .bb-footer). Not on any page yet.
 
@@ -21,7 +21,8 @@
   document.head.appendChild(s);
   H.SEL = '[data-barba-namespace="hoops"] .bb-footer';
   H.PATHS = [];
-  H.BALLS = 10;          // balls per round
+  H.BALLS = 15;          // balls per round
+  H.RELOAD = 0.45;       // seconds before the next ball pops into the sling (the last one can still be flying)
   H.SWISH = 2;           // multiplier for a clean shot
   var C = { ink: '#212121', lime: '#CCFF00', lav: '#E9DBEC', purps: '#AE9AE4', pink: '#E8CAE9', cream: '#F4E9D6', mint: '#66C9B0' };
   H.C = C;
@@ -71,7 +72,7 @@
     var last = g.hoops[g.hoops.length - 1], edge = last.x + last.rw / 2 + 14 * u;
     if (edge > W - 6) last.x -= edge - (W - 6);
     H.placeHoops(g);
-    if (g.b && g.b.held) H.toPouch(g, true);
+    if (g.b) H.toPouch(g, true);
   };
 
   H.placeHoops = function (g) {
@@ -84,8 +85,11 @@
     }
   };
 
+  H.newBall = function () {
+    return { x: 0, y: 0, vx: 0, vy: 0, held: true, pull: 0, mood: 'idle', moodT: 0, blink: 2, sq: 0, sqa: 0, pop: 0, hit: {}, fade: 1 };
+  };
   H.toPouch = function (g, keep) {
-    var b = g.b;
+    var b = g.b = g.b || H.newBall();
     b.x = g.pouch.x; b.y = g.pouch.y; b.vx = b.vy = 0; b.held = true; b.drag = false;
     b.rest = 0; b.fly = 0; b.touched = false; b.scored = 0; b.hit = {};
     if (!keep) { b.pop = 0; b.mood = 'idle'; b.moodT = 0; }
@@ -95,7 +99,7 @@
   H.input = function (g) {
     var cv = g.cv;
     function pt(e) { var r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
-    function nearBall(p) { var b = g.b; return b.held && Math.hypot(p.x - b.x, p.y - b.y) < Math.max(g.r * 2.6, 34); }
+    function nearBall(p) { var b = g.b; return !!b && Math.hypot(p.x - b.x, p.y - b.y) < Math.max(g.r * 2.6, 34); }
     // stop the page scrolling only when a touch starts on the ball, so the footer still scrolls on phones
     cv.addEventListener('touchstart', function (e) {
       var t = e.touches[0]; if (!t) return;
@@ -109,22 +113,23 @@
         return;
       }
       if (!nearBall(p)) return;
+      if (!g.b) return;
       g.b.drag = true; g.pid = e.pointerId; g.hint = 0;
       try { cv.setPointerCapture(e.pointerId); } catch (x) {}
       H.aim(g, p);
     });
     cv.addEventListener('pointermove', function (e) {
       var p = pt(e); g.mx = p.x; g.my = p.y; g.mT = 2.5;
-      if (g.b.drag && e.pointerId === g.pid) H.aim(g, p);
+      if (g.b && g.b.drag && e.pointerId === g.pid) H.aim(g, p);
       else cv.style.cursor = g.mode === 'over' ? (g.btn && p.x > g.btn.x && p.x < g.btn.x + g.btn.w && p.y > g.btn.y && p.y < g.btn.y + g.btn.h ? 'pointer' : '') : nearBall(p) ? 'grab' : '';
     });
     function up(e) {
-      if (!g.b.drag || e.pointerId !== g.pid) return;
+      if (!g.b || !g.b.drag || e.pointerId !== g.pid) return;
       g.b.drag = false; cv.style.cursor = '';
       H.release(g);
     }
     cv.addEventListener('pointerup', up);
-    cv.addEventListener('pointercancel', function (e) { if (g.b.drag && e.pointerId === g.pid) { g.b.drag = false; H.toPouch(g, true); } });
+    cv.addEventListener('pointercancel', function (e) { if (g.b && g.b.drag && e.pointerId === g.pid) { g.b.drag = false; H.toPouch(g, true); } });
   };
 
   H.aim = function (g, p) {
@@ -148,14 +153,16 @@
     var b = g.b;
     if (b.pull < 0.14) { H.toPouch(g, true); return; }
     var v = H.launchV(g);
-    b.held = false; b.vx = v.vx; b.vy = v.vy; b.fly = 0;
+    b.held = false; b.drag = false; b.vx = v.vx; b.vy = v.vy; b.fly = 0; b.pop = 1;
     b.mood = 'wheee'; b.moodT = 0;
+    g.fly.push(b); g.b = null; g.reload = H.RELOAD;
+    while (g.fly.length > 6) g.fly.shift();
     g.left--; g.mode = 'play'; g.snap = 0.35;
   };
 
   H.reset = function (g) {
-    g.score = 0; g.left = H.BALLS; g.mode = 'ready'; g.overT = 0; g.streak = 0; g.fx = []; g.confetti = [];
-    H.toPouch(g);
+    g.score = 0; g.left = H.BALLS; g.mode = 'ready'; g.overT = 0; g.streak = 0; g.fx = []; g.confetti = []; g.fly = [];
+    g.b = null; H.toPouch(g);
   };
 
   // ---- physics -----------------------------------------------------------------------------------
@@ -168,8 +175,8 @@
     if (what !== 'floor') { b.touched = true; if (hard > 140) { b.mood = 'dizzy'; b.moodT = 0; } }
   }
 
-  H.step = function (g, dt) {
-    var b = g.b, r = g.r, u = g.u;
+  H.step = function (g, b, dt) {
+    var r = g.r, u = g.u;
     b.vy += g.G * dt;
     var px = b.x, py = b.y;
     b.x += b.vx * dt; b.y += b.vy * dt;
@@ -201,13 +208,13 @@
       if (dd < mm && dd > 0) { var bx = ddx / dd, by = ddy / dd; b.x = h.bx + bx * mm; b.y = cy + by * mm; bump(g, b, bx, by, 0.5, 'board'); }
       // scored: centre crosses the rim line going down, between the rim ends
       if (!b.hit[i] && b.vy > 0 && py < h.y && b.y >= h.y && b.x > h.lx + h.rr && b.x < h.rx - h.rr) {
-        b.hit[i] = 1; H.scored(g, h);
+        b.hit[i] = 1; H.scored(g, b, h);
       }
     }
   };
 
-  H.scored = function (g, h) {
-    var b = g.b, swish = !b.touched, pts = h.pts * (swish ? H.SWISH : 1);
+  H.scored = function (g, b, h) {
+    var swish = !b.touched, pts = h.pts * (swish ? H.SWISH : 1);
     b.scored++; g.streak++;
     if (g.streak >= 3) pts += 10 * (g.streak - 2);
     g.score += pts; g.flash = 0.5;
@@ -224,20 +231,29 @@
   H.update = function (g, dt) {
     g.clock += dt;
     H.placeHoops(g);
-    var b = g.b;
-    b.moodT += dt; b.blink -= dt; b.pop = Math.min(1, b.pop + dt * 4);
-    if (b.blink < -0.12) b.blink = 2 + Math.random() * 2.5;
-    if (b.sq > 0) b.sq = Math.max(0, b.sq - dt * 1.6);
     if (g.snap > 0) g.snap -= dt;
     if (g.flash > 0) g.flash -= dt;
     if (g.mT > 0) g.mT -= dt;
     if (g.mode === 'over') g.overT += dt;
     for (var i = 0; i < g.hoops.length; i++) if (g.hoops[i].sw > 0) g.hoops[i].sw = Math.max(0, g.hoops[i].sw - dt * 1.4);
-    if (!b.held) {
+    // the ball in the sling (or the next one loading)
+    var b = g.b;
+    if (b) {
+      b.moodT += dt; b.pop = Math.min(1, b.pop + dt * 4);
+      if (b.drag) b.mood = 'grit';
+      else if (b.mood !== 'idle' && b.moodT > 0.4) { b.mood = 'idle'; b.moodT = 0; }
+    } else if (g.left > 0 && g.mode !== 'over') {
+      g.reload -= dt;
+      if (g.reload <= 0) H.toPouch(g);
+    }
+    // balls in flight
+    for (var j = g.fly.length - 1; j >= 0; j--) {
+      b = g.fly[j];
+      b.moodT += dt;
+      if (b.sq > 0) b.sq = Math.max(0, b.sq - dt * 1.6);
       var n = 4, h = dt / n;
-      for (var k = 0; k < n; k++) H.step(g, h);
+      for (var k = 0; k < n; k++) H.step(g, b, h);
       b.fly += dt;
-      // moods in the air
       if (b.mood === 'wheee' && b.vy > 260 && b.moodT > 0.25) { b.mood = 'scared'; b.moodT = 0; }
       if ((b.mood === 'dizzy' && b.moodT > 0.7) || (b.mood === 'happy' && b.moodT > 1.3)) {
         if (b.y < g.floorY - g.r * 1.75 - 2) { b.mood = b.vy > 200 ? 'scared' : 'wheee'; b.moodT = 0; }
@@ -245,15 +261,16 @@
       }
       var onFloor = b.y >= g.floorY - g.r * 1.75 - 0.5, slow = Math.hypot(b.vx, b.vy) < 30 * g.u;
       b.rest = onFloor && slow ? b.rest + dt : 0;
-      if (b.rest > 0.9 || b.fly > 9) {
+      if (b.rest > 0.6 || b.fly > 9) b.fade -= dt * 3.5;     // settles, then fades away
+      if (b.fade <= 0) {
         if (!b.scored) g.streak = 0;
-        if (g.left <= 0) { g.mode = 'over'; g.overT = 0; g.newBest = g.score > g.best; if (g.newBest) { g.best = g.score; try { localStorage.setItem('bbHoopsBest', g.score); } catch (e) {} } }
-        H.toPouch(g);
-        if (g.mode !== 'over') g.mode = 'aim';
+        g.fly.splice(j, 1);
       }
-    } else if (b.drag) {
-      b.mood = 'grit';
-    } else if (b.mood !== 'idle' && b.moodT > 0.4) { b.mood = 'idle'; b.moodT = 0; }
+    }
+    if (g.mode !== 'over' && g.mode !== 'ready' && g.left <= 0 && !g.b && !g.fly.length) {
+      g.mode = 'over'; g.overT = 0; g.newBest = g.score > g.best;
+      if (g.newBest) { g.best = g.score; try { localStorage.setItem('bbHoopsBest', g.score); } catch (e) {} }
+    }
     for (i = g.fx.length - 1; i >= 0; i--) { g.fx[i].t += dt; if (g.fx[i].t > 1.1) g.fx.splice(i, 1); }
     for (i = g.confetti.length - 1; i >= 0; i--) {
       var c = g.confetti[i]; c.t += dt; c.vy += g.G * 0.6 * dt; c.x += c.vx * dt; c.y += c.vy * dt; c.vx *= Math.pow(0.4, dt); c.rot += dt * 8;
@@ -319,12 +336,12 @@
       x.beginPath(); x.moveTo(sx, g.floorY); x.lineTo(sx, fy + 46 * u); x.stroke();
       x.lineWidth = 9 * u;
       x.beginPath(); x.moveTo(sx, fy + 50 * u); x.quadraticCurveTo(sx, fy + 26 * u, rx, fy - 6 * u); x.stroke();
-      if (b.held) band(rx, fy - 2 * u);
+      if (b) band(rx, fy - 2 * u);
       x.lineCap = 'butt';
     } else {
       x.strokeStyle = C.ink; x.lineCap = 'round'; x.lineWidth = 9 * u;
       x.beginPath(); x.moveTo(sx, fy + 50 * u); x.quadraticCurveTo(sx, fy + 26 * u, lx, fy - 6 * u); x.stroke();
-      if (b.held) band(lx, fy - 2 * u);
+      if (b) band(lx, fy - 2 * u);
       else if (g.snap > 0) {
         // bands twang back after release
         var k = g.snap / 0.35, wob = Math.sin(k * 30) * k * 12 * u;
@@ -346,7 +363,7 @@
   };
 
   H.drawAim = function (g) {
-    var b = g.b; if (!b.drag || b.pull < 0.14) return;
+    var b = g.b; if (!b || !b.drag || b.pull < 0.14) return;
     var v = H.launchV(g); if (!v) return;
     var x = g.ctx, px = b.x, py = b.y, vx = v.vx, vy = v.vy, dt = 0.055;
     x.fillStyle = C.lav;
@@ -417,16 +434,11 @@
       if (mood === 'idle') x.arc(0, r * 0.12, r * 0.28, 0.25 * P, 0.75 * P);     // easy smile
       else x.arc(0, r * 0.62, r * 0.26, 1.25 * P, 1.75 * P);                     // frown
       x.stroke();
-    } else if (mood === 'grit') {                // screwed-up eyes > < and gritted teeth
-      for (s = -1; s <= 1; s += 2) {
-        x.beginPath(); x.moveTo(s * ex - s * er, ey - er); x.lineTo(s * ex + s * er * 0.6, ey); x.lineTo(s * ex - s * er, ey + er); x.stroke();
-      }
-      var mw = r * (0.55 + 0.2 * k), mh = r * 0.26, my = r * 0.38;
-      x.beginPath(); if (x.roundRect) x.roundRect(-mw / 2, my - mh / 2, mw, mh, mh * 0.3); else x.rect(-mw / 2, my - mh / 2, mw, mh); x.fill();
-      x.strokeStyle = C.lime; x.lineWidth = Math.max(1, lw * 0.6);
-      x.beginPath(); x.moveTo(-mw / 2 + lw, my); x.lineTo(mw / 2 - lw, my);
-      for (var q = 1; q < 4; q++) { var tx = -mw / 2 + mw * q / 4; x.moveTo(tx, my - mh / 2 + lw * 0.4); x.lineTo(tx, my + mh / 2 - lw * 0.4); }
-      x.stroke();
+    } else if (mood === 'grit') {                // focused: eyes narrow, a cheeky smirk that grows as you pull
+      var nar = 0.55 - 0.2 * k;
+      for (s = -1; s <= 1; s += 2) { x.beginPath(); x.ellipse(s * ex, ey + er * 0.2, er, er * nar, 0, 0, P * 2); x.fill(); }
+      var sr = r * (0.2 + 0.1 * k);
+      x.beginPath(); x.arc(r * 0.06, r * 0.22, sr, 0.15 * P, 0.7 * P); x.stroke();
     } else if (mood === 'wheee') {               // wide-eyed with a big open grin
       for (s = -1; s <= 1; s += 2) { x.beginPath(); x.arc(s * ex, ey - r * 0.04, er * 1.15, 0, P * 2); x.fill(); }
       x.beginPath(); x.moveTo(-r * 0.38, r * 0.14); x.arc(0, r * 0.14, r * 0.38, 0, P); x.closePath(); x.fill();
@@ -447,8 +459,8 @@
     x.lineCap = 'butt'; x.lineJoin = 'miter';
   };
 
-  H.drawBall = function (g) {
-    var x = g.ctx, b = g.b, r = g.r * (b.held ? (0.4 + 0.6 * easeBack(b.pop)) : 1);
+  H.drawBall = function (g, b) {
+    var x = g.ctx, r = g.r * (b.held ? (0.4 + 0.6 * easeBack(b.pop)) : 1);
     var sp = Math.hypot(b.vx, b.vy);
     x.save(); x.translate(b.x, b.y);
     // stretch along the flight path, squash on impact
@@ -478,7 +490,7 @@
     var sw = x.measureText('SCORE 0000').width + g.fs * 1.5;
     x.font = '700 ' + g.fs + 'px ' + g.font;
     for (i = 0; i < H.BALLS; i++) {
-      x.beginPath(); x.arc(pad + sw + i * g.fs * 0.95, g.hy - g.fs * 0.34, g.fs * 0.3, 0, Math.PI * 2);
+      x.beginPath(); x.arc(pad + sw + i * g.fs * 0.8, g.hy - g.fs * 0.34, g.fs * 0.26, 0, Math.PI * 2);
       if (i < g.left) { x.fillStyle = C.lime; x.fill(); }
       x.lineWidth = 1.5; x.strokeStyle = C.ink; x.stroke();
     }
@@ -489,7 +501,9 @@
     for (i = 0; i < g.hoops.length; i++) H.drawHoopBack(g, g.hoops[i]);
     H.drawSling(g, 'back');
     H.drawAim(g);
-    H.drawBall(g);
+    for (i = 0; i < g.fly.length; i++) { x.globalAlpha = Math.max(0, g.fly[i].fade); H.drawBall(g, g.fly[i]); }
+    x.globalAlpha = 1;
+    if (g.b) H.drawBall(g, g.b);
     H.drawSling(g, 'front');
     for (i = 0; i < g.hoops.length; i++) H.drawHoopFront(g, g.hoops[i]);
     // confetti
@@ -507,7 +521,7 @@
     }
     x.globalAlpha = 1;
     // first-time hint
-    if (g.mode === 'ready' && g.b.held && !g.b.drag) {
+    if (g.mode === 'ready' && g.b && !g.b.drag) {
       x.textAlign = 'left'; x.font = '500 ' + g.fs + 'px ' + g.font; x.fillStyle = C.ink;
       if (g.phone) x.fillText('Drag the ball back, let go', Math.max(16, Math.round(W * 0.05)), g.top + g.fs * 0.6);
       else x.fillText('Pull the ball back and let go', g.sx - 30 * u, g.forkY - 48 * u + Math.sin(g.clock * 3) * 2 * u);
@@ -554,7 +568,7 @@
     var g = { st: st, cv: cv, ctx: cv.getContext('2d'), W: 0, best: best, clock: 0, fx: [], confetti: [], streak: 0, flash: 0, snap: 0, mT: 0, mx: 0, my: 0,
       rm: window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches,
       font: getComputedStyle(document.body).fontFamily || 'sans-serif',
-      b: { x: 0, y: 0, vx: 0, vy: 0, held: true, pull: 0, mood: 'idle', moodT: 0, blink: 2, sq: 0, sqa: 0, pop: 1, hit: {} } };
+      fly: [], reload: 0, b: null };
     H.size(g); H.reset(g); H.input(g);
     var raf = 0, last = performance.now(), dead = false;
     var ro = window.ResizeObserver ? new ResizeObserver(function () { H.size(g); }) : null;
