@@ -79,6 +79,13 @@
     for (var k = 1; k <= list.length; k++) if (A.start(list[(i + k) % list.length])) return;
   };
 
+  // after a press the squiggle fill clears again (the squiggle script only clears on mouseout, which never comes on
+  // phones or while the pointer is still on the button); it refills the next time the pointer comes over it
+  A.unfill = function () {
+    if (!A.btn) return;
+    try { A.btn.dispatchEvent(new MouseEvent('mouseout', { bubbles: true, relatedTarget: document.body })); } catch (e) {}
+  };
+
   A.label = function () {
     if (!A.btn) return;
     A.btn.querySelector('.bbarc-tx').textContent = A.cur ? 'Next game' : 'Play a game';
@@ -97,7 +104,7 @@
     var star = function (c) { return '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="' + c + '" d="M12 0C12.7 6.5 17.5 11.3 24 12C17.5 12.7 12.7 17.5 12 24C11.3 17.5 6.5 12.7 0 12C6.5 11.3 11.3 6.5 12 0Z"/></svg>'; };
     bar.innerHTML = '<button type="button" class="bbarc-btn" data-squiggle><span class="bbarc-ic bbarc-ic-l">' + star('#F4F4F4') + '</span><span class="bbarc-tx">Next game</span><span class="bbarc-ic bbarc-ic-r">' + star('#212121') + '</span></button>';
     A.btn = bar.firstChild;
-    A.btn.addEventListener('click', function () { A.next(); });
+    A.btn.addEventListener('click', function () { A.next(); A.unfill(); });
     A.f.insertBefore(bar, A.f.firstChild);
     A.start(A.pageGame(A.t));
     A.label();
