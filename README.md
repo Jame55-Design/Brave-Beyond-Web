@@ -20,8 +20,8 @@ Always pin to a commit or tag, never `@main`. jsDelivr caches `@main` for up to 
 
 Current release:
 - `bb-head.js`: commit `8442db0a0ee7a60fbbd35b4e21bc393ce35d42e0` (BB Head Bundle 1.0.11, live: cookie consent banner (z-index 99990, just under the custom cursor) + Google Analytics G-GGV0NKKR7H + "Cookie Settings" footer pill, all in src/head/09-cookie-consent.js). Previous head 1.0.10 (`e55272c`). Blog links hidden in all menus via src/head/08-hide-blog-links.js; delete that file to bring Blog back)
-- `bb-site.js`: commit `b0672bb47f158c1997a3c1909d7f62787466d062` (BB Site Bundle 1.10.0, live: footer arcade (src/site/18-footer-arcade.js): NEXT GAME squiggle button on every footer swaps between invaders, bricks, cats and the new hoops game (17), each in a green or purple colour set to match the footer)
-- Previous live: head 1.0.7 (`a913f9e`), site 1.9.7 (`19a8355`)
+- `bb-site.js`: commit `e722a29f93f12b2c49b0499f6f81053fac2753c1` (BB Site Bundle 1.10.1, live: footer arcade (src/site/18-footer-arcade.js): NEXT GAME squiggle button on every footer swaps between invaders, bricks, cats and hoops (17), each in a green or purple colour set; hoops shows all four hoops on phones; game loops never step with a negative frame time)
+- Previous live: site 1.10.0 (`b0672bb`), site 1.9.7 (`19a8355`)
 
 ## Rolling back
 
