@@ -5,7 +5,8 @@
 // The ball is the Sling footer's character (lime, solid ink face, stick arms) with legs added: it hangs loose,
 // grits its teeth as you pull, flails its arms and legs in flight, goes dizzy off the rim, cheers when it scores
 // and slumps when it misses. Score 3 in a row and YOU'RE ON FIRE: the ball becomes the Brave Beyond pixel fireball
-// and every basket counts double until a ball misses. 20 balls a round, and the next ball loads while the last is still flying, best score saved in this browser.
+// and every basket counts double until a ball misses. Sink 3 more while on fire and he gets a pair of pixel
+// high-tops (Purps, lavender, lime laces) for the rest of the round. 20 balls a round, and the next ball loads while the last is still flying, best score saved in this browser.
 // Instagram, Privacy Policy and the rights line stay under the game, like the other footer games.
 // Pages: set in H.SEL / H.PATHS below (Barba namespace or URL path + .bb-footer). Not on any page yet.
 
@@ -27,6 +28,10 @@
   H.SWISH = 2;           // multiplier for a clean shot
   H.FIRE_AT = 3;         // baskets in a row to catch fire (a nod to the old 90s arcade basketball games)
   H.FIRE_X = 2;          // points multiplier while on fire
+  H.KICKS_AT = 3;        // baskets made while already on fire to earn the high-tops (kept for the rest of the round)
+  // Pixel basketball high-top (our own design), facing right with the heel at the left.
+  // O = ink outline/sole, P = Purps collar, L = lime laces, V = lavender upper
+  H.KICKS = ['OOO....', 'OPPO...', 'OVPO...', 'OVLLOO.', 'OVVVVVO', 'OOOOOOO'];
   // Brave Beyond pixel flame (same as the bricks game). O = ink outline, L = lime flame, V = lavender core
   H.FLAME = ['.....O.....', '....OLO....', '...OLLO.O..', '...OLLLOLO.', '..OLLLLLLO.', '.OLLLVLLLLO', '.OLLVVLLLLO', 'OLLVVVVLLLO', 'OLLVVVVVLLO', 'OLLVVVVVLLO', '.OLLVVVLLO.', '..OLLLLLO..', '...OOOOO...'];
   var C = { ink: '#212121', lime: '#CCFF00', lav: '#E9DBEC', purps: '#AE9AE4', pink: '#E8CAE9', cream: '#F4E9D6', mint: '#66C9B0' };
@@ -166,7 +171,7 @@
   };
 
   H.reset = function (g) {
-    g.score = 0; g.left = H.BALLS; g.mode = 'ready'; g.overT = 0; g.streak = 0; g.onFire = false; g.fireMsg = 0; g.fx = []; g.confetti = []; g.fly = []; g.parts = [];
+    g.score = 0; g.left = H.BALLS; g.mode = 'ready'; g.overT = 0; g.streak = 0; g.onFire = false; g.fireMsg = 0; g.fireRun = 0; g.kicks = false; g.fx = []; g.confetti = []; g.fly = []; g.parts = [];
     g.b = null; H.toPouch(g);
   };
 
@@ -186,7 +191,7 @@
     var px = b.x, py = b.y;
     b.x += b.vx * dt; b.y += b.vy * dt;
     // floor: it lands on its feet
-    var foot = r * 1.75;
+    var foot = r * 1.95;
     if (b.y > g.floorY - foot) {
       b.y = g.floorY - foot;
       if (b.vy > 0) {
@@ -226,7 +231,10 @@
     b.mood = 'happy'; b.moodT = 0;
     h.sw = 1;
     g.fx.push({ x: h.x, y: h.y - 28 * g.u, t: 0, text: (swish ? 'SWISH +' : '+') + pts });
-    if (!g.onFire && g.streak >= H.FIRE_AT) { g.onFire = true; g.fireMsg = 2.2; }
+    if (g.onFire && !g.kicks && ++g.fireRun >= H.KICKS_AT) {
+      g.kicks = true; g.fx.push({ x: h.x, y: h.y - 52 * g.u, t: -0.2, text: 'FRESH KICKS!' });
+    }
+    if (!g.onFire && g.streak >= H.FIRE_AT) { g.onFire = true; g.fireMsg = 2.2; g.fireRun = 0; }
     if (!g.rm) for (var i = 0; i < (g.phone ? 10 : 18); i++) {
       var a = -Math.PI / 2 + (Math.random() - 0.5) * 2.2, sp = (180 + Math.random() * 260) * g.u;
       g.confetti.push({ x: h.x, y: h.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, t: 0, c: [C.lime, C.purps, C.pink, C.lav][i % 4], s: (3 + Math.random() * 3) * g.u, rot: Math.random() * 6 });
@@ -274,10 +282,10 @@
       b.fly += dt;
       if (b.mood === 'wheee' && b.vy > 260 && b.moodT > 0.25) { b.mood = 'scared'; b.moodT = 0; }
       if ((b.mood === 'dizzy' && b.moodT > 0.7) || (b.mood === 'happy' && b.moodT > 1.3)) {
-        if (b.y < g.floorY - g.r * 1.75 - 2) { b.mood = b.vy > 200 ? 'scared' : 'wheee'; b.moodT = 0; }
+        if (b.y < g.floorY - g.r * 1.95 - 2) { b.mood = b.vy > 200 ? 'scared' : 'wheee'; b.moodT = 0; }
         else if (b.mood === 'dizzy') { b.mood = b.scored ? 'happy' : 'sad'; b.moodT = 0; }
       }
-      var onFloor = b.y >= g.floorY - g.r * 1.75 - 0.5, slow = Math.hypot(b.vx, b.vy) < 30 * g.u;
+      var onFloor = b.y >= g.floorY - g.r * 1.95 - 0.5, slow = Math.hypot(b.vx, b.vy) < 30 * g.u;
       b.rest = onFloor && slow ? b.rest + dt : 0;
       if (b.rest > 0.6 || b.fly > 9) b.fade -= dt * 3.5;     // settles, then fades away
       if (b.fade <= 0) {
@@ -399,20 +407,21 @@
 
   // The ball as a character, same style as the Sling footer's: lime ball, solid ink face, stick arms and legs.
   // Drawn in ball space (radius r). k = how hard it's being pulled (0-1).
-  H.drawGuy = function (x, r, mood, t, k) {
+  H.drawGuy = function (x, r, mood, t, k, kicks) {
     var lw = Math.max(1.6, r * 0.13);
     x.lineCap = 'round'; x.lineJoin = 'round'; x.strokeStyle = C.ink; x.fillStyle = C.ink; x.lineWidth = lw;
+    var feet = [];
     function limb(sx, sy, a1, a2, L1, L2) {   // joint -> elbow/knee -> hand/foot, angles in radians
-      var ex = sx + Math.cos(a1) * L1, ey = sy + Math.sin(a1) * L1;
-      x.beginPath(); x.moveTo(sx, sy); x.lineTo(ex, ey); x.lineTo(ex + Math.cos(a2) * L2, ey + Math.sin(a2) * L2); x.stroke();
+      var ex = sx + Math.cos(a1) * L1, ey = sy + Math.sin(a1) * L1, fx = ex + Math.cos(a2) * L2, fy = ey + Math.sin(a2) * L2;
+      x.beginPath(); x.moveTo(sx, sy); x.lineTo(ex, ey); x.lineTo(fx, fy); x.stroke();
+      return { x: fx, y: fy };
     }
     function arms(a1, a2, b1, b2) {   // left arm angles, right arm angles (0 = pointing right, PI/2 = down)
       limb(-r * 0.9, r * 0.15, a1, a2, r * 0.6, r * 0.55);
       limb(r * 0.9, r * 0.15, b1, b2, r * 0.6, r * 0.55);
     }
     function legs(a1, a2, b1, b2) {
-      limb(-r * 0.38, r * 0.86, a1, a2, r * 0.5, r * 0.5);
-      limb(r * 0.38, r * 0.86, b1, b2, r * 0.5, r * 0.5);
+      feet = [limb(-r * 0.38, r * 0.86, a1, a2, r * 0.5, r * 0.5), limb(r * 0.38, r * 0.86, b1, b2, r * 0.5, r * 0.5)];
     }
     var P = Math.PI, f, g2, sw;
     // limbs go behind the ball
@@ -442,6 +451,18 @@
       legs(P / 2 + 0.15, P / 2, P / 2 - 0.15, P / 2);
     }
     x.fillStyle = C.lime; x.beginPath(); x.arc(0, 0, r, 0, P * 2); x.fill();
+    // high-tops on the feet, toes pointing outwards
+    if (kicks && feet.length) {
+      var kp = Math.max(1.5, r * 0.12), rows = H.KICKS, kw = rows[0].length, kh = rows.length, col = { O: C.ink, P: C.purps, L: C.lime, V: C.lav };
+      for (var fi = 0; fi < 2; fi++) {
+        var ft = feet[fi], dir = fi ? 1 : -1;
+        for (var ky = 0; ky < kh; ky++) for (var kx = 0; kx < kw; kx++) {
+          var kc = col[rows[ky][kx]]; if (!kc) continue;
+          x.fillStyle = kc;
+          x.fillRect(ft.x + dir * (kx - 1.5) * kp - (dir < 0 ? kp : 0), ft.y + (ky - kh + 1.5) * kp, kp + 0.3, kp + 0.3);
+        }
+      }
+    }
     x.fillStyle = C.ink;
     var ex = r * 0.34, ey = -r * 0.16, er = r * 0.15, s;
     if (mood === 'idle' || mood === 'sad') {     // relaxed, half-closed eyes
@@ -494,7 +515,7 @@
       x.rotate(pa); x.scale(ps, 1 / ps); x.rotate(-pa);
     }
     if (b.sq > 0) { x.rotate(b.sqa); x.scale(1 - b.sq, 1 + b.sq * 0.8); x.rotate(-b.sqa); }
-    H.drawGuy(x, r, b.mood, g.clock, b.pull || 0);
+    H.drawGuy(x, r, b.mood, g.clock, b.pull || 0, g.kicks);
     x.restore();
   };
   // the Brave Beyond pixel flame wrapped round the ball, trailing behind it and flickering
