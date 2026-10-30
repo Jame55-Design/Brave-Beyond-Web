@@ -127,9 +127,39 @@
     setTimeout(function () { b.remove(); }, 300);
   }
 
+
+  // Footer: add a "Cookie settings" pill next to every Privacy Policy pill (works after Barba page swaps too)
+  function addFooterLinks() {
+    document.querySelectorAll('a.bb-tag[href$="privacy-policy"]:not([data-bbcc-done])').forEach(function (a) {
+      if (a.closest('.bbcc')) return;
+      a.setAttribute('data-bbcc-done', '');
+      var cs = getComputedStyle(a);
+      var w = document.createElement('div');
+      w.className = 'bbcc-links';
+      w.style.cssText = 'display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;'
+        + 'order:' + cs.order + ';margin:' + cs.margin + ';align-self:' + cs.alignSelf;
+      a.parentNode.insertBefore(w, a);
+      w.appendChild(a);
+      a.style.margin = '0';
+      var c = a.cloneNode(true);
+      c.setAttribute('href', '#');
+      c.setAttribute('data-cookie-settings', '');
+      c.removeAttribute('data-bbcc-done');
+      c.removeAttribute('id');
+      c.querySelectorAll('.bb-tag-label').forEach(function (l) { l.textContent = 'Cookie Settings'; });
+      w.appendChild(c);
+    });
+  }
+
   function boot() {
     var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
     if (!read()) open(false);
+    addFooterLinks();
+    var queued = false;
+    new MutationObserver(function () {
+      if (queued) return; queued = true;
+      requestAnimationFrame(function () { queued = false; addFooterLinks(); });
+    }).observe(document.body, { childList: true, subtree: true });
     // Any link or button with the attribute data-cookie-settings reopens the banner (e.g. a footer link)
     document.addEventListener('click', function (e) {
       var t = e.target.closest && e.target.closest('[data-cookie-settings]');
