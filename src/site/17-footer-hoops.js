@@ -584,9 +584,6 @@
     for (i = 0; i < g.hoops.length; i++) H.drawHoopBack(g, g.hoops[i]);
     H.drawSling(g, 'back');
     H.drawAim(g);
-    for (i = 0; i < g.fly.length; i++) { x.globalAlpha = Math.max(0, g.fly[i].fade); H.drawBall(g, g.fly[i]); }
-    x.globalAlpha = 1;
-    if (g.b) H.drawBall(g, g.b);
     H.drawSling(g, 'front');
     for (i = 0; i < g.hoops.length; i++) H.drawHoopFront(g, g.hoops[i]);
     // confetti
@@ -625,7 +622,12 @@
       else x.fillText('Pull the ball back and let go', g.sx - 30 * u, g.forkY - 48 * u + Math.sin(g.clock * 3) * 2 * u);
     }
     if (g.mode === 'over') H.drawOver(g);
-    if (g.frame) { H.drawNav(g); H.drawCursor(g); }
+    if (g.frame) H.drawNav(g);
+    // the ball always flies in front of everything: hoops, nets, sling, text and the logo
+    for (i = 0; i < g.fly.length; i++) { x.globalAlpha = Math.max(0, g.fly[i].fade); H.drawBall(g, g.fly[i]); }
+    x.globalAlpha = 1;
+    if (g.b) H.drawBall(g, g.b);
+    if (g.frame) H.drawCursor(g);
   };
 
   // frame mode only: the footer's links row (ink rule, Instagram / Privacy Policy / rights line), like the site
@@ -664,13 +666,14 @@
     x.textBaseline = 'alphabetic';
   };
 
-  // frame mode only: the site's fixed nav (bb monogram with the menu button beside it) and the lime custom cursor
-  H.MONO = window.Path2D ? new Path2D('M1208.72 270.53c-9.68-23.36-33.17-35.49-57.27-43.28-42.8-13.83-90.7-3.98-131.6 13.95-33.79 14.81-63.29 35.38-91.46 59.78l49.47-73.86c17.24-25.74 33.39-51.02 49.07-77.68 9.03-15.36 16.56-30.7 22.6-47.33 13.36-36.8 9.73-78.17-27.77-94.96-51.94-23.26-122.35 15.01-165.76 47.35-30.64 22.82-58.73 47.95-85.14 75.64-41.73 43.75-86.64 99.02-114.22 152.48-2.98 5.77-4.22 11.98-4.06 18.38.26 10.46 8.69 17.98 19.55 16.69 18.87-2.24 44.24-21.34 62.37-32.41 1.15-.49 1.41.11.64 1.27-11.13 15.76-22.27 31.51-33.34 47.32-1.08 1.55-2.17 3.09-3.42 4.51-7.78 8.8-19.37 15.66-28.53 23.03-5.01 4.03-10.02 8.06-15.07 12.05-2.53 1.99-5.06 3.98-7.61 5.94-1.16.9-6.57 3.87-6.84 5.19 6.88-34.08 5.35-68.98-8.83-101.9-10.04-23.3-28.45-39.71-52.55-47.5-42.8-13.83-90.7-3.98-131.6 13.95-33.79 14.81-63.29 35.38-91.46 59.78l49.47-73.86c17.24-25.74 33.39-51.02 49.07-77.68 9.03-15.36 16.56-30.7 22.6-47.33 13.36-36.8 9.73-78.17-27.77-94.96-51.94-23.26-122.35 15.01-165.76 47.35-30.64 22.82-58.73 47.95-85.14 75.64-41.73 43.75-86.64 99.02-114.22 152.48-2.98 5.77-4.22 11.98-4.05 18.38.26 10.46 8.69 17.98 19.55 16.69 18.87-2.24 44.24-21.34 62.37-32.41 1.14-.49 1.41.11.64 1.27l-32.55 46.09-51.35 75.53c-20.91 32.61-39.98 65.42-55.95 100.68-9.72 21.45-17.18 42.74-21.08 65.87-6.24 37.01 4.52 74.16 30.69 100.88 35.02 35.74 90.73 45.05 139.41 41.38 27.61-2.08 53.64-7.3 80.45-14.62 102.68-28.01 206.84-86.27 285.98-158.86 17.36-11 36.62-24.33 55.02-38.02-8.73 19.92-15.44 39.82-19.06 61.32-6.24 37.01 4.52 74.16 30.69 100.88 35.02 35.74 90.73 45.05 139.41 41.38 27.61-2.08 53.64-7.3 80.45-14.62 107.54-29.34 216.74-91.85 297.08-169.27 8.12-7.83 16.12-16.34 23.82-25.43 51.33-54.38 102.37-142.31 63.06-237.15ZM311.36 548.41c-12.79 8.1-31.79 18.09-46.21 17.88-13.24-.19-8.94-19.96-3.17-33.12 19.45-44.39 59.18-88.59 97.33-118.33 18.46-14.39 47.59-33.26 69.59-34.55 6.55-.38 11.37 4.12 11.25 10.56-.32 17.34-11.89 38.73-22.06 53.88-27.99 41.72-64.28 76.79-106.73 103.67ZM990.57 436.82c-27.99 41.72-64.28 76.79-106.73 103.67-12.79 8.1-31.79 18.09-46.21 17.88-13.24-.19-8.94-19.96-3.17-33.12 19.45-44.39 59.18-88.59 97.33-118.33 18.46-14.39 47.59-33.26 69.59-34.55 6.55-.38 11.37 4.12 11.25 10.56-.32 17.34-11.89 38.73-22.06 53.88Z') : null;
+  // frame mode only: a small stacked Brave Beyond logo centred at the top (paths from BBB.LOGO, as in the bricks game)
+  H.LOGO_W = 92;   // css px wide
   H.drawNav = function (g) {
-    var x = g.ctx, mw = 81, mh = 48, cx = g.W / 2;
-    if (H.MONO) { x.save(); x.translate(cx - mw / 2, 32); x.scale(mw / 1226, mh / 725.64); x.fillStyle = C.ink; x.fill(H.MONO); x.restore(); }
-    var bx = cx + Math.min(142, g.W * 0.2);
-    x.fillStyle = C.ink; x.fillRect(bx, 51, 32, 2); x.fillRect(bx, 58, 32, 2);
+    var B = window.BBB; if (!B || !B.LOGO || !window.Path2D) return;
+    if (!H.logo) H.logo = B.LOGO.map(function (d) { return new Path2D(d); });
+    var x = g.ctx, w = H.LOGO_W, h = w * B.VH / B.VW;
+    x.save(); x.translate(g.W / 2 - w / 2, g.hy + 14); x.scale(w / B.VW, h / B.VH);   // sits just under the score bar
+    x.fillStyle = C.ink; for (var i = 0; i < H.logo.length; i++) x.fill(H.logo[i]); x.restore();
   };
   H.drawCursor = function (g) {
     if (!(g.mT > 0) || !g.hover) return;
