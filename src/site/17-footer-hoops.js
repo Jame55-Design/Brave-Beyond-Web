@@ -63,28 +63,32 @@
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
 
-  // Frame mode (window.BBH_FRAME = { w, h, bg }): the game lays itself out in a fixed-size frame (e.g. a 1080 x 1350
-  // Instagram post), shown scaled to fit, paints its own background and draws the footer links row along the bottom,
-  // so recording the canvas captures exactly what you see. Without it the game sizes itself to the footer as normal.
+  // Frame mode (window.BBH_FRAME = { w, h, css, theme }): renders the footer as it looks on the live site in a browser
+  // window `css` px wide (nav monogram at the top, open sky, the game, then the site's footer links), drawn at w/css
+  // scale so a 1080 x 1350 recording looks like a screen recording of bravebeyond.com. Without it the game sizes
+  // itself to the real footer as normal.
   H.size = function (g) {
     var F = window.BBH_FRAME, rw = Math.round(g.st.getBoundingClientRect().width);
     if (!rw) return;
-    if (F) { g.k = F.w / rw; g.cv.style.height = Math.round(rw * F.h / F.w) + 'px'; if (g.W === F.w && g.H === F.h) return; }
+    var css = F ? (F.css || 720) : rw;
+    if (F) { g.k = css / rw; g.cv.style.height = Math.round(rw * F.h / F.w) + 'px'; if (g.W === css && g.frame === F) return; }
     else { g.k = 1; if (rw === g.W) return; }
-    var W = g.W = F ? F.w : rw;
+    var W = g.W = css;
     g.frame = F || null;
     g.pal = H.theme(g);
-    g.fs = F ? Math.round(W / 40) : Math.max(11, Math.min(16, Math.round(W / 96)));
-    g.hy = Math.round(g.fs * (F ? 2.6 : 1.6));
-    g.phone = !F && W < 560;
-    g.H = F ? F.h : g.phone ? 400 : Math.round(clamp(W * 0.36, 440, 560));
-    var dpr = F ? 1 : Math.min(2, window.devicePixelRatio || 1);
-    g.cv.width = W * dpr; g.cv.height = g.H * dpr; if (!F) g.cv.style.height = g.H + 'px';
+    g.fs = Math.max(11, Math.min(16, Math.round(W / 96)));
+    g.hy = Math.round(g.fs * 1.6);
+    g.phone = W < 560;
+    var band = g.phone ? 400 : Math.round(clamp(W * 0.36, 440, 560));   // the game's height on the site at this width
+    var dpr = F ? F.w / css : Math.min(2, window.devicePixelRatio || 1);
+    g.H = F ? Math.round(F.h / dpr) : band;
+    g.cv.width = Math.round(W * dpr); g.cv.height = Math.round(g.H * dpr); if (!F) g.cv.style.height = g.H + 'px';
     g.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    var u = g.u = F ? 1.2 * W / 1080 : clamp(Math.min(W / 1200, g.H / 440), 0.62, 1.25);
-    g.footH = F ? H.footH(W) : 0;
+    var u = g.u = clamp(Math.min(W / 1200, band / 440), 0.62, 1.25);
+    g.footH = F ? H.FOOT_H : 0;
     g.floorY = g.H - g.footH - Math.round(10 * u);
     g.top = g.hy + g.fs * 2;
+    g.band = band;
     g.r = Math.max(12, 17 * u);
     g.G = 1500 * u;
     g.sx = Math.round(Math.max(56, W * (g.phone ? 0.13 : 0.11)));
@@ -92,7 +96,7 @@
     g.pouch = { x: g.sx, y: g.forkY + 4 * u };
     g.maxPull = 92 * u;
     g.vmax = Math.sqrt(g.G * ((W * 0.98 - g.sx) * 1.3 + (g.floorY - g.top) * 0.8));
-    var list = g.phone ? H.HOOPS_PHONE : H.HOOPS, playH = (g.floorY - g.top - 70 * u) * (F ? 0.8 : 1);
+    var list = g.phone ? H.HOOPS_PHONE : H.HOOPS, playH = band - Math.round(10 * u) - g.top - 70 * u;
     var old = g.hoops || [];
     g.hoops = list.map(function (d, i) {
       var rw = g.r * (g.phone ? 3.4 : 3.2);
@@ -149,7 +153,7 @@
       H.aim(g, p);
     });
     cv.addEventListener('pointermove', function (e) {
-      var p = pt(e); g.mx = p.x; g.my = p.y; g.mT = 2.5;
+      var p = pt(e); g.mx = p.x; g.my = p.y; g.mT = 2.5; g.hover = true;
       if (g.b && g.b.drag && e.pointerId === g.pid) H.aim(g, p);
       else cv.style.cursor = g.mode === 'over' ? (g.btn && p.x > g.btn.x && p.x < g.btn.x + g.btn.w && p.y > g.btn.y && p.y < g.btn.y + g.btn.h ? 'pointer' : '') : nearBall(p) ? 'grab' : '';
     });
@@ -159,6 +163,7 @@
       H.release(g);
     }
     cv.addEventListener('pointerup', up);
+    cv.addEventListener('pointerleave', function () { g.hover = false; });
     cv.addEventListener('pointercancel', function (e) { if (g.b && g.b.drag && e.pointerId === g.pid) { g.b.drag = false; H.toPouch(g, true); } });
   };
 
@@ -620,15 +625,15 @@
       else x.fillText('Pull the ball back and let go', g.sx - 30 * u, g.forkY - 48 * u + Math.sin(g.clock * 3) * 2 * u);
     }
     if (g.mode === 'over') H.drawOver(g);
+    if (g.frame) { H.drawNav(g); H.drawCursor(g); }
   };
 
   // frame mode only: the footer's links row (ink rule, Instagram / Privacy Policy / rights line), like the site
   // frame mode only: the site's footer bottom, drawn as it looks on the live site (centred): round outline Instagram
   // button, PRIVACY POLICY / COOKIE SETTINGS ink pills, then the rights line. Sized like the phone footer at 2x.
-  H.FOOT_K = 2;
-  H.footH = function (W) { var k = H.FOOT_K * W / 1080; return Math.round((44 + 18 + 14 + 9 + 17 + 22 + 16) * k); };
+  H.FOOT_H = 14 + 44 + 18 + 14 + 9 + 17 + 22;   // the site's footer links stack under the game, in css px
   H.drawFoot = function (g) {
-    var x = g.ctx, W = g.W, k = H.FOOT_K * W / 1080, cx = W / 2, y = g.H - g.footH + 16 * k;
+    var x = g.ctx, W = g.W, k = 1, cx = W / 2, y = g.H - g.footH + 14;
     // Instagram button: 44px circle, 1px ink outline, camera glyph
     var R = 22 * k;
     x.strokeStyle = C.ink; x.lineWidth = Math.max(1, 1 * k);
@@ -657,6 +662,20 @@
     x.fillStyle = C.ink; x.font = '500 ' + 12 * k + 'px ' + g.font; x.textAlign = 'center';
     x.fillText('All rights reserved Brave Beyond ' + new Date().getFullYear(), cx, y + 8.5 * k);
     x.textBaseline = 'alphabetic';
+  };
+
+  // frame mode only: the site's fixed nav (bb monogram with the menu button beside it) and the lime custom cursor
+  H.MONO = window.Path2D ? new Path2D('M1208.72 270.53c-9.68-23.36-33.17-35.49-57.27-43.28-42.8-13.83-90.7-3.98-131.6 13.95-33.79 14.81-63.29 35.38-91.46 59.78l49.47-73.86c17.24-25.74 33.39-51.02 49.07-77.68 9.03-15.36 16.56-30.7 22.6-47.33 13.36-36.8 9.73-78.17-27.77-94.96-51.94-23.26-122.35 15.01-165.76 47.35-30.64 22.82-58.73 47.95-85.14 75.64-41.73 43.75-86.64 99.02-114.22 152.48-2.98 5.77-4.22 11.98-4.06 18.38.26 10.46 8.69 17.98 19.55 16.69 18.87-2.24 44.24-21.34 62.37-32.41 1.15-.49 1.41.11.64 1.27-11.13 15.76-22.27 31.51-33.34 47.32-1.08 1.55-2.17 3.09-3.42 4.51-7.78 8.8-19.37 15.66-28.53 23.03-5.01 4.03-10.02 8.06-15.07 12.05-2.53 1.99-5.06 3.98-7.61 5.94-1.16.9-6.57 3.87-6.84 5.19 6.88-34.08 5.35-68.98-8.83-101.9-10.04-23.3-28.45-39.71-52.55-47.5-42.8-13.83-90.7-3.98-131.6 13.95-33.79 14.81-63.29 35.38-91.46 59.78l49.47-73.86c17.24-25.74 33.39-51.02 49.07-77.68 9.03-15.36 16.56-30.7 22.6-47.33 13.36-36.8 9.73-78.17-27.77-94.96-51.94-23.26-122.35 15.01-165.76 47.35-30.64 22.82-58.73 47.95-85.14 75.64-41.73 43.75-86.64 99.02-114.22 152.48-2.98 5.77-4.22 11.98-4.05 18.38.26 10.46 8.69 17.98 19.55 16.69 18.87-2.24 44.24-21.34 62.37-32.41 1.14-.49 1.41.11.64 1.27l-32.55 46.09-51.35 75.53c-20.91 32.61-39.98 65.42-55.95 100.68-9.72 21.45-17.18 42.74-21.08 65.87-6.24 37.01 4.52 74.16 30.69 100.88 35.02 35.74 90.73 45.05 139.41 41.38 27.61-2.08 53.64-7.3 80.45-14.62 102.68-28.01 206.84-86.27 285.98-158.86 17.36-11 36.62-24.33 55.02-38.02-8.73 19.92-15.44 39.82-19.06 61.32-6.24 37.01 4.52 74.16 30.69 100.88 35.02 35.74 90.73 45.05 139.41 41.38 27.61-2.08 53.64-7.3 80.45-14.62 107.54-29.34 216.74-91.85 297.08-169.27 8.12-7.83 16.12-16.34 23.82-25.43 51.33-54.38 102.37-142.31 63.06-237.15ZM311.36 548.41c-12.79 8.1-31.79 18.09-46.21 17.88-13.24-.19-8.94-19.96-3.17-33.12 19.45-44.39 59.18-88.59 97.33-118.33 18.46-14.39 47.59-33.26 69.59-34.55 6.55-.38 11.37 4.12 11.25 10.56-.32 17.34-11.89 38.73-22.06 53.88-27.99 41.72-64.28 76.79-106.73 103.67ZM990.57 436.82c-27.99 41.72-64.28 76.79-106.73 103.67-12.79 8.1-31.79 18.09-46.21 17.88-13.24-.19-8.94-19.96-3.17-33.12 19.45-44.39 59.18-88.59 97.33-118.33 18.46-14.39 47.59-33.26 69.59-34.55 6.55-.38 11.37 4.12 11.25 10.56-.32 17.34-11.89 38.73-22.06 53.88Z') : null;
+  H.drawNav = function (g) {
+    var x = g.ctx, mw = 81, mh = 48, cx = g.W / 2;
+    if (H.MONO) { x.save(); x.translate(cx - mw / 2, 32); x.scale(mw / 1226, mh / 725.64); x.fillStyle = C.ink; x.fill(H.MONO); x.restore(); }
+    var bx = cx + Math.min(142, g.W * 0.2);
+    x.fillStyle = C.ink; x.fillRect(bx, 51, 32, 2); x.fillRect(bx, 58, 32, 2);
+  };
+  H.drawCursor = function (g) {
+    if (!(g.mT > 0) || !g.hover) return;
+    var x = g.ctx; x.fillStyle = C.lime;
+    x.beginPath(); x.arc(g.mx, g.my, 7, 0, Math.PI * 2); x.fill();
   };
 
   H.drawOver = function (g) {
