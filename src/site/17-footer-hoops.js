@@ -198,13 +198,14 @@
     var v = H.launchV(g);
     b.held = false; b.drag = false; b.vx = v.vx; b.vy = v.vy; b.fly = 0; b.pop = 1;
     b.mood = 'wheee'; b.moodT = 0;
+    b.n = ++g.seq; b.res = null; g.queue.push(b);   // results count towards the streak in the order balls were thrown
     g.fly.push(b); g.b = null; g.reload = H.RELOAD;
-    while (g.fly.length > 6) g.fly.shift();
+    while (g.fly.length > 6) { var gone = g.fly.shift(); if (!gone.res) { gone.res = 'miss'; H.resolve(g); } }
     g.left--; g.mode = 'play'; g.snap = 0.35;
   };
 
   H.reset = function (g) {
-    g.score = 0; g.left = H.BALLS; g.mode = 'ready'; g.overT = 0; g.streak = 0; g.onFire = false; g.fireMsg = 0; g.fireRun = 0; g.kicks = false; g.fx = []; g.confetti = []; g.fly = []; g.parts = [];
+    g.score = 0; g.left = H.BALLS; g.mode = 'ready'; g.overT = 0; g.streak = 0; g.onFire = false; g.fireMsg = 0; g.fireRun = 0; g.kicks = false; g.queue = []; g.seq = 0; g.fx = []; g.confetti = []; g.fly = []; g.parts = [];
     g.b = null; H.toPouch(g);
   };
 
@@ -232,6 +233,7 @@
         b.vy = b.vy > 90 ? -b.vy * 0.5 : 0;
         b.vx *= 0.82;
         if (!b.scored && b.mood !== 'dizzy') { b.mood = 'sad'; b.moodT = 0; }
+        if (!b.scored && !b.res && b.n) { b.res = 'miss'; H.resolve(g); }   // a miss counts the moment it lands
       }
       b.vx *= Math.pow(0.35, dt);    // rolling friction
     }
@@ -258,18 +260,34 @@
     }
   };
 
+  // Settle the streak in throw order: a basket only counts towards YOU'RE ON FIRE (and the kicks) once every ball
+  // thrown before it has gone in or missed, so a miss still rolling about can't be skipped by a quick next shot.
+  H.resolve = function (g) {
+    while (g.queue.length && g.queue[0].res) {
+      var b = g.queue.shift();
+      if (b.res === 'hit') {
+        var h = b.resH;
+        g.streak++;
+        if (g.onFire && !g.kicks && ++g.fireRun >= H.KICKS_AT) {
+          g.kicks = true; g.fx.push({ x: h.x, y: h.y - 52 * g.u, t: -0.2, text: 'FRESH KICKS!' });
+        }
+        if (!g.onFire && g.streak >= H.FIRE_AT) { g.onFire = true; g.fireMsg = 2.2; g.fireRun = 0; }
+      } else {
+        g.streak = 0;
+        if (g.onFire) { g.onFire = false; g.fx.push({ x: b.x, y: b.y - 30 * g.u, t: 0, text: 'FIRE\u2019S OUT' }); }
+      }
+    }
+  };
+
   H.scored = function (g, b, h) {
     var swish = !b.touched, pts = h.pts * (swish ? H.SWISH : 1);
-    b.scored++; g.streak++;
+    b.scored++;
     if (g.onFire) pts *= H.FIRE_X;
     g.score += pts; g.flash = 0.5;
     b.mood = 'happy'; b.moodT = 0;
     h.sw = 1;
     g.fx.push({ x: h.x, y: h.y - 28 * g.u, t: 0, text: (swish ? 'SWISH +' : '+') + pts });
-    if (g.onFire && !g.kicks && ++g.fireRun >= H.KICKS_AT) {
-      g.kicks = true; g.fx.push({ x: h.x, y: h.y - 52 * g.u, t: -0.2, text: 'FRESH KICKS!' });
-    }
-    if (!g.onFire && g.streak >= H.FIRE_AT) { g.onFire = true; g.fireMsg = 2.2; g.fireRun = 0; }
+    if (!b.res && b.n) { b.res = 'hit'; b.resH = h; H.resolve(g); }
     if (!g.rm) for (var i = 0; i < (g.phone ? 10 : 18); i++) {
       var a = -Math.PI / 2 + (Math.random() - 0.5) * 2.2, sp = (180 + Math.random() * 260) * g.u;
       g.confetti.push({ x: h.x, y: h.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, t: 0, c: g.pal.conf[i % 4], s: (3 + Math.random() * 3) * g.u, rot: Math.random() * 6 });
@@ -324,10 +342,7 @@
       b.rest = onFloor && slow ? b.rest + dt : 0;
       if (b.rest > 0.6 || b.fly > 9) b.fade -= dt * 3.5;     // settles, then fades away
       if (b.fade <= 0) {
-        if (!b.scored) {
-          g.streak = 0;
-          if (g.onFire) { g.onFire = false; g.fx.push({ x: b.x, y: b.y - 30 * g.u, t: 0, text: 'FIRE\u2019S OUT' }); }
-        }
+        if (!b.res && b.n) { b.res = 'miss'; H.resolve(g); }
         g.fly.splice(j, 1);
       }
     }
@@ -718,13 +733,9 @@
     x.fillText(g.newBest ? 'NEW BEST' : 'OUT OF BALLS', W / 2, cy);
     x.font = '500 ' + Math.round(g.fs * 1.3) + 'px ' + g.font;
     x.fillText(g.score + ' points', W / 2, cy + g.fs * 2);
-    var bw = Math.round(g.fs * 10), bh = Math.round(g.fs * 2.8), bx = Math.round(W / 2 - bw / 2), by = Math.round(cy + g.fs * 3.4);
-    g.btn = { x: bx, y: by, w: bw, h: bh };
-    x.fillStyle = C.ink; x.beginPath();
-    if (x.roundRect) x.roundRect(bx, by, bw, bh, bh / 2); else x.rect(bx, by, bw, bh);
-    x.fill();
-    x.fillStyle = C.lime; x.font = '700 ' + g.fs + 'px ' + g.font; x.textBaseline = 'middle';
-    x.fillText('Play again', W / 2, by + bh / 2 + 1);
+    var bh = W < 480 ? 36 : 40, by = Math.round(cy + g.fs * 3.4);
+    g.btn = window.BBPILL ? window.BBPILL.draw(x, W / 2, by + bh / 2, 'Play again', { W: W, font: g.font, theme: g.pal === H.THEMES.purple ? 'purple' : 'green' })
+      : { x: W / 2 - 60, y: by, w: 120, h: bh };
     x.globalAlpha = 1; x.textBaseline = 'alphabetic';
   };
 

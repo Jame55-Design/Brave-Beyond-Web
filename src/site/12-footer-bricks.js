@@ -469,15 +469,9 @@
   };
   // HUD 'Restore logo' pill, same as the invaders game
   B.pill = function (g, x, right, y) {
-    var txt = g.W < 480 ? 'RESTORE' : 'RESTORE LOGO';
-    x.font = '700 ' + g.fs + 'px ' + g.font;
-    var w = x.measureText(txt).width + g.fs * 1.8, h = Math.round(g.fs * 2.1), px = right - w, py = y - h / 2;
-    g.rb = { x: px, y: py, w: w, h: h };
-    x.globalAlpha = g.alive < g.total ? 1 : .35;
-    x.fillStyle = B.COL.ink; x.beginPath(); if (x.roundRect) x.roundRect(px, py, w, h, h / 2); else x.rect(px, py, w, h); x.fill();
-    x.fillStyle = B.COL.lime; x.textAlign = 'center'; x.fillText(txt, px + w / 2, y + 1);
-    x.globalAlpha = 1;
-    return px;
+    g.rb = window.BBPILL.draw(x, right, y, g.W < 480 ? 'Restore' : 'Restore logo', { size: 'hud', align: 'right', W: g.W, font: g.font,
+      theme: B.COL === B.PALS.purple ? 'purple' : 'green', alpha: g.alive < g.total ? 1 : .35 });
+    return g.rb.x;
   };
   B.draw = function (g) {
     var x = g.ctx, K = B.COL, W = g.W, H = g.H, s = g.s;
@@ -549,10 +543,7 @@
       g.mode === 'over' ? 'GAME OVER · ' + g.score + ' PTS · ' + tap + ' TO PLAY AGAIN' :
       g.mode === 'clear' ? g.score + ' PTS · ' + tap + ' TO PLAY AGAIN' : '';
     if (msg) {
-      var ms = Math.max(12, Math.min(16, Math.round(W / 90))), bh = Math.round(ms * 2.5);
-      x.font = '700 ' + ms + 'px ' + g.font; var tw = x.measureText(msg).width + ms * 2.4, cy = g.py - 44;
-      x.fillStyle = K.ink; x.beginPath(); if (x.roundRect) x.roundRect(W / 2 - tw / 2, cy - bh / 2, tw, bh, bh / 2); else x.rect(W / 2 - tw / 2, cy - bh / 2, tw, bh); x.fill();
-      x.fillStyle = K.lime; x.textAlign = 'center'; x.fillText(msg, W / 2, cy + 1);
+      window.BBPILL.draw(x, W / 2, g.py - 44, msg, { W: W, font: g.font, theme: B.COL === B.PALS.purple ? 'purple' : 'green' });
     }
   };
   B.input = function (g) {

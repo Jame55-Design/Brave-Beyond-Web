@@ -350,12 +350,8 @@
   }
 
   function pill(g, txt, right, y) {
-    var x = g.ctx; x.font = '700 ' + g.fs + 'px ' + g.font;
-    var w = x.measureText(txt).width + g.fs * 1.8, h = Math.round(g.fs * 2.1), px = right - w, py = y - h / 2;
-    x.fillStyle = K.C.ink; x.beginPath(); if (x.roundRect) x.roundRect(px, py, w, h, h / 2); else x.rect(px, py, w, h); x.fill();
-    x.fillStyle = K.C.lime; x.textAlign = 'center'; x.fillText(txt, px + w / 2, y + 1);
-    g.btn = { x: px, y: py, w: w, h: h };
-    return px;
+    g.btn = window.BBPILL.draw(g.ctx, right, y, txt, { size: 'hud', align: 'right', W: g.W, font: g.font, theme: g.theme === 'lilac' ? 'purple' : 'green' });
+    return g.btn.x;
   }
 
   K.draw = function (g) {
@@ -399,19 +395,14 @@
       var top = g.hy + g.fs * 2, bottom = g.rimY - 1.2 * g.s, mid = (top + bottom) / 2;
       var hz = Math.max(4, Math.round(P * 1.6)), sz = Math.max(3, Math.round(P * 0.9));
       var k = g.rm ? 1 : Math.min(1, g.overT / 0.25), hzA = Math.max(2, Math.round(hz * (0.6 + 0.4 * k)));
-      var bh = Math.round(g.fs * 3.6), gap = Math.round(hz * 2.2);
+      var bh = g.W < 480 ? 36 : 40, gap = Math.round(hz * 2.2);   // Play again is the shared main pill (10z-footer-pill.js)
       var y1 = Math.round(mid - (hz * 7 + gap + sz * 7 + gap + bh) / 2 + hz * 3.5);
       text(x, "TIME'S UP", g.W / 2, y1, hzA, K.C.pink);
       var y2 = y1 + hz * 3.5 + gap + sz * 3.5;
       text(x, (g.newBest ? 'NEW BEST ' : 'SCORE ') + g.score, g.W / 2, y2, sz, K.C.ink);
       // big centred Play again button
-      x.font = '700 ' + Math.round(g.fs * 1.6) + 'px ' + g.font;
-      var label = 'Play again', bw = x.measureText(label).width + g.fs * 4, bx = g.W / 2 - bw / 2, by = y2 + sz * 3.5 + gap;
-      x.globalAlpha = g.overT > 0.6 || g.rm ? 1 : 0.5;
-      x.fillStyle = K.C.ink; x.beginPath(); if (x.roundRect) x.roundRect(bx, by, bw, bh, bh / 2); else x.rect(bx, by, bw, bh); x.fill();
-      x.fillStyle = K.C.lime; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(label, g.W / 2, by + bh / 2 + 1);
-      x.globalAlpha = 1;
-      g.btn = { x: bx, y: by, w: bw, h: bh };
+      var by = y2 + sz * 3.5 + gap;
+      g.btn = window.BBPILL.draw(x, g.W / 2, by + bh / 2, 'Play again', { W: g.W, font: g.font, theme: g.theme === 'lilac' ? 'purple' : 'green', alpha: g.overT > 0.6 || g.rm ? 1 : 0.5 });
     }
   };
 })();

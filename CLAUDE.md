@@ -53,4 +53,5 @@ James's studio site. Built in Webflow, with custom JS served from this repo via 
 - Footer colour = first painted background behind the footer: Purps -> 'purple', anything else -> 'green'. Every game has both sets (invaders/bricks: Purps bits swap to Main Green, blob bullets and the bricks ball go ink; cats: 'lilac' set; hoops: H.THEMES).
 - Only one game runs at a time; switching calls stop(), removes the game's stage and its -on class. Bricks removes its window key listeners on stop.
 - Hoops (17) has no page default yet (ns: []). High balls fly on over the button (a .bbhp-sky canvas above the stage) and bounce off the top of the footer. Its stand-alone preview / recorder page sets window.BBH_PREVIEW and window.BBH_FRAME.
-
+- Buttons drawn inside the games all use BBPILL.draw (src/site/10z-footer-pill.js): ink pill, uppercase 600, text centred on cap height; main size matches NEXT GAME (40px / 36px on phones), hud size for score-bar buttons (Restore logo, Play). Light pink text on green footers, lime on Purps.
+- Hoops settles its streak in throw order (H.resolve): a ball counts as a miss the moment it lands unscored, and later baskets can't start YOU'RE ON FIRE until every earlier ball is settled.
