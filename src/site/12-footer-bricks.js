@@ -468,10 +468,11 @@
     if (g.score > g.best) { g.best = g.score; try { localStorage.setItem('bbBricksBest', g.best); } catch (e) {} }
   };
   // HUD 'Restore logo' pill, same as the invaders game
-  B.pill = function (g, x, right, y) {
-    g.rb = window.BBPILL.draw(x, right, y, g.W < 480 ? 'Restore' : 'Restore logo', { size: 'hud', align: 'right', W: g.W, font: g.font,
-      theme: B.COL === B.PALS.purple ? 'purple' : 'green', alpha: g.alive < g.total ? 1 : .35 });
-    return g.rb.x;
+  B.pill = function (g, x, right, y) {   // the shared button (10z-footer-pill.js), small size
+    g.rb = null;
+    var b = window.BBPILL.place(g.st, 'restore', { show: true, size: 'hud', align: 'right', x: right, y: y, text: g.W < 480 ? 'Restore' : 'Restore logo',
+      theme: B.COL === B.PALS.purple ? 'purple' : 'green', enabled: g.alive < g.total, onClick: function () { B.reset(g); } });
+    return right - (b ? b._w : 0);
   };
   B.draw = function (g) {
     var x = g.ctx, K = B.COL, W = g.W, H = g.H, s = g.s;
@@ -538,13 +539,13 @@
     x.font = '500 ' + g.fs + 'px ' + g.font; x.fillStyle = K.ink; x.textAlign = 'right';
     x.fillText('LOGO ' + Math.round(100 * g.alive / g.total) + '%', px - 10, g.hy);
     var tap = g.touch ? 'TAP' : 'CLICK';
-    var msg = g.mode === 'idle' ? (g.touch ? 'SLIDE TO MOVE · TAP TO PLAY' : 'MOVE TO STEER · CLICK TO PLAY') :
-      g.mode === 'serve' ? tap + ' TO LAUNCH' :
-      g.mode === 'over' ? 'GAME OVER · ' + g.score + ' PTS · ' + tap + ' TO PLAY AGAIN' :
-      g.mode === 'clear' ? g.score + ' PTS · ' + tap + ' TO PLAY AGAIN' : '';
-    if (msg) {
-      window.BBPILL.draw(x, W / 2, g.py - 44, msg, { W: W, font: g.font, theme: B.COL === B.PALS.purple ? 'purple' : 'green' });
-    }
+    // instructions are plain text; the only button is Play again (the same one as every other game)
+    var say = g.mode === 'idle' ? (g.touch ? 'Slide to move · tap to play' : 'Move to steer · click to play') :
+      g.mode === 'serve' ? tap + ' to launch' : g.mode === 'over' ? 'Game over · ' + g.score + ' pts' : g.mode === 'clear' ? g.score + ' pts' : '';
+    var end = g.mode === 'over' || g.mode === 'clear';
+    if (say) window.BBPILL.say(x, W / 2, end ? g.py - 86 : g.py - 44, say, { W: W, font: g.font });
+    window.BBPILL.place(g.st, 'again', { show: end, x: W / 2, y: g.py - 46, text: 'Play again', theme: B.COL === B.PALS.purple ? 'purple' : 'green',
+      onClick: function () { if (g.mode === 'over' || g.mode === 'clear') B.reset(g); } });
   };
   B.input = function (g) {
     var cv = g.cv, drag = null;

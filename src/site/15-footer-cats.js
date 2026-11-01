@@ -349,9 +349,9 @@
     if (h.phase !== 'idle' && h.p > 0.85) { var fur = K.TYPES[h.type].fur, cx0 = h.x - K.CW * P / 2; rect(x, fur, cx0 + 3 * P, rim - P, 3 * P, 2 * P); rect(x, fur, cx0 + 10 * P, rim - P, 3 * P, 2 * P); }
   }
 
-  function pill(g, txt, right, y) {
-    g.btn = window.BBPILL.draw(g.ctx, right, y, txt, { size: 'hud', align: 'right', W: g.W, font: g.font, theme: g.theme === 'lilac' ? 'purple' : 'green' });
-    return g.btn.x;
+  function pill(g, txt, right, y, show) {   // the shared button (10z-footer-pill.js), small size
+    window.BBPILL.place(g.st, 'play', { show: show, size: 'hud', align: 'right', x: right, y: y, text: txt, theme: g.theme === 'lilac' ? 'purple' : 'green',
+      onClick: function () { if (g.mode === 'idle') K.start(g); } });
   }
 
   K.draw = function (g) {
@@ -367,7 +367,7 @@
     if (g.pop > 0 && g.mode === 'play') { x.font = '700 ' + g.fs + 'px ' + g.font; }
     x.fillText(hud, left, g.hy);
     g.btn = null;
-    if (g.mode === 'idle') pill(g, 'Play', right, g.hy);
+    pill(g, 'Play', right, g.hy, g.mode === 'idle');
     // floor rule
     rect(x, K.C.ink, 0, g.floorY + P, g.W, 1.5);
     g.holes.forEach(function (h) { box(g, h); });

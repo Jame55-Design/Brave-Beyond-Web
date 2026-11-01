@@ -60,7 +60,10 @@
     '.bbpb-ic svg{display:block;flex:none;width:12px;height:12px}' +
     '.bbpb-ic-l{width:0;margin-right:-10px;opacity:0}' +
     '.bbpb.is-clear .bbpb-ic-l{width:12px;margin-right:0;opacity:1}.bbpb.is-clear .bbpb-ic-r{width:0;margin-left:-10px;opacity:0}' +
-    '@media (max-width:479px){.bbpb{height:36px;font-size:12px;padding:0 15px}}' +
+    '.bbpb.is-hud{height:30px;font-size:11px;padding:0 12px;gap:8px}.bbpb.is-hud .bbpb-in{gap:8px}.bbpb.is-hud .bbpb-ic,.bbpb.is-hud .bbpb-ic svg{width:10px;height:10px}' +
+    '.bbpb.is-hud .bbpb-ic-l{width:0;margin-right:-8px}.bbpb.is-hud.is-clear .bbpb-ic-l{width:10px;margin-right:0}.bbpb.is-hud.is-clear .bbpb-ic-r{width:0;margin-left:-8px}' +
+    '.bbpb.is-right{transform:translate(-100%,-50%)}' +
+    '@media (max-width:479px){.bbpb{height:36px;font-size:12px;padding:0 15px}.bbpb.is-hud{height:28px;font-size:11px;padding:0 11px}}' +
     '@media (prefers-reduced-motion:reduce){.bbpb.is-pop .bbpb-in{animation:none}.bbpb-ic{transition:none}}';
   document.head.appendChild(css);
   var rm = function () { return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; };
@@ -130,7 +133,25 @@
     var l = Math.round(o.x) + 'px', tp = Math.round(o.y) + 'px';
     if (b.style.left !== l) b.style.left = l;
     if (b.style.top !== tp) b.style.top = tp;
+    var hud = o.size === 'hud', right = o.align === 'right';
+    if (b.classList.contains('is-hud') !== hud) { b.classList.toggle('is-hud', hud); b._w = 0; }
+    if (b.classList.contains('is-right') !== right) b.classList.toggle('is-right', right);
     var dis = o.enabled === false; if (b.disabled !== dis) b.disabled = dis;
+    if (!b._w || b._wt !== t) { b._w = b.offsetWidth; b._wt = t; }   // width, cached until the label changes
     return b;
+  };
+
+  // Instructions ("Move here to play", "Game over · 120 pts") are plain text, never a pill, so the only thing
+  // that looks like a button is a button. Uppercase 500, ink, centred on cap height.
+  P.say = function (x, cx, cy, txt, o) {
+    o = o || {};
+    var fs = (o.W || 1000) < 480 ? 12 : 13;
+    x.save();
+    x.font = '500 ' + fs + 'px ' + (o.font || 'sans-serif');
+    try { if ('letterSpacing' in x) x.letterSpacing = (fs * 0.04).toFixed(2) + 'px'; } catch (e) {}
+    var cap = x.measureText('H').actualBoundingBoxAscent || fs * 0.72;
+    x.fillStyle = o.color || '#212121'; x.textAlign = 'center'; x.textBaseline = 'alphabetic';
+    x.fillText(String(txt).toUpperCase(), cx, cy + cap / 2);
+    x.restore();
   };
 })();

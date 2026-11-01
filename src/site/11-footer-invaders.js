@@ -150,11 +150,12 @@
     g.parts.push({ x: x, y: y, c: c, vx: (Math.random() - .5) * 120, vy: (up ? -1 : 1) * (40 + Math.random() * 120), life: .6 + Math.random() * .7, s: Math.random() < .5 ? 2 : 3 });
   };
   // HUD 'Restore logo' pill (top right); stores its box so a click/tap can hit it
-  B.pill = function (g, x, right, y) {
+  B.pill = function (g, x, right, y) {   // the shared button (10z-footer-pill.js), small size
     var L = g.logo;
-    g.rb = window.BBPILL.draw(x, right, y, g.W < 480 ? 'Restore' : 'Restore logo', { size: 'hud', align: 'right', W: g.W, font: g.font,
-      theme: B.COL === B.PALS.purple ? 'purple' : 'green', alpha: L.alive < L.total ? 1 : .35 });
-    return g.rb.x;
+    g.rb = null;
+    var b = window.BBPILL.place(g.st, 'restore', { show: true, size: 'hud', align: 'right', x: right, y: y, text: g.W < 480 ? 'Restore' : 'Restore logo',
+      theme: B.COL === B.PALS.purple ? 'purple' : 'green', enabled: L.alive < L.total, onClick: function () { B.buildLogo(g); g.fire = false; } });
+    return right - (b ? b._w : 0);
   };
   B.part = (B.part || 0) + 1;
 })();
@@ -452,10 +453,12 @@
     var px = B.pill(g, x, W - 16, g.hy);
     x.font = '500 ' + g.fs + 'px ' + g.font; x.fillStyle = K.ink;
     x.textAlign = 'right'; x.fillText('LOGO ' + Math.round(100 * L.alive / L.total) + '%', px - 10, g.hy);
-    var msg = g.mode === 'idle' ? (g.touch ? 'TOUCH TO PLAY' : 'MOVE HERE TO PLAY') : g.mode === 'over' || g.mode === 'win' ? (g.mode === 'win' ? 'YOU WIN · ' : 'GAME OVER · ') + g.score + ' PTS · ' + (g.touch ? 'TAP' : 'CLICK') + ' TO PLAY AGAIN' : '';
-    if (msg) {
-      window.BBPILL.draw(x, W / 2, L.y - 36, msg, { W: W, font: g.font, theme: B.COL === B.PALS.purple ? 'purple' : 'green' });
-    }
+    // instructions are plain text; the only button is Play again (the same one as every other game)
+    var th = B.COL === B.PALS.purple ? 'purple' : 'green', end = g.mode === 'over' || g.mode === 'win';
+    if (g.mode === 'idle') window.BBPILL.say(x, W / 2, L.y - 36, g.touch ? 'Touch to play' : 'Move here to play', { W: W, font: g.font });
+    if (end) window.BBPILL.say(x, W / 2, L.y - 66, (g.mode === 'win' ? 'You win · ' : 'Game over · ') + g.score + ' pts', { W: W, font: g.font });
+    window.BBPILL.place(g.st, 'again', { show: end, x: W / 2, y: L.y - 30, text: 'Play again', theme: th,
+      onClick: function () { if (g.mode === 'over' || g.mode === 'win') { B.reset(g); g.mode = 'play'; } } });
   };
   B.part = (B.part || 0) + 1;
 })();
