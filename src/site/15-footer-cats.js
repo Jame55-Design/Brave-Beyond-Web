@@ -355,7 +355,7 @@
   }
 
   K.draw = function (g) {
-    var x = g.ctx, P = g.P;
+    var x = g.ctx, P = g.P, again = false;
     x.clearRect(0, 0, g.W, g.H);
     // HUD, same style as the other footer games
     x.textBaseline = 'middle'; x.textAlign = 'left'; x.fillStyle = K.C.ink;
@@ -402,8 +402,13 @@
       text(x, (g.newBest ? 'NEW BEST ' : 'SCORE ') + g.score, g.W / 2, y2, sz, K.C.ink);
       // big centred Play again button
       var by = y2 + sz * 3.5 + gap;
-      g.btn = window.BBPILL.draw(x, g.W / 2, by + bh / 2, 'Play again', { W: g.W, font: g.font, theme: g.theme === 'lilac' ? 'purple' : 'green', alpha: g.overT > 0.6 || g.rm ? 1 : 0.5 });
+      // Play again is a real button over the canvas (reverse squiggle + bounce, 10z-footer-pill.js)
+      window.BBPILL.place(g.st, 'again', { show: true, x: g.W / 2, y: by + bh / 2, text: 'Play again', theme: g.theme === 'lilac' ? 'purple' : 'green',
+        enabled: g.overT > 0.6 || g.rm, onClick: function () { if (g.mode === 'over') K.start(g); } });
+      g.btn = null;
+      again = true;
     }
+    if (!again) window.BBPILL.place(g.st, 'again', { show: false });
   };
 })();
 

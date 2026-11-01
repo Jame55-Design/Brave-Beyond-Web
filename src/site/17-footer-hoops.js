@@ -651,6 +651,7 @@
       else x.fillText('Pull the ball back and let go', g.sx - 30 * u, g.forkY - 48 * u + Math.sin(g.clock * 3) * 2 * u);
     }
     if (g.mode === 'over') H.drawOver(g);
+    else if (window.BBPILL && window.BBPILL.place) window.BBPILL.place(g.st, 'again', { show: false });
     if (g.frame) H.drawCursor(g);
     if (g.sky) H.drawSky(g);
   };
@@ -734,8 +735,13 @@
     x.font = '500 ' + Math.round(g.fs * 1.3) + 'px ' + g.font;
     x.fillText(g.score + ' points', W / 2, cy + g.fs * 2);
     var bh = W < 480 ? 36 : 40, by = Math.round(cy + g.fs * 3.4);
-    g.btn = window.BBPILL ? window.BBPILL.draw(x, W / 2, by + bh / 2, 'Play again', { W: W, font: g.font, theme: g.pal === H.THEMES.purple ? 'purple' : 'green' })
-      : { x: W / 2 - 60, y: by, w: 120, h: bh };
+    var th = g.pal === H.THEMES.purple ? 'purple' : 'green';
+    if (g.frame || !window.BBPILL.place) g.btn = window.BBPILL.draw(x, W / 2, by + bh / 2, 'Play again', { W: W, font: g.font, theme: th, alpha: a });   // the recorder draws it into the video
+    else {   // on the site it's a real button over the canvas (reverse squiggle + bounce, 10z-footer-pill.js)
+      g.btn = null;
+      window.BBPILL.place(g.st, 'again', { show: true, x: W / 2, y: by + bh / 2, text: 'Play again', theme: th, enabled: g.overT > 0.6,
+        onClick: function () { if (g.mode === 'over') H.reset(g); } });
+    }
     x.globalAlpha = 1; x.textBaseline = 'alphabetic';
   };
 
