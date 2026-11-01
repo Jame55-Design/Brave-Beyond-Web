@@ -20,8 +20,8 @@ Always pin to a commit or tag, never `@main`. jsDelivr caches `@main` for up to 
 
 Current release:
 - `bb-head.js`: commit `b715dd92e400a364a72fe3b4c4db605fb88b5d41` (BB Head Bundle 1.0.12, live: cookie consent banner (z-index 99990, just under the custom cursor) with an animated Purps cookie that gets bitten (scalloped bites, crumbs, pops back; still with one bite under reduced motion) + Google Analytics G-GGV0NKKR7H + "Cookie Settings" footer pill, all in src/head/09-cookie-consent.js). Previous head 1.0.11 (`8442db0`). Blog links hidden in all menus via src/head/08-hide-blog-links.js; delete that file to bring Blog back)
-- `bb-site.js`: commit `e83f9d5726a596566db9ad653e6d6c47e5e99c99` (BB Site Bundle 1.10.4, live: footer arcade (src/site/18-footer-arcade.js) swapping invaders, bricks, cats and hoops in green or purple colour sets, with an animated NEXT GAME press; every in-game button uses one shared pill (src/site/10z-footer-pill.js: ink, uppercase, pink text on green / lime on purple, centred on cap height); hoops settles its streak in throw order so a miss can't be skipped into a false YOU'RE ON FIRE; cats height in line with the other games; game loops never step with a negative frame time)
-- Previous live: site 1.10.3 (`cf0de3f`), 1.10.2 (`eb9bd8e`), 1.10.0 (`b0672bb`), 1.9.7 (`19a8355`)
+- `bb-site.js`: commit `6f431722a2ff1ceba1501208fc3c7dd30cf52af1` (BB Site Bundle 1.10.5, live: footer arcade (src/site/18-footer-arcade.js) swapping invaders, bricks, cats and hoops in green or purple colour sets, with an animated NEXT GAME press; in-game buttons share one pill (src/site/10z-footer-pill.js) and Play again in cats + hoops is a real button with a reverse squiggle (solid to clear), bounce and sparkle; hoops settles its streak in throw order; cats height in line with the other games)
+- Previous live: site 1.10.4 (`e83f9d5`), 1.10.3 (`cf0de3f`), 1.10.0 (`b0672bb`), 1.9.7 (`19a8355`)
 
 ## Rolling back
 
