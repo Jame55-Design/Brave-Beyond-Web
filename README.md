@@ -20,8 +20,8 @@ Always pin to a commit or tag, never `@main`. jsDelivr caches `@main` for up to 
 
 Current release:
 - `bb-head.js`: commit `b715dd92e400a364a72fe3b4c4db605fb88b5d41` (BB Head Bundle 1.0.12, live: cookie consent banner (z-index 99990, just under the custom cursor) with an animated Purps cookie that gets bitten (scalloped bites, crumbs, pops back; still with one bite under reduced motion) + Google Analytics G-GGV0NKKR7H + "Cookie Settings" footer pill, all in src/head/09-cookie-consent.js). Previous head 1.0.11 (`8442db0`). Blog links hidden in all menus via src/head/08-hide-blog-links.js; delete that file to bring Blog back)
-- `bb-site.js`: commit `cf0de3f3b2d47e5450b95c778c7824544850b371` (BB Site Bundle 1.10.3, live: footer arcade (src/site/18-footer-arcade.js): NEXT GAME squiggle button on every footer swaps between invaders, bricks, cats and hoops (17), each in a green or purple colour set; a press plays out (dip, squiggle fill, old game fades out, next fades in, button clears); cats canvas 1.4x gameH so its height sits in line with the other games; hoops shows all four hoops on phones; game loops never step with a negative frame time)
-- Previous live: site 1.10.2 (`eb9bd8e`), 1.10.1 (`e722a29`), 1.10.0 (`b0672bb`), 1.9.7 (`19a8355`)
+- `bb-site.js`: commit `e83f9d5726a596566db9ad653e6d6c47e5e99c99` (BB Site Bundle 1.10.4, live: footer arcade (src/site/18-footer-arcade.js) swapping invaders, bricks, cats and hoops in green or purple colour sets, with an animated NEXT GAME press; every in-game button uses one shared pill (src/site/10z-footer-pill.js: ink, uppercase, pink text on green / lime on purple, centred on cap height); hoops settles its streak in throw order so a miss can't be skipped into a false YOU'RE ON FIRE; cats height in line with the other games; game loops never step with a negative frame time)
+- Previous live: site 1.10.3 (`cf0de3f`), 1.10.2 (`eb9bd8e`), 1.10.0 (`b0672bb`), 1.9.7 (`19a8355`)
 
 ## Rolling back
 
