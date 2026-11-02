@@ -27,6 +27,17 @@ James's studio site. Built in Webflow, with custom JS served from this repo via 
 - Plain text only: no text shadows or effects unless asked.
 - Contact + privacy pages are purple; home and Free Goodies footers are green.
 
+## Button rules (always follow these; James shouldn't have to ask)
+- Never invent a new button style. Every button on the site is one of the two below. If something genuinely needs a third kind, ask James before building it.
+- **Outline squiggle button** (page-level actions, e.g. "Drop me an email", NEXT GAME): the site's .button or any element with data-squiggle, so 02-squiggle-buttons.js handles it. Ink 1px outline pill (radius 80px), transparent, ink text, sparkle on the right. Hover: the ink squiggle draws in and fills it, text turns Purps, sparkle jumps to the left in white.
+- **Solid reverse-squiggle button** (actions inside the footer games: Play again, Restore logo, Play): always made with BBPILL.place (src/site/10z-footer-pill.js). Solid ink pill with a sparkle; text light pink #E8CAE9 on green backgrounds, lime #CCFF00 on Purps. Hover: a squiggle in the background colour wipes it clear to an ink outline with ink text, with a small bounce.
+- Sizes are fixed. Main: 40px tall, 13px text, 18px side padding (36px / 12px / 15px under 480px wide). Small (score bars only): 30px tall, 11px text (28px on phones). Sparkle 12px (10px small), 10px gap.
+- Text: uppercase, weight 600, the site font (Overused Grotesk). Never 700/bold, never text shadows or effects.
+- Every press plays out before it acts (about 0.4s): the button dips (scale .94), the squiggle runs (on phones it starts on touch), then the action happens and the button resets. prefers-reduced-motion: no animation, act straight away.
+- Buttons are real <button> elements, never drawn into a canvas. The only exception is the Hoops Recorder video, where BBPILL.draw paints the same look so it shows in the recording.
+- Only clickable things look like buttons. Instructions and results ("Move here to play", "Game over · 120 pts") are plain uppercase text (BBPILL.say), never in a pill.
+- After changing any button, check it on a phone width and a desktop width, on a green and a purple background, at rest and on hover/press.
+
 ## Footer game (src/site/11-footer-invaders.js)
 - Runs on Barba namespaces home and goodies only (B.SEL). Other pages keep the logo with footer hearts.
 - Reads logo paths from the footer SVG at runtime; no need to copy logo data.
