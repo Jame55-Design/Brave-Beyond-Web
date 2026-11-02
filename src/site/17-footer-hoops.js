@@ -6,7 +6,7 @@
 // grits its teeth as you pull, flails its arms and legs in flight, goes dizzy off the rim, cheers when it scores
 // and slumps when it misses. Score 3 in a row and YOU'RE ON FIRE: the ball becomes the Brave Beyond pixel fireball
 // and every basket counts double until a ball misses. Sink 3 more while on fire and he gets a pair of pixel
-// high-tops (Purps, lavender, lime laces) for the rest of the round. 20 balls a round, and the next ball loads while the last is still flying, best score saved in this browser.
+// high-tops (Purps, lavender, lime laces) for the rest of the round, and baskets stay double points even after the fire goes out. 20 balls a round, and the next ball loads while the last is still flying, best score saved in this browser.
 // Instagram, Privacy Policy and the rights line stay under the game, like the other footer games.
 // Pages: set in H.SEL / H.PATHS below (Barba namespace or URL path + .bb-footer). Not on any page yet.
 
@@ -31,6 +31,7 @@
   H.FIRE_AT = 3;         // baskets in a row to catch fire (a nod to the old 90s arcade basketball games)
   H.FIRE_X = 2;          // points multiplier while on fire
   H.KICKS_AT = 3;        // baskets made while already on fire to earn the high-tops (kept for the rest of the round)
+  // Once he has the kicks every basket stays double points for the rest of the round, fire or no fire (they don't stack: x2 max)
   // Pixel basketball high-top (our own design), facing right with the heel at the left.
   // O = ink outline/sole, P = Purps collar, L = lime laces, V = lavender upper
   H.KICKS = ['OOO....', 'OPPO...', 'OVPO...', 'OVLLOO.', 'OVVVVVO', 'OOOOOOO'];
@@ -282,7 +283,7 @@
   H.scored = function (g, b, h) {
     var swish = !b.touched, pts = h.pts * (swish ? H.SWISH : 1);
     b.scored++;
-    if (g.onFire) pts *= H.FIRE_X;
+    if (g.onFire || g.kicks) pts *= H.FIRE_X;
     g.score += pts; g.flash = 0.5;
     b.mood = 'happy'; b.moodT = 0;
     h.sw = 1;
@@ -601,7 +602,10 @@
       if (i < g.left) { x.fillStyle = C.lime; x.fill(); }
       x.lineWidth = 1.5; x.strokeStyle = C.ink; x.stroke();
     }
-    if (g.onFire && !g.phone && Math.floor(g.clock * 6) % 2) { x.textAlign = 'left'; x.fillStyle = g.pal.fire; x.font = '700 ' + g.fs + 'px ' + g.font; x.fillText('ON FIRE x' + H.FIRE_X, pad + sw + H.BALLS * g.fs * 0.8 + g.fs, g.hy); }
+    if (!g.phone && (g.onFire ? Math.floor(g.clock * 6) % 2 : g.kicks)) {   // flashing while on fire, steady once it's just the kicks
+      x.textAlign = 'left'; x.fillStyle = g.onFire ? g.pal.fire : C.ink; x.font = '600 ' + g.fs + 'px ' + g.font;
+      x.fillText((g.onFire ? 'ON FIRE x' : 'KICKS x') + H.FIRE_X, pad + sw + H.BALLS * g.fs * 0.8 + g.fs, g.hy);
+    }
     x.textAlign = 'right'; x.fillStyle = C.ink; x.font = '500 ' + g.fs + 'px ' + g.font;
     x.fillText('BEST ' + g.best, W - pad, g.hy);
     if (g.frame) H.drawNav(g);   // the logo sits back with the score bar, so the ball flies in front of it
