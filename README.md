@@ -20,7 +20,8 @@ Always pin to a commit or tag, never `@main`. jsDelivr caches `@main` for up to 
 
 Current release:
 - `bb-head.js`: commit `b715dd92e400a364a72fe3b4c4db605fb88b5d41` (BB Head Bundle 1.0.12, live: cookie consent banner (z-index 99990, just under the custom cursor) with an animated Purps cookie that gets bitten (scalloped bites, crumbs, pops back; still with one bite under reduced motion) + Google Analytics G-GGV0NKKR7H + "Cookie Settings" footer pill, all in src/head/09-cookie-consent.js). Previous head 1.0.11 (`8442db0`). Blog links hidden in all menus via src/head/08-hide-blog-links.js; delete that file to bring Blog back)
-- `bb-site.js`: commit `26c23bf99943dfff58e289b59bcd5790f516078a` (BB Site Bundle 1.11.0, live: adds the backpack footer game (src/site/19-footer-backpack.js) to the arcade rotation on green and purple footers, no page default)
+- `bb-site.js`: commit `bccdc192175659c9a51de9fd7958d537e456b53c` (BB Site Bundle 1.11.1, live: backpack footer game (src/site/19-footer-backpack.js) in the arcade on green and purple footers; chunkier pencil; site custom cursor stays visible over it)
+- Previous live: site 1.11.0 (`26c23bf`: backpack game added)
 - Previous live: site 1.10.7 (`7f066702b3eea3ba5c6dd3d1ab9139d3ffd8fc0c`: footer arcade swapping invaders, bricks, cats and hoops in green or purple colour sets; one button family in every game (src/site/10z-footer-pill.js); hoops streak settles in throw order; cats height in line with the other games); before that 1.10.6 (`d24403a`), 1.10.5 (`6f43172`), 1.10.0 (`b0672bb`), 1.9.7 (`19a8355`)
 
 ## Rolling back
