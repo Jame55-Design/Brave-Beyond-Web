@@ -441,7 +441,9 @@
     const dpr = Math.min(2, window.devicePixelRatio || 1); gm.dpr = dpr;
     gm.cv.width = W*dpr; gm.cv.height = gm.H*dpr; gm.cv.style.height = gm.H + 'px';
     gm.ctx.setTransform(dpr,0,0,dpr,0,0);
-    gm.ground = gm.H - 20;
+    gm.pu = W < 560 ? 3 : 4;                 // one pavement art pixel
+    gm.ground = gm.H - 12*gm.pu;             // 12 art pixels of side-on pavement under the wheels
+    gm.pave = null;
     gm.size = Math.max(30, Math.min(48, W*0.045));
     gm.cart.w = Math.max(110, Math.min(170, W*0.15));
     if (!gm.cart.x) gm.cart.x = gm.cart.tx = W/2;
@@ -523,6 +525,34 @@
     if (it.def.k!=='headphones') twinkle(ctx, it.x-sz*0.46, it.y-sz*0.44, sz*0.16*(RM ? 1 : 0.6+0.4*Math.abs(Math.sin(t*4+it.seed))));
   }
 
+  // side-on pixel pavement: kerb stones in two staggered courses with dithered shading and the odd crack,
+  // then a gutter. Drawn in ink tints so it works on the green and the purple footer; cached per width.
+  function drawPavement(ctx){
+    if (!g.pave){
+      const U=g.pu, B=12, cols=Math.ceil(g.W/U), cv=document.createElement('canvas'), dpr=g.dpr||1;
+      cv.width=Math.ceil(g.W*dpr); cv.height=Math.ceil(B*U*dpr);
+      const c=cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0);
+      const hash=(a,b)=>{ const h=Math.sin(a*127.1+b*311.7)*43758.5453; return h-Math.floor(h); };
+      const px=(x,y,col)=>{ c.fillStyle=col; c.fillRect(x*U,y*U,U,U); };
+      for (let x=0; x<cols; x++){
+        for (let r=0; r<B; r++){
+          let col;
+          if (r===0) col='rgba(33,33,33,0.6)';                                    // the riding surface edge
+          else if (r<9){
+            const joint = ((x + (r<5 ? 0 : 9)) % 18)===0;
+            if (r===4) col='rgba(33,33,33,0.45)';
+            else if (joint) col='rgba(33,33,33,0.5)';
+            else col = ((x+r)%2===0 && hash(x,r) < (r>5 ? 0.55 : 0.25)) ? 'rgba(33,33,33,0.32)' : 'rgba(33,33,33,0.16)';
+          } else col = (x+r)%2 ? 'rgba(33,33,33,0.5)' : 'rgba(33,33,33,0.38)';      // gutter
+          px(x,r,col);
+        }
+        if (hash(x,99) < 0.012){ px(x,2,'rgba(33,33,33,0.6)'); px(x+1,3,'rgba(33,33,33,0.6)'); }   // cracks
+      }
+      g.pave = cv;
+    }
+    ctx.drawImage(g.pave, 0, g.ground, g.W, 12*g.pu);
+  }
+
   function drawBag(ctx){
     const c=g.cart, G=geo(), k=G.k;
     const sx = c.shake>0 ? Math.sin(c.shake*90)*4 : 0;
@@ -581,9 +611,7 @@
     const left = gm.W < 560 ? 16 : Math.round(gm.W*0.05);
     const hud = gm.mode==='play' ? 'SCORE ' + gm.score + '   TIME ' + Math.ceil(gm.t) + '   BEST ' + gm.best : 'BEST ' + gm.best;
     ctx.fillText(hud, left, gm.hy);
-    // pavement
-    ctx.fillRect(0, gm.ground, gm.W, 1.5);
-    for (let x=40; x<gm.W; x+=120) ctx.fillRect(x, gm.ground+1.5, 1.5, 8);
+    drawPavement(ctx);
     for (const it of gm.items) drawItem(ctx, it);
     drawBag(ctx);
     ctx.fillStyle=C.ink;
