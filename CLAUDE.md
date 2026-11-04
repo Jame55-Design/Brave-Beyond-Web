@@ -57,6 +57,13 @@ James's studio site. Built in Webflow, with custom JS served from this repo via 
 - When time runs out: cats duck in, no new ones, big Pink TIME'S UP + score (or NEW BEST) and a centred Play again button (active after 0.6s). Cats can't be tapped on that screen.
 - Test: BBC.update(BBC.g, 1/60); BBC.draw(BBC.g).
 
+## Footer backpack (src/site/19-footer-backpack.js)
+- Ride a Brave Beyond backpack on a skateboard along the footer: catch good design (swatches, James's pencil, bézier curve, camera +10; lime golden spiral +25; headphones +40 with lime fades and notes), dodge glitching bad design (Comic Sans at a slant, low-res JPEG, crumpled paper, colour bars) -15. 45s rounds, best in localStorage bbBackpackBest.
+- Bag + board are James's master SVG (BP.BAG_SVG, Illustrator metadata stripped); wheels redrawn so they roll and turn lime on a catch, grab loop goes lime, bag squashes. Caught items poke out along the domed top; a bad catch knocks two out.
+- Green and purple sets: on Purps every #AE9AE4 part goes Main Green and the green pencil replaces the purple one (BP.PENCIL_SVG).
+- In the arcade rotation on both footers, no page default yet (ns: []). Play / Play again via BBPILL.place; instructions and results via BBPILL.say.
+- Test: BBBP.update(BBBP.g, 1/60); BBBP.draw(BBBP.g).
+
 ## Footer arcade (src/site/18-footer-arcade.js)
 - Every footer can play every footer game. Games no longer start themselves: each registers on window.BBARCADE ({ id, name, themes, ns, paths, cls, stage, mount(footer, theme), stop }) and the arcade starts one.
 - Page defaults: invaders on home + goodies, bricks on services, cats on contact (from each game's ns / paths). Other pages keep the logo + hearts with a PLAY A GAME pill.
