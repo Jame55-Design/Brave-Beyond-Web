@@ -13,10 +13,9 @@
     '.bb-footer.bbbp-on{padding-top:4vw}' +
     '.bb-footer.bbbp-on .bbft-lm{display:none}' +
     '.bbbp-stage{order:0;align-self:stretch;margin:0 -5vw;position:relative}' +
-    '.bbbp-stage canvas{display:block;width:100%;cursor:none;touch-action:pan-y}' +
+    '.bbbp-stage canvas{display:block;width:100%;touch-action:pan-y}' +
     '.bb-footer.bbbp-on .bbft-ig{order:1;margin:2vw 0 0}' +
-    // the bag follows the mouse, so the site's custom cursor hides while it's over the game
-    'body.bbbp-hover .custom-cursor{opacity:0!important;visibility:hidden!important}' +
+    // the site's custom cursor stays visible over the game so you can see where you're steering
     '@media (max-width:479px){.bb-footer.bbbp-on{padding-top:24px}.bb-footer.bbbp-on .bbft-ig{margin:16px 0 0}}';
   document.head.appendChild(s);
   // Comic Sans for the bad "Comic Sans" item; Comic Neue stands in where it isn't installed (phones)
@@ -253,7 +252,7 @@
   function pencil(c, s){
     const im = THEME==='purple' ? PENCIL.green : PENCIL.purple;
     if (!(im.complete && im.naturalWidth)) return;
-    const L = s*1.3, w = L*117/1062;
+    const L = s*1.55, w = L*117/1062*1.6;   // drawn a bit longer and 1.6x wider so it stands out
     c.save(); c.rotate(0.62); c.drawImage(im, -w/2, -L/2, w, L); c.restore();
   }
 
