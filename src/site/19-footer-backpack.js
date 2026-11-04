@@ -449,9 +449,9 @@
     SPR.clear();
   };
 
-  function spawn(){
-    const bad = g.mode==='play' ? Math.random() < Math.min(0.42, 0.28 + g.elapsed*0.004) : Math.random()<0.35;
-    const def = bad ? BAD[Math.random()*BAD.length|0] : pick(GOOD);
+  function spawn(force){
+    const bad = !force && (g.mode==='play' ? Math.random() < Math.min(0.42, 0.28 + g.elapsed*0.004) : Math.random()<0.35);
+    const def = force ? GOOD.find(d => d.k===force) : bad ? BAD[Math.random()*BAD.length|0] : pick(GOOD);
     const sz = g.size * (def.big ? 1.1 : 1);
     const speed = g.H*(0.32 + Math.random()*0.1) * (g.mode==='play' ? 1 + g.elapsed*0.018 : 0.65);
     g.items.push({ def, bad, s: sz, x: sz + Math.random()*(g.W - 2*sz), y: -sz, vy: speed, rot: Math.random()*6.28, seed: Math.random()*100 });
@@ -460,6 +460,8 @@
   BP.start = function(gm){
     Object.assign(gm, { mode:'play', score:0, t:BP.ROUND, elapsed:0, items:[], pops:[], puffs:[], spawn:0.4 });
     gm.cart.load = [];
+    // guaranteed bonuses each round (random drops can still add more): headphones once in each half, the spiral once
+    gm.bonus = [[6 + Math.random()*12, 'spiral'], [10 + Math.random()*10, 'headphones'], [26 + Math.random()*12, 'headphones']].sort((a,b) => a[0]-b[0]);
   };
   function end(){
     g.mode = 'over'; g.overT = 0;
@@ -499,6 +501,7 @@
     if (c.shake>0) c.shake -= dt;
     if (c.glow>0) c.glow -= dt;
     if (c.sq>0) c.sq -= dt;
+    if (gm.mode==='play' && gm.bonus && gm.bonus.length && gm.elapsed >= gm.bonus[0][0]) spawn(gm.bonus.shift()[1]);
     gm.spawn -= dt;
     if (gm.spawn <= 0){ spawn(); gm.spawn = gm.mode==='play' ? Math.max(0.32, 0.85 - gm.elapsed*0.012) * (0.7+Math.random()*0.6) : 1.1; }
     const G = geo(), top = G.top, half = G.half + gm.size*0.15;

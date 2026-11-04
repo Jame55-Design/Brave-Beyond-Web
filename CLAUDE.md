@@ -62,6 +62,7 @@ James's studio site. Built in Webflow, with custom JS served from this repo via 
 - Bag + board are James's master SVG (BP.BAG_SVG, Illustrator metadata stripped); wheels redrawn so they roll and turn lime on a catch, grab loop goes lime, bag squashes. Caught items poke out along the domed top; a bad catch knocks two out.
 - Green and purple sets: on Purps every #AE9AE4 part goes Main Green and the green pencil replaces the purple one (BP.PENCIL_SVG).
 - In the arcade rotation on both footers, no page default yet (ns: []). Play / Play again via BBPILL.place; instructions and results via BBPILL.say.
+- Every round drops the headphones twice (once in each half) and the spiral once on top of random drops (gm.bonus), so nobody misses them.
 - The site's custom cursor stays visible over the game (unlike cats). Pencil is drawn 1.55x item size long and 1.6x wide so it stands out.
 - Parked (not in the file): side-on pavement + storm drain with eyes and a grabbing hand, waiting on James's hand artwork.
 - Test: BBBP.update(BBBP.g, 1/60); BBBP.draw(BBBP.g).
