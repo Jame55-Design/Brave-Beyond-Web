@@ -20,7 +20,8 @@ Always pin to a commit or tag, never `@main`. jsDelivr caches `@main` for up to 
 
 Current release:
 - `bb-head.js`: commit `b715dd92e400a364a72fe3b4c4db605fb88b5d41` (BB Head Bundle 1.0.12, live: cookie consent banner (z-index 99990, just under the custom cursor) with an animated Purps cookie that gets bitten (scalloped bites, crumbs, pops back; still with one bite under reduced motion) + Google Analytics G-GGV0NKKR7H + "Cookie Settings" footer pill, all in src/head/09-cookie-consent.js). Previous head 1.0.11 (`8442db0`). Blog links hidden in all menus via src/head/08-hide-blog-links.js; delete that file to bring Blog back)
-- `bb-site.js`: commit `425ef07aa54f72b8d8d439fb716e86e23e914829` (BB Site Bundle 1.11.3, live: backpack footer game (src/site/19-footer-backpack.js) now rides on side-on pixel pavement; headphones at least twice a round, spiral at least once; chunkier pencil; custom cursor visible)
+- `bb-site.js`: commit `c2dca411f689e2acc47e69da7a3cde27792ed6cd` (BB Site Bundle 1.11.4, live: backpack footer game (src/site/19-footer-backpack.js): catching Comic Sans is an instant pixel GAME OVER; side-on pixel pavement; headphones at least twice a round, spiral at least once; chunkier pencil; custom cursor visible)
+- Previous live: site 1.11.3 (`425ef07`: pixel pavement)
 - Previous live: site 1.11.2 (`0a92858`: guaranteed headphones + spiral)
 - Previous live: site 1.11.1 (`bccdc19`: chunkier pencil, visible cursor)
 - Previous live: site 1.11.0 (`26c23bf`: backpack game added)
