@@ -62,6 +62,7 @@ James's studio site. Built in Webflow, with custom JS served from this repo via 
 - Bag + board are James's master SVG (BP.BAG_SVG, Illustrator metadata stripped); wheels redrawn so they roll and turn lime on a catch, grab loop goes lime, bag squashes. Caught items poke out along the domed top; a bad catch knocks two out.
 - Green and purple sets: on Purps every #AE9AE4 part goes Main Green and the green pencil replaces the purple one (BP.PENCIL_SVG).
 - In the arcade rotation on both footers, no page default yet (ns: []). Play / Play again via BBPILL.place; instructions and results via BBPILL.say.
+- Catching Comic Sans (wordart) ends the round at once: big pixel GAME OVER (5x7 PF font, pink on green, lime on purple, flickers in), 'You caught Comic Sans · N pts', Play again. Other bad items stay -15.
 - Every round drops the headphones twice (once in each half) and the spiral once on top of random drops (gm.bonus), so nobody misses them.
 - Ground is side-on pixel pavement (drawPavement, cached per width): 12 art pixels deep (4px, 3px on phones), staggered kerb stones, dithering, cracks, gutter, all ink tints so it suits green and purple. No light line on top.
 - The site's custom cursor stays visible over the game (unlike cats). Pencil is drawn 1.55x item size long and 1.6x wide so it stands out.

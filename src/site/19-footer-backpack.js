@@ -465,14 +465,20 @@
     // guaranteed bonuses each round (random drops can still add more): headphones once in each half, the spiral once
     gm.bonus = [[6 + Math.random()*12, 'spiral'], [10 + Math.random()*10, 'headphones'], [26 + Math.random()*12, 'headphones']].sort((a,b) => a[0]-b[0]);
   };
-  function end(){
-    g.mode = 'over'; g.overT = 0;
+  function end(reason){
+    g.mode = 'over'; g.overT = 0; g.reason = reason || 'time';
     g.newBest = g.score > g.best && g.score > 0;
     if (g.newBest){ g.best = g.score; try { localStorage.setItem('bbBackpackBest', g.best); } catch(e){} }
   }
 
   function catchItem(it){
     const c=g.cart, pts=it.def.pts;
+    // catching Comic Sans is instant GAME OVER
+    if (it.def.k==='wordart'){
+      if (!RM) c.shake = 0.4;
+      for (let i=0;i<12;i++){ const a=-Math.PI*(0.1+Math.random()*0.8); g.puffs.push({ x:it.x, y:geo().top, vx:Math.cos(a)*120, vy:Math.sin(a)*120, r:3+Math.random()*5, life:0.6 }); }
+      g.items = g.items.filter(o => o!==it); end('comic'); return;
+    }
     g.score = Math.max(0, g.score + pts);
     g.flash = 0.22; g.flashGood = pts>0;
     g.pops.push({ x:it.x, y:geo().top-14, txt:(pts>0?'+':'−')+Math.abs(pts), good:pts>0, life:0.8 });
@@ -602,6 +608,24 @@
     return y + 2*ic + 10;
   }
 
+  // chunky 5x7 pixel letters for the big GAME OVER (same idea as the bricks game's pixel font)
+  const PF = {
+    G:['.###.','#...#','#....','#.###','#...#','#...#','.###.'], A:['.###.','#...#','#...#','#####','#...#','#...#','#...#'],
+    M:['#...#','##.##','#.#.#','#.#.#','#...#','#...#','#...#'], E:['#####','#....','#....','####.','#....','#....','#####'],
+    O:['.###.','#...#','#...#','#...#','#...#','#...#','.###.'], V:['#...#','#...#','#...#','#...#','#...#','.#.#.','..#..'],
+    R:['####.','#...#','#...#','####.','#.#..','#..#.','#...#']
+  };
+  function pixelText(ctx, txt, cx, cy, z, col){
+    const w = [...txt].reduce((a,ch)=>a + (ch===' ' ? 3 : 6), -1)*z;
+    let x0 = Math.round(cx - w/2); const y0 = Math.round(cy - 3.5*z);
+    ctx.fillStyle = col;
+    for (const ch of txt){
+      if (ch===' '){ x0 += 3*z; continue; }
+      PF[ch].forEach((row,r) => { for (let i=0;i<5;i++) if (row[i]==='#') ctx.fillRect(x0+i*z, y0+r*z, z, z); });
+      x0 += 6*z;
+    }
+  }
+
   BP.draw = function(gm){
     g = gm; const ctx = gm.ctx;
     ctx.clearRect(0,0,gm.W,gm.H);
@@ -623,11 +647,23 @@
     ctx.globalAlpha=1;
     // start / end screen: plain text, the key, and the shared Play / Play again button
     const show = gm.mode!=='play', bh = gm.W < 480 ? 36 : 40;
-    if (show){
-      const blockH = 20 + 2*(gm.W<560?30:40) + 10 + 16 + bh;
+    if (show && gm.mode==='over' && gm.reason==='comic'){
+      // GAME OVER: big pixel letters (pink on green, lime on purple), a plain-text line, then Play again
+      const z = gm.W < 480 ? 5 : gm.W < 900 ? 7 : 10, titleH = 7*z, blockH = titleH + 30 + 20 + bh;
+      let y = Math.round(gm.hy + gm.fs*2 + (geo().top - 20 - gm.hy - gm.fs*2 - blockH)/2) + titleH/2;
+      const k = RM ? 1 : Math.min(1, gm.overT/0.25), zz = Math.max(2, Math.round(z*(0.6 + 0.4*k)));
+      if (RM || gm.overT > 0.6 || Math.floor(gm.overT*12)%2===0) pixelText(ctx, 'GAME OVER', gm.W/2, y, zz, THEME==='purple' ? C.lime : '#E8CAE9');
+      y += titleH/2 + 30;
+      window.BBPILL.say(ctx, gm.W/2, y, 'You caught Comic Sans · ' + gm.score + ' pts', { W: gm.W, font: gm.font });
+      y += 24;
+      window.BBPILL.place(gm.st, 'play', { show: true, x: gm.W/2, y: y + bh/2, text: 'Play again', theme: THEME,
+        enabled: gm.overT > 0.6 || RM, onClick: function(){ if (gm.mode!=='play') BP.start(gm); } });
+    } else if (show){
+      const blockH = 20 + (gm.mode!=='over' ? 18 : 0) + 2*(gm.W<560?30:40) + 10 + 16 + bh;
       let y = Math.round(gm.hy + gm.fs*2 + (geo().top - 30 - gm.hy - gm.fs*2 - blockH)/2);
       const msg = gm.mode==='over' ? (gm.newBest ? 'New best · ' : "Time's up · ") + gm.score + ' pts' : 'Catch good design · dodge the glitches';
       window.BBPILL.say(ctx, gm.W/2, y, msg, { W: gm.W, font: gm.font });
+      if (gm.mode!=='over'){ y += 18; window.BBPILL.say(ctx, gm.W/2, y, 'Catch Comic Sans and it\u2019s game over', { W: gm.W, font: gm.font }); }
       y = drawKey(ctx, gm.W/2, y + 20) + 16;
       window.BBPILL.place(gm.st, 'play', { show: true, x: gm.W/2, y: y + bh/2, text: gm.mode==='over' ? 'Play again' : 'Play', theme: THEME,
         enabled: gm.mode!=='over' || gm.overT > 0.6 || RM, onClick: function(){ if (gm.mode!=='play') BP.start(gm); } });
