@@ -30,19 +30,21 @@
   K.MAX_SPAN = 960;       // widest the four boxes spread (px) so the cats stay reachable on big screens
   K.LOGO_W = 1415.38; K.LOGO_H = 572.45;
 
-  var C = { green: '#07A87E', ink: '#212121', cream: '#F4E9D6', purps: '#AE9AE4', lilac: '#D0C6E9', pink: '#E8CAE9', mint: '#66C9B0',
+  var C = { green: '#07A87E', ink: '#212121', dark: '#212122', cream: '#F4E9D6', purps: '#AE9AE4', lilac: '#D0C6E9', pink: '#E8CAE9', mint: '#66C9B0',
     lime: '#CCFF00', gold: '#FFE36E', white: '#FFFFFF', fish: '#E9A04A' };
   K.C = C;
+  // dark = ink for details that sit on a cat (pupils, closed eyes, markings). One step off #212121 on purpose, so the
+  // 404 page's ink -> cream swap (20-404.js) leaves them dark.
   K.TYPES = {
     black: { fur: C.ink, nose: C.purps, closed: C.cream, eye: C.cream },
-    purps: { fur: C.purps, nose: C.pink, closed: C.ink, eye: C.cream },
-    lilac: { fur: C.lilac, nose: C.purps, closed: C.ink, eye: C.cream },
-    tabby: { fur: C.lilac, nose: C.purps, closed: C.ink, eye: C.cream, mark: C.purps, pat: 'tabby' },
-    pink: { fur: C.pink, nose: C.purps, closed: C.ink, eye: C.cream },
-    mint: { fur: C.mint, nose: C.pink, closed: C.ink, eye: C.cream },
-    tiger: { fur: C.green, nose: C.pink, closed: C.ink, eye: C.cream, mark: C.ink, pat: 'tiger' },
-    calico: { fur: C.cream, nose: C.pink, closed: C.ink, eye: C.white, a: C.purps, b: C.ink, pat: 'calico' },
-    lucky: { fur: '#F6C945', nose: '#C9654F', closed: C.ink, mark: '#E2483D', pat: 'lucky' }
+    purps: { fur: C.purps, nose: C.pink, closed: C.dark, eye: C.cream },
+    lilac: { fur: C.lilac, nose: C.purps, closed: C.dark, eye: C.cream },
+    tabby: { fur: C.lilac, nose: C.purps, closed: C.dark, eye: C.cream, mark: C.purps, pat: 'tabby' },
+    pink: { fur: C.pink, nose: C.purps, closed: C.dark, eye: C.cream },
+    mint: { fur: C.mint, nose: C.pink, closed: C.dark, eye: C.cream },
+    tiger: { fur: C.green, nose: C.pink, closed: C.dark, eye: C.cream, mark: C.dark, pat: 'tiger' },
+    calico: { fur: C.cream, nose: C.pink, closed: C.dark, eye: C.white, a: C.purps, b: C.ink, pat: 'calico' },
+    lucky: { fur: '#F6C945', nose: '#C9654F', closed: C.dark, mark: '#E2483D', pat: 'lucky' }
   };
   // box palettes: kraft-free brand boxes. 'purple' is used on a green footer, 'lilac' on a Purps footer.
   K.BOXES = {
@@ -308,7 +310,7 @@
   function cat(g, h) {
     var x = g.ctx, P = g.P, T = K.TYPES[h.type], fed = h.phase === 'hit', happy = fed && h.ht > 0.15;
     var x0 = h.x - K.CW * P / 2, y0 = Math.round((K.headY(g, h) - 9 * P) / P) * P;
-    var map = { F: T.fur, W: T.eye || K.C.white, P: K.C.ink, N: T.nose, A: T.a, B: T.b, M: T.mark };
+    var map = { F: T.fur, W: T.eye || K.C.white, P: K.C.dark, N: T.nose, A: T.a, B: T.b, M: T.mark };
     if (g.theme === 'lilac') for (var k in map) if (map[k] === K.C.purps) map[k] = K.C.mint;
     if (happy || h.blink < 0) { map.W = T.fur; map.P = T.fur; }
     if (h.type === 'lucky') sprite(x, K.PAWUP, x0 + K.CW * P, y0 + 4 * P - (g.rm ? 0 : (Math.floor(g.clock * 5) % 2) * P), { F: T.fur }, P);
@@ -317,11 +319,11 @@
       [2, 10].forEach(function (ex) {
         rect(x, T.closed, x0 + ex * P, y0 + 8 * P, P, P); rect(x, T.closed, x0 + (ex + 1) * P, y0 + 7 * P, 2 * P, P); rect(x, T.closed, x0 + (ex + 3) * P, y0 + 8 * P, P, P);
       });
-      sprite(x, K.FISH, x0 + 5 * P, y0 + 11 * P, { X: K.C.fish, E: K.C.ink }, P);
+      sprite(x, K.FISH, x0 + 5 * P, y0 + 11 * P, { X: K.C.fish, E: K.C.dark }, P);
     } else if (h.blink < 0) {
       [2, 10].forEach(function (ex) { rect(x, T.closed, x0 + ex * P, y0 + 8 * P, 4 * P, P); });
     }
-    if (fed && !happy) sprite(x, K.FISH, x0 + 5 * P, Math.round((y0 - 8 * P + h.ht / 0.15 * 19 * P) / P) * P, { X: K.C.fish, E: K.C.ink }, P);
+    if (fed && !happy) sprite(x, K.FISH, x0 + 5 * P, Math.round((y0 - 8 * P + h.ht / 0.15 * 19 * P) / P) * P, { X: K.C.fish, E: K.C.dark }, P);
   }
 
   function glow(g, h) {
@@ -387,7 +389,7 @@
       } else if (f.kind === 'ring') {
         var r = Math.round(g.s * (0.35 + t * 1.1) / P), cy = Math.round(f.y / P) * P; x.fillStyle = f.col;
         for (var a = 0; a < 64; a++) { var an = a / 64 * Math.PI * 2; x.fillRect(Math.round((f.x + Math.cos(an) * r * P) / P) * P, Math.round((cy + Math.sin(an) * r * P) / P) * P, P, P); }
-      } else if (f.kind === 'fish') sprite(x, K.FISH, Math.round(f.x / P) * P, Math.round(f.y / P) * P, { X: K.C.fish, E: K.C.ink }, P);
+      } else if (f.kind === 'fish') sprite(x, K.FISH, Math.round(f.x / P) * P, Math.round(f.y / P) * P, { X: K.C.fish, E: K.C.dark }, P);
       else if (f.kind === 'heart') sprite(x, K.HEART, Math.round(f.x / P) * P, Math.round(f.y / P) * P, { X: f.col }, Math.max(2, Math.round(P * 0.75)));
     });
     // TIME'S UP screen in the open space above the boxes
