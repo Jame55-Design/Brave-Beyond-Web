@@ -35,8 +35,8 @@
   CU.RUN = 0.64;                // run-up acceleration while held
   CU.MU = 0.147;                // ice friction
   CU.SWEEP = 0.34;              // full sweeping cuts friction by this much (about 1.5x the distance)
-  CU.CURL = 0.022;              // sideways drift, grows as the stone slows
-  CU.SWEEP_CURL = 0.65;         // full sweeping takes this much of the curl out
+  CU.CURL = 0.06;               // sideways drift, small at speed, big late on as the stone slows
+  CU.SWEEP_CURL = 0.7;          // full sweeping takes this much of the curl out
   CU.C = { ink: '#212121', lime: '#CCFF00', lav: '#E9DBEC', pink: '#E8CAE9', green: '#07A87E', purps: '#AE9AE4' };
   CU.THEMES = {
     green:  { bg: '#07A87E', ring: '#AE9AE4', cap: '#AE9AE4', pad: '#E8CAE9' },
@@ -192,7 +192,7 @@
       var nv = Math.max(0, v - CU.MU * (1 - CU.SWEEP * e) * h);
       if (v > 0) { st.vx *= nv / v; st.vy *= nv / v; }
       if (st.spin && nv > 0) {
-        var c = CU.CURL * st.spin * (1 - CU.SWEEP_CURL * e) * Math.min(1.6, 0.35 / (nv + 0.22));
+        var c = CU.CURL * st.spin * (1 - CU.SWEEP_CURL * e) * Math.min(2.4, 0.22 / (nv + 0.09));
         st.vx += -st.vy / nv * c * h; st.vy += st.vx / nv * c * h;
       }
       st.x += st.vx * h; st.y += st.vy * h;
