@@ -14,7 +14,10 @@
   // data-squiggle hands it to 02-squiggle-buttons.js, so on hover the ink squiggle draws in and fills it, the text
   // turns Purps (.sq-on) and the sparkle jumps to the left in white, like the site's buttons.
   s.textContent =
-    '.bbarc-bar{order:-1;align-self:center;display:flex;justify-content:center;margin:0 0 1.2vw;position:relative;z-index:2}' +
+    '.bbarc-bar{order:-1;align-self:center;display:flex;flex-direction:column;align-items:center;text-align:center;margin:0 0 1.2vw;position:relative;z-index:2}' +
+    // intro above the button so people know there's a game here: plain text, no effects
+    '.bbarc-h{margin:0 0 6px;font-family:inherit;font-size:clamp(26px,3vw,44px);line-height:1.05;font-weight:500;letter-spacing:-.01em;color:#212121}' +
+    '.bbarc-p{margin:0 0 18px;font-family:inherit;font-size:clamp(15px,1.3vw,18px);line-height:1.4;font-weight:400;color:#212121}' +
     '.bbarc-btn{-webkit-appearance:none;appearance:none;margin:0;box-sizing:border-box;position:relative;isolation:isolate;overflow:hidden;cursor:pointer;' +
       'display:inline-flex;align-items:center;gap:10px;height:40px;padding:0 18px;background:transparent;color:#212121;border:1px solid #212121;border-radius:80px;' +
       'font-family:inherit;font-weight:600;font-size:13px;line-height:1;letter-spacing:.01em;text-transform:uppercase;-webkit-user-select:none;user-select:none}' +
@@ -25,7 +28,7 @@
     '.bbarc-ic-l{width:0;margin-right:-10px;opacity:0}' +
     '.bbarc-btn.sq-on .bbarc-ic-l{width:12px;margin-right:0;opacity:1}' +
     '.bbarc-btn.sq-on .bbarc-ic-r{width:0;margin-left:-10px;opacity:0}' +
-    '@media (max-width:479px){.bbarc-bar{margin:0 0 12px}.bbarc-btn{height:36px;font-size:12px;padding:0 15px}}' +
+    '@media (max-width:479px){.bbarc-bar{margin:0 0 12px}.bbarc-p{margin-bottom:14px}.bbarc-btn{height:36px;font-size:12px;padding:0 15px}}' +
     '@media (prefers-reduced-motion:reduce){.bbarc-ic{transition:none}}';
   document.head.appendChild(s);
 
@@ -135,8 +138,8 @@
     var bar = A.bar = document.createElement('div');
     bar.className = 'bbarc-bar';
     var star = function (c) { return '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="' + c + '" d="M12 0C12.7 6.5 17.5 11.3 24 12C17.5 12.7 12.7 17.5 12 24C11.3 17.5 6.5 12.7 0 12C6.5 11.3 11.3 6.5 12 0Z"/></svg>'; };
-    bar.innerHTML = '<button type="button" class="bbarc-btn" data-squiggle><span class="bbarc-ic bbarc-ic-l">' + star('#F4F4F4') + '</span><span class="bbarc-tx">Next game</span><span class="bbarc-ic bbarc-ic-r">' + star('#212121') + '</span></button>';
-    A.btn = bar.firstChild;
+    bar.innerHTML = '<p class="bbarc-h">Fancy a game?</p><p class="bbarc-p">Take five. Go on.</p><button type="button" class="bbarc-btn" data-squiggle><span class="bbarc-ic bbarc-ic-l">' + star('#F4F4F4') + '</span><span class="bbarc-tx">Next game</span><span class="bbarc-ic bbarc-ic-r">' + star('#212121') + '</span></button>';
+    A.btn = bar.querySelector('.bbarc-btn');
     A.btn.addEventListener('mouseover', function () { if (!A.btn._fillT) A.btn._fillT = performance.now(); });
     // while a press plays out, real mouseouts (phones send one straight after a tap) don't reach the squiggle script
     A.btn.addEventListener('mouseout', function (e) {

@@ -21,6 +21,7 @@
     '~ .bb404-h{margin:0 0 14px;font-size:clamp(22px,3.2vw,40px);line-height:1.05;font-weight:500;letter-spacing:-.01em;text-transform:uppercase;color:C}' +
     '~ .bb404-p{margin:0 0 30px;max-width:30em;font-size:clamp(15px,1.4vw,18px);line-height:1.45;color:C}' +
     // outline squiggle button on ink: cream outline, cream squiggle fill, ink text
+    '~ .bbarc-h,~ .bbarc-p{color:C}' +
     '~ .bbarc-btn{color:C;border-color:C;text-decoration:none}' +
     '~ .bbarc-ic-r path{fill:C}~ .bbarc-ic-l path{fill:I}' +
     '~ .sq-l path{stroke:C}' +
