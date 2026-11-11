@@ -16,7 +16,7 @@
   s.textContent =
     '.bbarc-bar{order:-1;align-self:center;display:flex;flex-direction:column;align-items:center;text-align:center;margin:0 0 1.2vw;position:relative;z-index:2}' +
     // intro above the button so people know there's a game here: plain text, no effects
-    '.bbarc-h{margin:0 0 6px;font-family:inherit;font-size:clamp(26px,3vw,44px);line-height:1.05;font-weight:500;letter-spacing:-.01em;color:#212121}' +
+    '.bbarc-h{margin:0 0 6px;font-family:inherit;font-size:clamp(26px,3vw,44px);line-height:1.05;font-weight:700;letter-spacing:-.01em;color:#212121}' +
     '.bbarc-p{margin:0 0 18px;font-family:inherit;font-size:clamp(15px,1.3vw,18px);line-height:1.4;font-weight:400;color:#212121}' +
     '.bbarc-btn{-webkit-appearance:none;appearance:none;margin:0;box-sizing:border-box;position:relative;isolation:isolate;overflow:hidden;cursor:pointer;' +
       'display:inline-flex;align-items:center;gap:10px;height:40px;padding:0 18px;background:transparent;color:#212121;border:1px solid #212121;border-radius:80px;' +
