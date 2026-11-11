@@ -84,3 +84,7 @@ James's studio site. Built in Webflow, with custom JS served from this repo via 
 - The footer is fetched from the home page at load and appended, then BBA.mount() runs, so the arcade (PLAY A GAME / NEXT GAME) offers every game. No game starts by default.
 - Ink set for the games: they run their green set and BB404 swaps colours as they draw (BB404.MAP: ink -> cream, Main Green -> ink) by wrapping canvas fillStyle / strokeStyle / gradients / putImageData and SVG image sources. Switched on only while the 404 page shows (BB404.patch / unpatch). Anything that must stay dark on this page uses #212122 (cats: C.dark for pupils, closed eyes, markings).
 - Both button types have ink-page colours in 10-404-styles.js (outline: cream outline, cream squiggle, ink text; solid game button: cream pill, ink text). Same shapes, sizes and motion.
+
+## Footer arcade intro (18-footer-arcade.js + 18b-footer-doit.js)
+- "Fancy a game?" (bold heading, .bbarc-h) and "Take five. Go on." (.bbarc-p) sit above the PLAY A GAME / NEXT GAME button. Plain ink text; cream on the 404 page.
+- Hovering the heading throws out DO IT! words and 16x8 pixel game controllers with the footer-hearts physics (pop, tumble, bounce, fade). Purps on green footers, Main Green on Purps footers. A tap throws a burst of 7. Off under reduced motion.
