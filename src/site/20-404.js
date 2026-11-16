@@ -13,7 +13,8 @@
   N.MAP = { '#212121': N.CREAM, '#07a87e': N.INK };
   // Only #212121 is swapped. Black that sits inside a filled shape (logo words on the backpack, the golden spiral's
   // lines, the hoops ball's face, lenses, pupils) is drawn in #212122 by the games, so it stays black on this page.
-  N.HYDRA = '#4B3D7A';   // the bricks hydra's outline on this page: deep purple
+  N.DEEP = '#4B3D7A';    // deep purple: the outline of the pixel sprites on this page (hydra, flame, elixir, high-tops) in place of ink
+  N.SLING = '#AE9AE4';   // the hoops catapult on this page: Purps, so the ball's cream arms and legs stand out against it
   N.RGB = [[/rgba?\(\s*33\s*,\s*33\s*,\s*33\b/i, '245,241,234'], [/rgba?\(\s*7\s*,\s*168\s*,\s*126\b/i, '33,33,33']];
   // 5x7 pixel digits
   N.GLYPH = {

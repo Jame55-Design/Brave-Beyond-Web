@@ -43,7 +43,7 @@
     pink: { fur: C.pink, nose: C.purps, closed: C.dark, eye: C.cream },
     mint: { fur: C.mint, nose: C.pink, closed: C.dark, eye: C.cream },
     tiger: { fur: C.green, nose: C.pink, closed: C.dark, eye: C.cream, mark: C.dark, pat: 'tiger' },
-    calico: { fur: C.cream, nose: C.pink, closed: C.dark, eye: C.white, a: C.purps, b: C.dark, pat: 'calico' },
+    calico: { fur: C.cream, nose: C.pink, closed: C.dark, eye: C.white, a: C.purps, b: C.ink, pat: 'calico' },
     lucky: { fur: '#F6C945', nose: '#C9654F', closed: C.dark, mark: '#E2483D', pat: 'lucky' }
   };
   // box palettes: kraft-free brand boxes. 'purple' is used on a green footer, 'lilac' on a Purps footer.

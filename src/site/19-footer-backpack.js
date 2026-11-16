@@ -135,22 +135,24 @@
 </svg>`;
   BP.PENCIL_SVG = { purple: `<svg width="117" height="1062" viewBox="0 0 117 1062" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M116 930.56V69.8496H0V930.56C0 936.09 1.15 941.56 3.37 946.63L52.01 1057.57C54.3 1062.8 61.71 1062.8 64 1057.57L112.64 946.63C114.86 941.56 116.01 936.09 116.01 930.56H116Z" fill="#212121"/>
+<path d="M12.2383 135.25H103.759V933.86H12.2383V135.25Z" fill="#212122"/>
 <path d="M36.4583 135.25H12.2383V933.86H36.4583V135.25Z" fill="#AE9AE4"/>
 <path d="M70.1067 135.25H45.8867V933.86H70.1067V135.25Z" fill="#D0C6E9"/>
 <path d="M103.759 135.25H79.5391V933.86H103.759V135.25Z" fill="#AE9AE4"/>
 <path d="M4 65.85V26.08C4 13.9 13.9 4 26.08 4H89.92C102.09 4 112 13.9 112 26.08V65.85H4Z" fill="#AE9AE4"/>
-<path d="M89.92 8C99.89 8 108 16.11 108 26.08V61.85H8V26.08C8 16.11 16.11 8 26.08 8H89.92ZM89.92 0H26.08C11.68 0 0 11.68 0 26.08V69.85H116V26.08C116 11.68 104.32 0 89.92 0Z" fill="#231F20"/>
+<path d="M89.92 8C99.89 8 108 16.11 108 26.08V61.85H8V26.08C8 16.11 16.11 8 26.08 8H89.92ZM89.92 0H26.08C11.68 0 0 11.68 0 26.08V69.85H116V26.08C116 11.68 104.32 0 89.92 0Z" fill="#212121"/>
 <path d="M59.9217 1052.19L66.7717 1036.56C67.0217 1035.98 66.6017 1035.34 65.9717 1035.34H50.0217C49.3917 1035.34 48.9717 1035.99 49.2217 1036.56L56.0717 1052.19C56.8017 1053.86 59.1817 1053.86 59.9117 1052.19H59.9217Z" fill="#D0C6E9"/>
 <path d="M32.6602 37.3903C34.317 37.3903 35.6602 35.192 35.6602 32.4803C35.6602 29.7686 34.317 27.5703 32.6602 27.5703C31.0033 27.5703 29.6602 29.7686 29.6602 32.4803C29.6602 35.192 31.0033 37.3903 32.6602 37.3903Z" fill="#212122"/>
 <path d="M83.3398 37.3903C84.9967 37.3903 86.3398 35.192 86.3398 32.4803C86.3398 29.7686 84.9967 27.5703 83.3398 27.5703C81.683 27.5703 80.3398 29.7686 80.3398 32.4803C80.3398 35.192 81.683 37.3903 83.3398 37.3903Z" fill="#212122"/>
 <path d="M57.9982 47.0706C52.0182 47.0706 46.7682 44.0106 44.6282 39.2606C44.1682 38.2506 44.6282 37.0706 45.6282 36.6106C46.6382 36.1506 47.8182 36.6106 48.2782 37.6106C49.7582 40.8706 53.6582 43.0706 58.0082 43.0706C62.3582 43.0706 66.2582 40.8806 67.7382 37.6106C68.1982 36.6006 69.3782 36.1606 70.3882 36.6106C71.3982 37.0706 71.8382 38.2506 71.3882 39.2606C69.2482 44.0006 63.9982 47.0706 58.0182 47.0706H57.9982Z" fill="#231F20"/>
 </svg>`, green: `<svg width="117" height="1062" viewBox="0 0 117 1062" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M116 930.56V69.8496H0V930.56C0 936.09 1.15 941.56 3.37 946.63L52.01 1057.57C54.3 1062.8 61.71 1062.8 64 1057.57L112.64 946.63C114.86 941.56 116.01 936.09 116.01 930.56H116Z" fill="#212121"/>
+<path d="M12.2383 135.25H103.759V933.86H12.2383V135.25Z" fill="#212122"/>
 <path d="M36.4583 135.25H12.2383V933.86H36.4583V135.25Z" fill="#02A87E"/>
 <path d="M70.1067 135.25H45.8867V933.86H70.1067V135.25Z" fill="#66C9B0"/>
 <path d="M103.759 135.25H79.5391V933.86H103.759V135.25Z" fill="#02A87E"/>
 <path d="M4 65.85V26.08C4 13.9 13.9 4 26.08 4H89.92C102.09 4 112 13.9 112 26.08V65.85H4Z" fill="#02A87E"/>
-<path d="M89.92 8C99.89 8 108 16.11 108 26.08V61.85H8V26.08C8 16.11 16.11 8 26.08 8H89.92ZM89.92 0H26.08C11.68 0 0 11.68 0 26.08V69.85H116V26.08C116 11.68 104.32 0 89.92 0Z" fill="#231F20"/>
+<path d="M89.92 8C99.89 8 108 16.11 108 26.08V61.85H8V26.08C8 16.11 16.11 8 26.08 8H89.92ZM89.92 0H26.08C11.68 0 0 11.68 0 26.08V69.85H116V26.08C116 11.68 104.32 0 89.92 0Z" fill="#212121"/>
 <path d="M59.9217 1052.19L66.7717 1036.56C67.0217 1035.98 66.6017 1035.34 65.9717 1035.34H50.0217C49.3917 1035.34 48.9717 1035.99 49.2217 1036.56L56.0717 1052.19C56.8017 1053.86 59.1817 1053.86 59.9117 1052.19H59.9217Z" fill="#66C9B0"/>
 <path d="M32.6602 37.3903C34.317 37.3903 35.6602 35.192 35.6602 32.4803C35.6602 29.7686 34.317 27.5703 32.6602 27.5703C31.0033 27.5703 29.6602 29.7686 29.6602 32.4803C29.6602 35.192 31.0033 37.3903 32.6602 37.3903Z" fill="#212122"/>
 <path d="M83.3398 37.3903C84.9967 37.3903 86.3398 35.192 86.3398 32.4803C86.3398 29.7686 84.9967 27.5703 83.3398 27.5703C81.683 27.5703 80.3398 29.7686 80.3398 32.4803C80.3398 35.192 81.683 37.3903 83.3398 37.3903Z" fill="#212122"/>
@@ -172,14 +174,22 @@
   const LW = s => Math.max(1.5, s*0.055);
 
   function swatch(c, s){
-    const cols=[C.purps, C.lav, C.mint], w=s*0.26, h=s*0.72;
+    const cols=[C.purps, C.lav, C.mint], w=s*0.26, h=s*0.72, fan=[-1,0,1];
+    const card=()=>c.roundRect(-w/2,-h,w,h,s*0.05);
     c.save(); c.translate(0, s*0.34);
-    [-1,0,1].forEach((k,i)=>{
+    fan.forEach((k,i)=>{
       c.save(); c.rotate(k*0.42);
-      c.beginPath(); c.roundRect(-w/2,-h,w,h,s*0.05);
+      c.beginPath(); card();
       c.fillStyle=cols[i]; c.fill();
       c.fillStyle=C.cream; c.fillRect(-w/2+LW(s)/2, -h*0.24, w-LW(s), h*0.2);
       c.strokeStyle=C.ink; c.lineWidth=LW(s); c.stroke();
+      c.restore();
+      if (!i) return;
+      // where this card's edge crosses the cards under it the line is inside the fan, so it stays black (C.inn)
+      c.save(); c.beginPath();
+      for (let j=0;j<i;j++){ c.save(); c.rotate(fan[j]*0.42); card(); c.restore(); }
+      c.clip();
+      c.rotate(k*0.42); c.beginPath(); card(); c.strokeStyle=C.inn; c.lineWidth=LW(s); c.stroke();
       c.restore();
     });
     c.fillStyle=C.inn; c.beginPath(); c.arc(0,-s*0.05,s*0.05,0,6.28); c.fill();
@@ -254,15 +264,18 @@
   }
 
 
+  // built in BP.setTheme, not at file load: the ink 404 page swaps colours in SVG images as they are created
   const PENCIL = {};
-  for (const k of ['purple','green']){
-    const im = new Image();
-    im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(BP.PENCIL_SVG[k]);
-    PENCIL[k] = im;
+  function buildPencils(){
+    for (const k of ['purple','green']){
+      const im = new Image();
+      im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(BP.PENCIL_SVG[k]);
+      PENCIL[k] = im;
+    }
   }
   function pencil(c, s){
     const im = THEME==='purple' ? PENCIL.green : PENCIL.purple;
-    if (!(im.complete && im.naturalWidth)) return;
+    if (!(im && im.complete && im.naturalWidth)) return;
     const L = s*1.55, w = L*117/1062*1.6;   // drawn a bit longer and 1.6x wider so it stands out
     c.save(); c.rotate(0.62); c.drawImage(im, -w/2, -L/2, w, L); c.restore();
   }
@@ -274,11 +287,14 @@
     c.beginPath(); c.roundRect(x,y,w,h,s*0.09); c.fillStyle=C.purps; c.fill();
     c.save(); c.clip(); c.fillStyle=C.lav; c.fillRect(x,y,w,h*0.34); c.restore();
     c.strokeStyle=C.inn; c.beginPath(); c.moveTo(x,y+h*0.34); c.lineTo(x+w,y+h*0.34); c.stroke();
-    c.strokeStyle=C.ink; c.beginPath(); c.roundRect(x,y,w,h,s*0.09); c.stroke();
     c.fillStyle=C.inn; c.beginPath(); c.roundRect(x+w*0.08,y+h*0.1,w*0.16,h*0.14,s*0.02); c.fill();
     c.fillStyle=C.lime; c.beginPath(); c.arc(x+w*0.84,y+h*0.17,s*0.04,0,6.28); c.fill();
+    // lens: clipped to the body so its ring never cuts into the body's outline (which goes on last)
+    c.save(); c.beginPath(); c.roundRect(x,y,w,h,s*0.09); c.clip();
     c.strokeStyle=C.inn; c.beginPath(); c.arc(0,y+h*0.6,s*0.2,0,6.28); c.fillStyle=C.lav; c.fill(); c.stroke();
     c.beginPath(); c.arc(0,y+h*0.6,s*0.11,0,6.28); c.fillStyle=C.inn; c.fill();
+    c.restore();
+    c.strokeStyle=C.ink; c.beginPath(); c.roundRect(x,y,w,h,s*0.09); c.stroke();
   }
 
   // headphones bonus: lime fades behind the cups, notes drifting off, cups jump on the beat
@@ -389,13 +405,13 @@
     c.fillStyle=C.lime; c.strokeStyle=C.ink; c.lineWidth=Math.max(1,r*0.18);
     c.beginPath();
     for (let i=0;i<8;i++){ const a=i*Math.PI/4, rr= i%2 ? r*0.32 : r; c.lineTo(x+Math.cos(a-Math.PI/2)*rr, y+Math.sin(a-Math.PI/2)*rr); }
-    c.closePath(); c.fill(); c.stroke();
+    c.closePath(); c.fill(); if (!(window.BB404 && window.BB404.on)) c.stroke();   // ink 404 page: plain lime star, no outline
   }
 
 
   BP.setTheme = function(t){
     THEME = t; C.purps = t==='purple' ? '#07A87E' : '#AE9AE4';
-    SPR.clear(); buildBag();
+    SPR.clear(); buildBag(); buildPencils();
   };
 
   /* ---------- game ---------- */
@@ -592,7 +608,7 @@
     for (const wxs of [146, 494]){
       const wx=ox+wxs*k, wy=oy+501*k;
       ctx.fillStyle = lit ? C.lime : C.ink; ctx.beginPath(); ctx.arc(wx,wy,r,0,6.28); ctx.fill();
-      ctx.strokeStyle = lit ? C.ink : C.lav; ctx.lineWidth=Math.max(1.5,r*0.2); ctx.lineCap='round';
+      ctx.strokeStyle = lit ? C.inn : C.lav; ctx.lineWidth=Math.max(1.5,r*0.2); ctx.lineCap='round';
       ctx.beginPath();
       for (let a=0;a<2;a++){ const ang=c.wheel+a*Math.PI/2; ctx.moveTo(wx+Math.cos(ang)*r*0.62, wy+Math.sin(ang)*r*0.62); ctx.lineTo(wx-Math.cos(ang)*r*0.62, wy-Math.sin(ang)*r*0.62); }
       ctx.stroke();

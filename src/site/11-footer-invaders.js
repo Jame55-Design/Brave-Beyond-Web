@@ -428,7 +428,7 @@
       x.save(); x.beginPath(); x.rect(0, g.lane - 4, W, H - 18 - g.lane + 4); x.clip();
       g.win.fl.forEach(function (q) {
         var fw = BB.FIRE[0].length * q.px, fh = BB.FIRE.length * q.px;
-        BB.sprite(x, BB.FIRE, Math.round(q.x - fw / 2), Math.round(q.y - fh / 2), q.px, { O: K.ink, L: K.lime, V: K.lav }, Math.floor(g.t * 8 + q.ph) % 2);
+        BB.sprite(x, BB.FIRE, Math.round(q.x - fw / 2), Math.round(q.y - fh / 2), q.px, BB.fireCols ? BB.fireCols() : { O: K.ink, L: K.lime, V: K.lav }, Math.floor(g.t * 8 + q.ph) % 2);
       });
       x.restore();
     }

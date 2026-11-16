@@ -408,12 +408,15 @@
     x.lineCap = 'butt';
   };
 
+  // pixel sprites (flame, high-tops): ink outline, or deep purple on the ink 404 page, where ink would turn cream
+  H.outline = function () { return (window.BB404 && window.BB404.on && window.BB404.DEEP) || C.ink; };
   H.drawSling = function (g, part) {
     var x = g.ctx, u = g.u, sx = g.sx, fy = g.forkY, fl = 26 * u, b = g.b;
+    var wood = (window.BB404 && window.BB404.on && window.BB404.SLING) || C.ink;   // the catapult is purple on the ink 404 page
     var lx = sx - fl, rx = sx + fl * 0.9;
     if (part === 'back') {
       // stem and fork (ink), back band
-      x.strokeStyle = C.ink; x.lineCap = 'round'; x.lineJoin = 'round';
+      x.strokeStyle = wood; x.lineCap = 'round'; x.lineJoin = 'round';
       x.lineWidth = 11 * u;
       x.beginPath(); x.moveTo(sx, g.floorY); x.lineTo(sx, fy + 46 * u); x.stroke();
       x.lineWidth = 9 * u;
@@ -421,7 +424,7 @@
       if (b) band(rx, fy - 2 * u);
       x.lineCap = 'butt';
     } else {
-      x.strokeStyle = C.ink; x.lineCap = 'round'; x.lineWidth = 9 * u;
+      x.strokeStyle = wood; x.lineCap = 'round'; x.lineWidth = 9 * u;
       x.beginPath(); x.moveTo(sx, fy + 50 * u); x.quadraticCurveTo(sx, fy + 26 * u, lx, fy - 6 * u); x.stroke();
       if (b) band(lx, fy - 2 * u);
       else if (g.snap > 0) {
@@ -506,7 +509,7 @@
     x.fillStyle = C.lime; x.beginPath(); x.arc(0, 0, r, 0, P * 2); x.fill();
     // high-tops on the feet, toes pointing outwards
     if (kicks && feet.length) {
-      var kp = Math.max(1.5, r * 0.12), rows = H.KICKS, kw = rows[0].length, kh = rows.length, col = { O: C.ink, P: C.purps, L: C.lime, V: C.lav };
+      var kp = Math.max(1.5, r * 0.12), rows = H.KICKS, kw = rows[0].length, kh = rows.length, col = { O: H.outline(), P: C.purps, L: C.lime, V: C.lav };
       for (var fi = 0; fi < 2; fi++) {
         var ft = feet[fi], dir = fi ? 1 : -1;
         for (var ky = 0; ky < kh; ky++) for (var kx = 0; kx < kw; kx++) {
@@ -577,8 +580,7 @@
     var flip = Math.floor(g.clock * 12) % 2, grow = 1 + Math.sin(g.clock * 23) * 0.06;
     var a = (!b.held && sp > 60) ? Math.atan2(-b.vy, -b.vx) + Math.PI / 2 : 0;   // tip points away from travel
     x.save(); x.rotate(a); x.scale(1, grow);
-    var ox = -w * P / 2, oy = -h * P + r * 1.05, col = { O: C.ink, L: C.lime, V: C.lav };
-    if (window.BB404 && window.BB404.on) col.O = null;   // ink 404 page: no outline (cream looked wrong, black would cut into the sling)
+    var ox = -w * P / 2, oy = -h * P + r * 1.05, col = { O: H.outline(), L: C.lime, V: C.lav };
     for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) {
       var ch = rows[j][flip ? w - 1 - i : i];
       if (col[ch]) { x.fillStyle = col[ch]; x.fillRect(Math.round(ox + i * P), Math.round(oy + j * P), P, P); }
