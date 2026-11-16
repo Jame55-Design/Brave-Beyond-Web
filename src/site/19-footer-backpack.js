@@ -646,6 +646,7 @@
     const left = gm.W < 560 ? 16 : Math.round(gm.W*0.05);
     const hud = gm.mode==='play' ? 'SCORE ' + gm.score + '   TIME ' + Math.ceil(gm.t) + '   BEST ' + gm.best : 'BEST ' + gm.best;
     ctx.fillText(hud, left, gm.hy);
+    if (window.BBA && BBA.hud) BBA.hud(gm.st, gm.W - left, gm.hy, gm.W);
     drawPavement(ctx);
     for (const it of gm.items) drawItem(ctx, it);
     drawBag(ctx);

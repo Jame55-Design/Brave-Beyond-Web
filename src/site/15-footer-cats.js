@@ -369,7 +369,7 @@
     if (g.pop > 0 && g.mode === 'play') { x.font = '700 ' + g.fs + 'px ' + g.font; }
     x.fillText(hud, left, g.hy);
     g.btn = null;
-    pill(g, 'Play', right, g.hy, g.mode === 'idle');
+    pill(g, 'Play', (window.BBA && BBA.hud ? BBA.hud(g.st, right, g.hy, g.W) : right), g.hy, g.mode === 'idle');
     // floor rule
     rect(x, K.C.ink, 0, g.floorY + P, g.W, 1.5);
     g.holes.forEach(function (h) { box(g, h); });

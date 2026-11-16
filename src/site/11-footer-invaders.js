@@ -450,7 +450,7 @@
     // HUD
     x.font = '500 ' + g.fs + 'px ' + g.font; x.fillStyle = K.ink; x.textBaseline = 'middle';
     x.textAlign = 'left'; x.fillText('SCORE ' + g.score + '   ' + (g.hyd ? 'FINAL WAVE' : 'WAVE ' + g.wave + '/' + B.WAVES) + '   LIVES ' + g.lives, 16, g.hy);
-    var px = B.pill(g, x, W - 16, g.hy);
+    var px = B.pill(g, x, (window.BBA && BBA.hud ? BBA.hud(g.st, W - 16, g.hy, W) : W - 16), g.hy);
     x.font = '500 ' + g.fs + 'px ' + g.font; x.fillStyle = K.ink;
     x.textAlign = 'right'; x.fillText('LOGO ' + Math.round(100 * L.alive / L.total) + '%', px - 10, g.hy);
     // instructions are plain text; the only button is Play again (the same one as every other game)

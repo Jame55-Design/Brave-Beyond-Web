@@ -610,7 +610,7 @@
       x.fillText((g.onFire ? 'ON FIRE x' : 'KICKS x') + H.FIRE_X, pad + sw + H.BALLS * g.fs * 0.8 + g.fs, g.hy);
     }
     x.textAlign = 'right'; x.fillStyle = C.ink; x.font = '500 ' + g.fs + 'px ' + g.font;
-    x.fillText('BEST ' + g.best, W - pad, g.hy);
+    x.fillText('BEST ' + g.best, (window.BBA && BBA.hud ? BBA.hud(g.st, W - pad, Math.round(g.hy - g.fs * 0.35), W) : W - pad) - (window.BBA && BBA.hudOn(g.st) ? 4 : 0), g.hy);
     if (g.frame) H.drawNav(g);   // the logo sits back with the score bar, so the ball flies in front of it
     // floor rule
     x.fillStyle = C.ink; x.fillRect(0, g.floorY, W, 1.5);

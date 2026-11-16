@@ -21,7 +21,7 @@
     '.bbarc-btn{-webkit-appearance:none;appearance:none;margin:0;box-sizing:border-box;position:relative;isolation:isolate;overflow:hidden;cursor:pointer;' +
       'display:inline-flex;align-items:center;gap:10px;height:40px;padding:0 18px;background:transparent;color:#212121;border:1px solid #212121;border-radius:80px;' +
       'font-family:inherit;font-weight:600;font-size:13px;line-height:1;letter-spacing:.01em;text-transform:uppercase;-webkit-user-select:none;user-select:none}' +
-    '.bbarc-btn:focus-visible{outline:2px solid #CCFF00;outline-offset:3px}' +
+    '.bbarc-btn[hidden]{display:none}.bbarc-btn:focus-visible{outline:2px solid #CCFF00;outline-offset:3px}' +
     '.bbarc-btn{transition:transform .14s cubic-bezier(.3,.7,.4,1)}.bbarc-btn.bbarc-press{transform:scale(.94)}' +
     '.bbarc-ic{display:inline-flex;flex:none;width:12px;height:12px;overflow:hidden;transition:width .3s,margin .3s,opacity .2s}' +
     '.bbarc-ic svg{display:block;flex:none;width:12px;height:12px}' +
@@ -110,6 +110,36 @@
     }, wait);
   };
 
+  // NEXT GAME lives in the running game's score bar (far right), as the small solid score-bar button, so the intro
+  // ("Fancy a game?") above the game is left on its own. Each game calls BBA.hud(stage, right, y, W) while drawing its
+  // HUD and gets back the new right edge for the rest of its HUD (Restore logo, BEST...). 'Next' under 480px wide.
+  A.hudOn = function (st) { return !!(window.BBPILL && A.cur && A.f && st && A.f.contains(st)); };
+  A.hud = function (st, right, y, W) {
+    if (!A.hudOn(st)) return right;
+    var b = window.BBPILL.place(st, 'next', { show: true, size: 'hud', align: 'right', x: right, y: y, text: W < 480 ? 'Next' : 'Next game',
+      theme: A.t === 'purple' ? 'purple' : 'green', onClick: A.swap });
+    if (b && !b._bbarc) { b._bbarc = 1; b.setAttribute('aria-label', 'Switch footer game'); }
+    return right - (b ? b._w : 0) - 8;
+  };
+  // the score-bar button plays its own press (10z-footer-pill.js), then the old game fades out and the next fades in
+  A.swap = function () {
+    if (A.busy) return;
+    var rm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches, f = A.f;
+    var old = A.cur && f && f.querySelector(A.cur.stage);
+    A.busy = true;
+    if (old && !rm) { old.style.transition = 'opacity ' + A.OUT_MS + 'ms ease'; old.style.opacity = '0'; }
+    setTimeout(function () {
+      A.busy = false;
+      if (A.f !== f) return;
+      A.next();
+      var st = A.cur && f.querySelector(A.cur.stage);
+      if (st && !rm) {
+        st.style.opacity = '0'; st.style.transition = 'opacity ' + A.IN_MS + 'ms ease';
+        requestAnimationFrame(function () { requestAnimationFrame(function () { st.style.opacity = '1'; }); });
+      }
+    }, old && !rm ? A.OUT_MS : 0);
+  };
+
   A.fill = function () {
     if (!A.btn || A.btn._fillT) return;
     A.btn._fillT = performance.now();
@@ -123,6 +153,8 @@
 
   A.label = function () {
     if (!A.btn) return;
+    // the top button is only PLAY A GAME now; once a game runs, NEXT GAME is in its score bar (A.hud)
+    A.btn.hidden = !!A.cur;
     A.btn.querySelector('.bbarc-tx').textContent = A.cur ? 'Next game' : 'Play a game';
     A.btn.setAttribute('aria-label', A.cur ? 'Switch footer game (playing ' + A.cur.name + ')' : 'Play a footer game');
   };
