@@ -37,7 +37,9 @@
   H.KICKS = ['OOO....', 'OPPO...', 'OVPO...', 'OVLLOO.', 'OVVVVVO', 'OOOOOOO'];
   // Brave Beyond pixel flame (same as the bricks game). O = ink outline, L = lime flame, V = lavender core
   H.FLAME = ['.....O.....', '....OLO....', '...OLLO.O..', '...OLLLOLO.', '..OLLLLLLO.', '.OLLLVLLLLO', '.OLLVVLLLLO', 'OLLVVVVLLLO', 'OLLVVVVVLLO', 'OLLVVVVVLLO', '.OLLVVVLLO.', '..OLLLLLO..', '...OOOOO...'];
-  var C = { ink: '#212121', lime: '#CCFF00', lav: '#E9DBEC', purps: '#AE9AE4', pink: '#E8CAE9', cream: '#F4E9D6', mint: '#66C9B0' };
+  // C.inn: ink that sits inside a filled shape (his face on the lime ball). Same black to the
+  // eye, but the ink 404 page only turns #212121 cream, so anything drawn in C.inn stays black there.
+  var C = { ink: '#212121', inn: '#212122', lime: '#CCFF00', lav: '#E9DBEC', purps: '#AE9AE4', pink: '#E8CAE9', cream: '#F4E9D6', mint: '#66C9B0' };
   H.C = C;
   // Colour sets: the green footer (home, goodies) and the Purps footer (contact, privacy), with the same swaps as the
   // other purple-footer games so nothing blends into the background.
@@ -514,7 +516,7 @@
         }
       }
     }
-    x.fillStyle = C.ink;
+    x.fillStyle = C.inn; x.strokeStyle = C.inn;   // the face is always black on the lime ball
     var ex = r * 0.34, ey = -r * 0.16, er = r * 0.15, s;
     if (mood === 'idle' || mood === 'sad') {     // relaxed, half-closed eyes
       var blink = (t % 3.2) < 0.12;
@@ -576,6 +578,7 @@
     var a = (!b.held && sp > 60) ? Math.atan2(-b.vy, -b.vx) + Math.PI / 2 : 0;   // tip points away from travel
     x.save(); x.rotate(a); x.scale(1, grow);
     var ox = -w * P / 2, oy = -h * P + r * 1.05, col = { O: C.ink, L: C.lime, V: C.lav };
+    if (window.BB404 && window.BB404.on) col.O = null;   // ink 404 page: no outline (cream looked wrong, black would cut into the sling)
     for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) {
       var ch = rows[j][flip ? w - 1 - i : i];
       if (col[ch]) { x.fillStyle = col[ch]; x.fillRect(Math.round(ox + i * P), Math.round(oy + j * P), P, P); }

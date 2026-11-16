@@ -23,9 +23,12 @@
   B.SEL = '[data-barba-namespace="services"] .bb-footer';
   B.PATHS = ['/services'];
   // Colour sets. On the Purps footer anything Purps swaps to Main Green so it doesn't vanish, and the ball goes ink.
+  // inn: the pixel flame's own outline. Same black to the eye, but the ink 404 page only turns #212121 cream, so the
+  // flame keeps its normal colours there instead of getting a cream outline. (The hydra's outline on that page is
+  // BB404.HYDRA, a deep purple: see B.hydraParts.)
   B.PALS = {
-    green:  { ink: '#212121', lime: '#CCFF00', lav: '#E9DBEC', purp: '#AE9AE4', ball: '#E9DBEC' },
-    purple: { ink: '#212121', lime: '#CCFF00', lav: '#E9DBEC', purp: '#07A87E', ball: '#212121' }
+    green:  { ink: '#212121', inn: '#212122', lime: '#CCFF00', lav: '#E9DBEC', purp: '#AE9AE4', ball: '#E9DBEC' },
+    purple: { ink: '#212121', inn: '#212122', lime: '#CCFF00', lav: '#E9DBEC', purp: '#07A87E', ball: '#212121' }
   };
   B.COL = B.PALS.green;
   B.setTheme = function (t) { B.COL = B.PALS[t] || B.PALS.green; };
@@ -184,9 +187,11 @@
   // Build once per pixel size: a body layer, one layer per head, and each tongue's pixels (tied to its head)
   B.hydraParts = function (px) {
     B._hp = B._hp || {};
-    var key = px + B.COL.purp;   // one cache per pixel size and colour set
+    // on the ink 404 page the hydra's outline is deep purple (cream looked wrong, black made it spindly)
+    var deep = (window.BB404 && window.BB404.on && window.BB404.HYDRA) || '';
+    var key = px + B.COL.purp + deep;   // one cache per pixel size and colour set
     if (B._hp[key]) return B._hp[key];
-    var K = B.COL, map = { X: K.ink, P: K.purp, V: '#E8CAE9', E: K.lime }, w = B.HYDRA[0].length, h = B.HYDRA.length;
+    var K = B.COL, map = { X: deep || K.ink, P: K.purp, V: '#E8CAE9', E: K.lime }, w = B.HYDRA[0].length, h = B.HYDRA.length;
     function layer() { var c = document.createElement('canvas'), x = c.getContext && c.getContext('2d'); if (!x) return null; c.width = w * px; c.height = h * px; return { c: c, x: x }; }
     var body = layer(), heads = [layer(), layer(), layer()], tongues = [[], [], []], tHead = [0, 0, 0], list = [];
     for (var r = 0; r < h; r++) for (var k = 0; k < w; k++) {
@@ -492,7 +497,7 @@
       x.save(); x.beginPath(); x.rect(0, g.ceil + 1, W, H - 18 - g.ceil - 1); x.clip();
       g.win.flames.forEach(function (q) {
         var fw = B.FIRE[0].length * q.px, fh = B.FIRE.length * q.px;
-        B.sprite(x, B.FIRE, Math.round(q.x - fw / 2), Math.round(q.y - fh / 2), q.px, { O: K.ink, L: K.lime, V: K.lav }, Math.floor(g.t * 8 + q.ph) % 2);
+        B.sprite(x, B.FIRE, Math.round(q.x - fw / 2), Math.round(q.y - fh / 2), q.px, { O: K.inn, L: K.lime, V: K.lav }, Math.floor(g.t * 8 + q.ph) % 2);
       });
       x.restore();
     }
@@ -508,7 +513,7 @@
     g.pu.forEach(function (u) {
       var sz = B.puSize(g, u.type), ux = u.x - sz.w / 2, uy = u.y - sz.h / 2;
       if (u.type === 'life') B.sprite(x, B.ELIXIR, ux, uy + Math.round(Math.sin(g.t * 5 + u.x) * 1.5) * ppx, ppx, { X: K.ink, P: K.purp, V: K.lav, L: K.lime, H: '#FFFFFF' });
-      else if (u.type === 'thru') B.sprite(x, B.FIRE, ux, uy, ppx, { O: K.ink, L: K.lime, V: K.lav }, fr);
+      else if (u.type === 'thru') B.sprite(x, B.FIRE, ux, uy, ppx, { O: K.inn, L: K.lime, V: K.lav }, fr);
       else { var hk = B.hyScale(g); x.save(); x.translate(Math.round(ux), Math.round(uy + Math.sin(g.t * 4 + u.x) * 2)); x.scale(hk, hk); B.drawHydra(x, 0, 0, B.puPxFor(g, 'x6'), g.t, u.x * .01); x.restore(); }
     });
     // pick-up label: pixel text, rises and fades

@@ -43,13 +43,13 @@
     pink: { fur: C.pink, nose: C.purps, closed: C.dark, eye: C.cream },
     mint: { fur: C.mint, nose: C.pink, closed: C.dark, eye: C.cream },
     tiger: { fur: C.green, nose: C.pink, closed: C.dark, eye: C.cream, mark: C.dark, pat: 'tiger' },
-    calico: { fur: C.cream, nose: C.pink, closed: C.dark, eye: C.white, a: C.purps, b: C.ink, pat: 'calico' },
+    calico: { fur: C.cream, nose: C.pink, closed: C.dark, eye: C.white, a: C.purps, b: C.dark, pat: 'calico' },
     lucky: { fur: '#F6C945', nose: '#C9654F', closed: C.dark, mark: '#E2483D', pat: 'lucky' }
   };
   // box palettes: kraft-free brand boxes. 'purple' is used on a green footer, 'lilac' on a Purps footer.
   K.BOXES = {
-    purple: { front: C.purps, back: '#9583D1', edge: '#8D78C9', inside: C.ink, flap: C.lilac, tape: C.pink, logo: C.ink },
-    lilac: { front: C.lilac, back: '#BFB2E3', edge: '#B4A6DE', inside: C.ink, flap: C.pink, tape: C.cream, logo: C.ink }
+    purple: { front: C.purps, back: '#9583D1', edge: '#8D78C9', inside: C.dark, flap: C.lilac, tape: C.pink, logo: C.dark },
+    lilac: { front: C.lilac, back: '#BFB2E3', edge: '#B4A6DE', inside: C.dark, flap: C.pink, tape: C.cream, logo: C.dark }
   };
   K.POOLS = {
     purple: ['black', 'black', 'black', 'purps', 'purps', 'purps', 'lilac', 'tabby', 'pink', 'mint', 'calico'],
