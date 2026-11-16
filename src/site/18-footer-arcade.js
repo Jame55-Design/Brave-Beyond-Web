@@ -32,9 +32,9 @@
     '.bb-footer .bbft-contact{order:1;align-self:center;margin:12px 0 0;text-decoration:none}' +
     // while a game runs (it takes over the big logo), a smaller copy of the logo sits under the buttons, above the
     // privacy / cookie links, and still throws hearts on hover (01-footer-hearts.js)
-    '.bb-footer .bbft-lm2{display:none;order:1;align-self:center;width:clamp(220px,36vw,560px);height:auto;margin:3vw 0 1.5vw;overflow:visible}' +
+    '.bb-footer .bbft-lm2{display:none;order:1;align-self:center;width:clamp(220px,36vw,560px);height:auto;margin:16px 0 6px;overflow:visible}' +
     '.bb-footer.bbarc-playing .bbft-lm2{display:block}.bbft-lm2 path{fill:#212121}' +
-    '@media (max-width:479px){.bb-footer .bbft-lm2{margin:28px 0 14px}}' +
+    '@media (max-width:479px){.bb-footer .bbft-lm2{margin:14px 0 4px}}' +
     '@media (max-width:479px){.bbarc-bar{margin:0 0 12px}.bbarc-p{margin-bottom:14px}.bbarc-btn{height:36px;font-size:12px;padding:0 15px}}' +
     '@media (prefers-reduced-motion:reduce){.bbarc-ic{transition:none}}';
   document.head.appendChild(s);
@@ -164,6 +164,7 @@
     // the top button is only PLAY A GAME now; once a game runs, NEXT GAME is in its score bar (A.hud)
     A.btn.hidden = !!A.cur;
     if (A.f) A.f.classList.toggle('bbarc-playing', !!A.cur);
+    if (A.cur) A.fitMini(A.f);
     A.btn.querySelector('.bbarc-tx').textContent = A.cur ? 'Next game' : 'Play a game';
     A.btn.setAttribute('aria-label', A.cur ? 'Switch footer game (playing ' + A.cur.name + ')' : 'Play a footer game');
   };
@@ -189,6 +190,17 @@
     [].forEach.call(c.querySelectorAll('.bbft-l'), function (p) { var d = p.getAttribute('data-bb-d'); if (d) p.setAttribute('d', d); p.removeAttribute('class'); p.removeAttribute('style'); });
     var after = f.querySelector('.bbft-contact') || ig;
     after.parentNode.insertBefore(c, after.nextSibling);
+  };
+
+  // crop the small logo's viewBox to the letters (the original has room around it for the bend), so the gaps above
+  // and below it are just its margins; hearts fly over the buttons in their own layer, so it can sit tight
+  A.fitMini = function (f) {
+    var c = f && f.querySelector('.bbft-lm2');
+    if (!c || c._fit) return;
+    try {
+      var b = c.getBBox();
+      if (b.width && b.height) { c.setAttribute('viewBox', [b.x, b.y - b.height * .04, b.width, b.height * 1.08].join(' ')); c._fit = 1; }
+    } catch (e) {}
   };
 
   A.mount = function () {
