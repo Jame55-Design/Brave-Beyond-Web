@@ -173,7 +173,11 @@
   /* ---------- item artwork (all drawn around 0,0 at size s) ---------- */
   const LW = s => Math.max(1.5, s*0.055);
 
+  // ink 404 page: the swatches and the camera take a deep purple line (BB404.DEEP) for outline and details alike.
+  // Cream outside + black inside looked broken on them.
+  const lines = () => { const d = (window.BB404 && window.BB404.on && window.BB404.DEEP) || ''; return { ink: d || C.ink, inn: d || C.inn }; };
   function swatch(c, s){
+    const L404=lines();
     const cols=[C.purps, C.lav, C.mint], w=s*0.26, h=s*0.72, fan=[-1,0,1];
     const card=()=>c.roundRect(-w/2,-h,w,h,s*0.05);
     c.save(); c.translate(0, s*0.34);
@@ -182,17 +186,17 @@
       c.beginPath(); card();
       c.fillStyle=cols[i]; c.fill();
       c.fillStyle=C.cream; c.fillRect(-w/2+LW(s)/2, -h*0.24, w-LW(s), h*0.2);
-      c.strokeStyle=C.ink; c.lineWidth=LW(s); c.stroke();
+      c.strokeStyle=L404.ink; c.lineWidth=LW(s); c.stroke();
       c.restore();
       if (!i) return;
       // where this card's edge crosses the cards under it the line is inside the fan, so it stays black (C.inn)
       c.save(); c.beginPath();
       for (let j=0;j<i;j++){ c.save(); c.rotate(fan[j]*0.42); card(); c.restore(); }
       c.clip();
-      c.rotate(k*0.42); c.beginPath(); card(); c.strokeStyle=C.inn; c.lineWidth=LW(s); c.stroke();
+      c.rotate(k*0.42); c.beginPath(); card(); c.strokeStyle=L404.inn; c.lineWidth=LW(s); c.stroke();
       c.restore();
     });
-    c.fillStyle=C.inn; c.beginPath(); c.arc(0,-s*0.05,s*0.05,0,6.28); c.fill();
+    c.fillStyle=L404.inn; c.beginPath(); c.arc(0,-s*0.05,s*0.05,0,6.28); c.fill();
     c.restore();
   }
 
@@ -281,20 +285,21 @@
   }
 
   function camera(c, s){
+    const L404=lines();
     const w=s*0.96,h=s*0.52,x=-w/2,y=-h/2+s*0.05,lw=LW(s);
-    c.lineJoin='round'; c.strokeStyle=C.ink; c.lineWidth=lw;
-    c.fillStyle=C.ink; c.beginPath(); c.roundRect(x+w*0.66,y-s*0.08,w*0.16,s*0.1,s*0.03); c.fill();
+    c.lineJoin='round'; c.strokeStyle=L404.ink; c.lineWidth=lw;
+    c.fillStyle=L404.ink; c.beginPath(); c.roundRect(x+w*0.66,y-s*0.08,w*0.16,s*0.1,s*0.03); c.fill();
     c.beginPath(); c.roundRect(x,y,w,h,s*0.09); c.fillStyle=C.purps; c.fill();
     c.save(); c.clip(); c.fillStyle=C.lav; c.fillRect(x,y,w,h*0.34); c.restore();
-    c.strokeStyle=C.inn; c.beginPath(); c.moveTo(x,y+h*0.34); c.lineTo(x+w,y+h*0.34); c.stroke();
-    c.fillStyle=C.inn; c.beginPath(); c.roundRect(x+w*0.08,y+h*0.1,w*0.16,h*0.14,s*0.02); c.fill();
+    c.strokeStyle=L404.inn; c.beginPath(); c.moveTo(x,y+h*0.34); c.lineTo(x+w,y+h*0.34); c.stroke();
+    c.fillStyle=L404.inn; c.beginPath(); c.roundRect(x+w*0.08,y+h*0.1,w*0.16,h*0.14,s*0.02); c.fill();
     c.fillStyle=C.lime; c.beginPath(); c.arc(x+w*0.84,y+h*0.17,s*0.04,0,6.28); c.fill();
     // lens: clipped to the body so its ring never cuts into the body's outline (which goes on last)
     c.save(); c.beginPath(); c.roundRect(x,y,w,h,s*0.09); c.clip();
-    c.strokeStyle=C.inn; c.beginPath(); c.arc(0,y+h*0.6,s*0.2,0,6.28); c.fillStyle=C.lav; c.fill(); c.stroke();
-    c.beginPath(); c.arc(0,y+h*0.6,s*0.11,0,6.28); c.fillStyle=C.inn; c.fill();
+    c.strokeStyle=L404.inn; c.beginPath(); c.arc(0,y+h*0.6,s*0.2,0,6.28); c.fillStyle=C.lav; c.fill(); c.stroke();
+    c.beginPath(); c.arc(0,y+h*0.6,s*0.11,0,6.28); c.fillStyle=L404.inn; c.fill();
     c.restore();
-    c.strokeStyle=C.ink; c.beginPath(); c.roundRect(x,y,w,h,s*0.09); c.stroke();
+    c.strokeStyle=L404.ink; c.beginPath(); c.roundRect(x,y,w,h,s*0.09); c.stroke();
   }
 
   // headphones bonus: lime fades behind the cups, notes drifting off, cups jump on the beat
