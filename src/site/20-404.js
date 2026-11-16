@@ -101,13 +101,37 @@
       N.GLYPH[ch].forEach(function (row, y) {
         for (var x = 0; x < 5; x++) if (row.charAt(x) === '1') {
           d += 'M' + (col + x) + ' ' + y + 'h1v1h-1z';
-          px += '<rect x="' + (col + x) + '" y="' + y + '" width="1" height="1" style="animation-delay:' + (40 * (col + x) + 25 * y + (n++ % 3) * 30) + 'ms"/>';
+          px += '<rect x="' + (col + x) + '" y="' + y + '" width="1" height="1" style="animation-delay:' + (N.STEP_X * (col + x) + N.STEP_Y * y) + 'ms"/>';
         }
       });
       col += 6;
     });
     // one solid shape under the pixels, so no hairlines show between them at odd sizes
-    return '<svg class="bb404-num bb404-in" viewBox="0 0 17 7" role="img" aria-label="404"><path class="bb404-base" d="' + d + '"/>' + px + '</svg>';
+    // bb404-wait keeps it hidden until N.play starts the intro
+    return '<svg class="bb404-num bb404-wait" viewBox="0 0 17 7" role="img" aria-label="404"><path class="bb404-base" d="' + d + '"/>' + px + '</svg>';
+  };
+  // The intro: pixels drop in left to right, a wave across the three digits, then the solid base shape fades in under
+  // them. Timings here must match 10-404-styles.js (.3s per pixel, base at N.INTRO - 200ms).
+  N.STEP_X = 34; N.STEP_Y = 22;                       // ms of delay per column / per row
+  N.INTRO = 34 * 16 + 22 * 6 + 300 + 200;             // ms until the whole intro is done
+  // It starts only once the page has finished loading (the script bundle, Barba and Webflow all start up at the same
+  // moment and made it stutter), and the footer is held back until it has finished (building the footer froze it
+  // half way). N.done(fn) runs fn when the intro is over.
+  N.play = function (svg) {
+    var rm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches, waiting = [], over = false;
+    N.done = function (fn) { if (over) fn(); else waiting.push(fn); };
+    function finish() { if (over) return; over = true; waiting.splice(0).forEach(function (fn) { try { fn(); } catch (e) {} }); }
+    function go() {
+      if (go.ran) return; go.ran = true;
+      requestAnimationFrame(function () { requestAnimationFrame(function () {
+        svg.classList.remove('bb404-wait'); svg.classList.add('bb404-in');
+        setTimeout(finish, rm ? 0 : N.INTRO);
+      }); });
+    }
+    if (rm) { svg.classList.remove('bb404-wait'); finish(); return; }
+    if (document.readyState === 'complete') setTimeout(go, 150);
+    else { window.addEventListener('load', function () { setTimeout(go, 150); }); setTimeout(go, 3000); }
+    setTimeout(finish, 3000 + N.INTRO + 500);   // never hold the footer back for long
   };
   var star = function () { return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C12.7 6.5 17.5 11.3 24 12C17.5 12.7 12.7 17.5 12 24C11.3 17.5 6.5 12.7 0 12C6.5 11.3 11.3 6.5 12 0Z"/></svg>'; };
 
@@ -125,15 +149,19 @@
   N.footer = function (c) {
     if (!window.fetch || !window.DOMParser) return;
     fetch(N.HOME, { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (html) {
-      if (!html || !c.isConnected || c.querySelector('.bb-footer')) return;
-      var f = new DOMParser().parseFromString(html, 'text/html').querySelector('.bb-footer');
-      if (!f) return;
-      f = document.importNode(f, true);
-      [].forEach.call(f.querySelectorAll('script'), function (s) { s.remove(); });
-      c.appendChild(f);
-      try { if (window.initFooterBend) window.initFooterBend(); } catch (e) {}
-      try { if (window.BBA && window.BBA.mount) window.BBA.mount(); } catch (e) { console.error('[bb] 404 arcade', e); }
-      try { document.dispatchEvent(new CustomEvent('bb404:footer')); } catch (e) {}
+      // wait for the 404's intro to finish: parsing the page and building the footer would freeze it half way
+      (N.done || function (fn) { fn(); })(function () {
+        if (!html || !c.isConnected || c.querySelector('.bb-footer')) return;
+        var f = new DOMParser().parseFromString(html, 'text/html').querySelector('.bb-footer');
+        if (!f) return;
+        f = document.importNode(f, true);
+        [].forEach.call(f.querySelectorAll('script'), function (s) { s.remove(); });
+        f.classList.add('bb404-foot');   // fades in (10-404-styles.js)
+        c.appendChild(f);
+        try { if (window.initFooterBend) window.initFooterBend(); } catch (e) {}
+        try { if (window.BBA && window.BBA.mount) window.BBA.mount(); } catch (e) { console.error('[bb] 404 arcade', e); }
+        try { document.dispatchEvent(new CustomEvent('bb404:footer')); } catch (e) {}
+      });
     }).catch(function () {});
   };
 
@@ -152,6 +180,7 @@
       '<span class="bbarc-tx">Back to home</span><span class="bbarc-ic bbarc-ic-r">' + star() + '</span></a>';
     c.insertBefore(hero, c.firstChild);
     c.classList.add('bb404-on');
+    N.play(hero.querySelector('.bb404-num'));
     var a = hero.querySelector('.bb404-home');
     a.setAttribute('data-barba-prevent', 'self');   // a plain page load home, so the colour swap is gone for sure
     a.addEventListener('pointerdown', function () { a.classList.add('bbarc-press'); });
