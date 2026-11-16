@@ -274,6 +274,7 @@
       if (g.mode === 'over') return;
       var h = K.hit(g, px, py);
       if (!h) {
+        if (g.mode === 'idle' && py > g.hy + g.fs) K.start(g);
         if (py > g.hy + g.fs) g.fx.push({ kind: 'fish', x: px - 3.5 * g.P, y: py, vx: (Math.random() - .5) * 60, vy: -140, g: 900, life: 0.6, max: 0.6 });
         if (g.mode === 'play') g.combo = 0;
         return;
@@ -365,11 +366,12 @@
     var left = g.W < 560 ? 16 : Math.round(g.W * 0.05), right = g.W - left;
     var hud = g.mode === 'play' ? 'SCORE ' + g.score + '   TIME ' + Math.ceil(g.time) + '   BEST ' + g.best
       : g.mode === 'over' ? 'BEST ' + g.best
-        : 'FEED THE CATS   BEST ' + g.best;
+        : 'FEED A CAT TO PLAY   BEST ' + g.best;
     if (g.pop > 0 && g.mode === 'play') { x.font = '700 ' + g.fs + 'px ' + g.font; }
     x.fillText(hud, left, g.hy);
     g.btn = null;
-    pill(g, 'Play', (window.BBA && BBA.hud ? BBA.hud(g.st, right, g.hy, g.W) : right), g.hy, g.mode === 'idle');
+    // no Play button: feeding a cat (or any tap on the game) starts it; NEXT GAME is the only score-bar button
+    if (window.BBA && BBA.hud) BBA.hud(g.st, right, g.hy, g.W);
     // floor rule
     rect(x, K.C.ink, 0, g.floorY + P, g.W, 1.5);
     g.holes.forEach(function (h) { box(g, h); });

@@ -545,7 +545,8 @@
     // HUD
     x.font = '500 ' + g.fs + 'px ' + g.font; x.fillStyle = K.ink; x.textBaseline = 'middle'; x.textAlign = 'left';
     x.fillText('SCORE ' + g.score + '   BEST ' + g.best + '   LIVES ' + g.lives + (g.thru > 0 ? '   FIRE ' + Math.ceil(g.thru) : ''), 16, g.hy);
-    var px = B.pill(g, x, (window.BBA && BBA.hud ? BBA.hud(g.st, W - 16, g.hy, W) : W - 16), g.hy);
+    // the only score-bar button is NEXT GAME (no Restore logo: a new game rebuilds the logo)
+    var px = (window.BBA && BBA.hud ? BBA.hud(g.st, W - 16, g.hy, W) : W - 16) + 8;
     x.font = '500 ' + g.fs + 'px ' + g.font; x.fillStyle = K.ink; x.textAlign = 'right';
     x.fillText('LOGO ' + Math.round(100 * g.alive / g.total) + '%', px - 10, g.hy);
     var tap = g.touch ? 'TAP' : 'CLICK';
