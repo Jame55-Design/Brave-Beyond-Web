@@ -28,6 +28,13 @@
     '.bbarc-ic-l{width:0;margin-right:-10px;opacity:0}' +
     '.bbarc-btn.sq-on .bbarc-ic-l{width:12px;margin-right:0;opacity:1}' +
     '.bbarc-btn.sq-on .bbarc-ic-r{width:0;margin-left:-10px;opacity:0}' +
+    // Contact me: the same outline squiggle button, under Instagram (same flex order, so it lands before the privacy links)
+    '.bb-footer .bbft-contact{order:1;align-self:center;margin:12px 0 0;text-decoration:none}' +
+    // while a game runs (it takes over the big logo), a smaller copy of the logo sits under the buttons, above the
+    // privacy / cookie links, and still throws hearts on hover (01-footer-hearts.js)
+    '.bb-footer .bbft-lm2{display:none;order:1;align-self:center;width:clamp(220px,36vw,560px);height:auto;margin:3vw 0 1.5vw;overflow:visible}' +
+    '.bb-footer.bbarc-playing .bbft-lm2{display:block}.bbft-lm2 path{fill:#212121}' +
+    '@media (max-width:479px){.bb-footer .bbft-lm2{margin:28px 0 14px}}' +
     '@media (max-width:479px){.bbarc-bar{margin:0 0 12px}.bbarc-p{margin-bottom:14px}.bbarc-btn{height:36px;font-size:12px;padding:0 15px}}' +
     '@media (prefers-reduced-motion:reduce){.bbarc-ic{transition:none}}';
   document.head.appendChild(s);
@@ -62,6 +69,7 @@
   A.clear = function () {
     var g = A.cur, f = A.f;
     A.cur = null;
+    if (f) f.classList.remove('bbarc-playing');
     if (!g) return;
     try { g.stop(); } catch (e) {}
     if (f) { f.classList.remove(g.cls); var st = f.querySelector(g.stage); if (st) st.remove(); }
@@ -155,8 +163,32 @@
     if (!A.btn) return;
     // the top button is only PLAY A GAME now; once a game runs, NEXT GAME is in its score bar (A.hud)
     A.btn.hidden = !!A.cur;
+    if (A.f) A.f.classList.toggle('bbarc-playing', !!A.cur);
     A.btn.querySelector('.bbarc-tx').textContent = A.cur ? 'Next game' : 'Play a game';
     A.btn.setAttribute('aria-label', A.cur ? 'Switch footer game (playing ' + A.cur.name + ')' : 'Play a footer game');
+  };
+
+  function star(c) { return '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="' + c + '" d="M12 0C12.7 6.5 17.5 11.3 24 12C17.5 12.7 12.7 17.5 12 24C11.3 17.5 6.5 12.7 0 12C6.5 11.3 11.3 6.5 12 0Z"/></svg>'; }
+  // CONTACT ME under the Instagram button on every footer except the contact page's own
+  A.contact = function (f) {
+    var ig = f.querySelector('.bbft-ig'), c = container(), ns = c ? c.getAttribute('data-barba-namespace') : '';
+    if (!ig || f.querySelector('.bbft-contact')) return;
+    if (ns === 'contact' || /^\/contact\/?$/.test(location.pathname)) return;
+    var a = document.createElement('a');
+    a.className = 'bbarc-btn bbft-contact'; a.href = '/contact'; a.setAttribute('data-squiggle', '');
+    a.innerHTML = '<span class="bbarc-ic bbarc-ic-l">' + star('#F4F4F4') + '</span><span class="bbarc-tx">Contact me</span><span class="bbarc-ic bbarc-ic-r">' + star('#212121') + '</span>';
+    ig.parentNode.insertBefore(a, ig.nextSibling);
+  };
+  A.miniLogo = function (f) {
+    var lm = f.querySelector('svg.bbft-lm'), ig = f.querySelector('.bbft-ig');
+    if (!lm || !ig || f.querySelector('.bbft-lm2')) return;
+    var c = lm.cloneNode(true);
+    c.setAttribute('class', 'bbft-lm2'); c.removeAttribute('id'); c.removeAttribute('style');
+    c.setAttribute('role', 'img'); c.setAttribute('aria-label', 'Brave Beyond');
+    [].forEach.call(c.querySelectorAll('[id]'), function (n) { n.removeAttribute('id'); });
+    [].forEach.call(c.querySelectorAll('.bbft-l'), function (p) { var d = p.getAttribute('data-bb-d'); if (d) p.setAttribute('d', d); p.removeAttribute('class'); p.removeAttribute('style'); });
+    var after = f.querySelector('.bbft-contact') || ig;
+    after.parentNode.insertBefore(c, after.nextSibling);
   };
 
   A.mount = function () {
@@ -165,11 +197,12 @@
     if (A.bar && A.bar.parentNode) A.bar.parentNode.removeChild(A.bar);
     A.f = footer();
     if (!A.f) return;
+    try { A.contact(A.f); } catch (e) {}
+    try { A.miniLogo(A.f); } catch (e) {}
     A.t = A.theme(A.f);
     if (!A.games(A.t).length) return;
     var bar = A.bar = document.createElement('div');
     bar.className = 'bbarc-bar';
-    var star = function (c) { return '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="' + c + '" d="M12 0C12.7 6.5 17.5 11.3 24 12C17.5 12.7 12.7 17.5 12 24C11.3 17.5 6.5 12.7 0 12C6.5 11.3 11.3 6.5 12 0Z"/></svg>'; };
     bar.innerHTML = '<p class="bbarc-h">Fancy a game?</p><p class="bbarc-p">Take five. Go on.</p><button type="button" class="bbarc-btn" data-squiggle><span class="bbarc-ic bbarc-ic-l">' + star('#F4F4F4') + '</span><span class="bbarc-tx">Next game</span><span class="bbarc-ic bbarc-ic-r">' + star('#212121') + '</span></button>';
     A.btn = bar.querySelector('.bbarc-btn');
     A.btn.addEventListener('mouseover', function () { if (!A.btn._fillT) A.btn._fillT = performance.now(); });

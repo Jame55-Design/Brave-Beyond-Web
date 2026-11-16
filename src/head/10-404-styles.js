@@ -36,6 +36,7 @@
     // footer
     '~ .bb-footer{background:I}' +
     '~ .bbft-lm path{fill:C}' +
+    '~ .bbft-lm2 path{fill:C}' +
     '~ .bb-footer .bbft-bottom,~ .bb-footer .bbft-copy,~ .bb-footer a{color:C}' +
     '~ .bb-footer .bbft-ig{border-color:C;color:C}' +
     '~ .bb-footer .bbft-ig.sq-on,~ .bb-footer .bbft-ig.sq-on *{color:I!important}' +
