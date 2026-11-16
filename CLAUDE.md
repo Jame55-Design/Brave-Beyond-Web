@@ -88,5 +88,6 @@ James's studio site. Built in Webflow, with custom JS served from this repo via 
 - Both button types have ink-page colours in 10-404-styles.js (outline: cream outline, cream squiggle, ink text; solid game button: cream pill, ink text). Same shapes, sizes and motion.
 
 ## Footer arcade intro (18-footer-arcade.js + 18b-footer-doit.js)
-- "Fancy a game?" (bold heading, .bbarc-h) and "Take five. Go on." (.bbarc-p) sit above the PLAY A GAME / NEXT GAME button. Plain ink text; cream on the 404 page.
+- "Fancy a game?" (bold heading, .bbarc-h) and "Take five. Go on." (.bbarc-p) sit at the top of the footer. Plain ink text; cream on the 404 page.
+- The outline PLAY A GAME button sits under them only while no game runs (hidden once one starts). NEXT GAME lives in the running game's score bar, far right, as the small solid score-bar button: every game calls BBA.hud(stage, right, y, W) while drawing its HUD and lays the rest of its right side (Restore logo, Play, LOGO %, BEST) out from the edge it returns. 'Next' / 'Restore' under 480px wide. A press runs BBA.swap (old game fades out, next fades in).
 - Hovering the heading throws out DO IT! words and 16x8 pixel game controllers with the footer-hearts physics (pop, tumble, bounce, fade). Purps on green footers, Main Green on Purps footers. A tap throws a burst of 7. Off under reduced motion.
