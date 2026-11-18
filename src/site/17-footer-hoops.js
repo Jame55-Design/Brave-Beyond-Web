@@ -31,7 +31,13 @@
   H.FIRE_AT = 3;         // baskets in a row to catch fire (a nod to the old 90s arcade basketball games)
   H.FIRE_X = 2;          // points multiplier while on fire
   H.MAX_W = 1440;
-  H.WALL_MIN = 992;      // the graffiti brick wall only shows at this width and up (not on phones or tablets)        // widest the play area gets: on wider screens the court is centred so the far hoop stays in reach
+  H.WALL_MIN = 992;
+  // Desktop pull (992px and up; phones and tablets keep the original feel): a longer pull, and its range covers only
+  // useful speeds, from H.V_LOW of the top speed to H.V_TOP x just enough to reach the far hoop. So there's a wide
+  // sweet spot instead of "full pull flies miles past, a bit less falls short".
+  H.PULL_DESK = 1.35;
+  H.V_TOP = 1.22;
+  H.V_LOW = 0.45;      // the graffiti brick wall only shows at this width and up (not on phones or tablets)        // widest the play area gets: on wider screens the court is centred so the far hoop stays in reach
   H.KICKS_AT = 3;        // baskets made while already on fire to earn the high-tops (kept for the rest of the round)
   // Once he has the kicks every basket stays double points for the rest of the round, fire or no fire (they don't stack: x2 max)
   // Pixel basketball high-top (our own design), facing right with the heel at the left.
@@ -124,6 +130,13 @@
     g.wallX = ox + PW - g.wallT;
     var last = g.hoops[g.hoops.length - 1], edge = last.x + last.rw / 2 + 24 * u;
     if (edge > g.wallX - 8) last.x -= edge - (g.wallX - 8);
+    g.vmin = 0;
+    if (!F && W >= H.WALL_MIN) {
+      g.maxPull = 92 * u * H.PULL_DESK;
+      var fdx = last.x - g.sx, frise = g.pouch.y - last.baseY;            // to the far hoop's rim
+      g.vmax = H.V_TOP * Math.sqrt(g.G * (frise + Math.hypot(fdx, frise)));   // slowest throw that gets there, plus a bit
+      g.vmin = g.vmax * H.V_LOW;
+    }
     H.placeHoops(g);
     if (g.b) H.toPouch(g, true);
   };
@@ -202,7 +215,7 @@
     if (d > g.maxPull) { dx *= g.maxPull / d; dy *= g.maxPull / d; d = g.maxPull; }
     // keep the ball above the floor while pulling down
     if (g.pouch.y + dy > g.floorY - g.r) dy = g.floorY - g.r - g.pouch.y;
-    b.x = g.pouch.x + dx; b.y = g.pouch.y + dy;
+    b.x = Math.max(g.r + 2, g.pouch.x + dx); b.y = g.pouch.y + dy;   // keep the ball on screen at full pull
     b.pull = Math.hypot(dx, dy) / g.maxPull;
     g.cv.style.cursor = 'grabbing';
   };
@@ -210,7 +223,7 @@
   H.launchV = function (g) {
     var b = g.b, dx = g.pouch.x - b.x, dy = g.pouch.y - b.y, d = Math.hypot(dx, dy);
     if (d < 1) return null;
-    var sp = (d / g.maxPull) * g.vmax;
+    var sp = (g.vmin || 0) + (d / g.maxPull) * (g.vmax - (g.vmin || 0));
     return { vx: dx / d * sp, vy: dy / d * sp };
   };
 
