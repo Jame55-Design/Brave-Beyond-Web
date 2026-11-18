@@ -342,6 +342,8 @@
     g.oy = g.ceil + 18;
     g.py = g.oy + g.rows * g.s + Math.max(110, Math.round(W * 0.14)); // paddle row
     g.H = g.py + 46;
+    var sh = window.BBI && BBI.heightFor ? BBI.heightFor(W) : 0;   // match the shared footer game height (the extra goes above the paddle)
+    if (sh > g.H) { g.py += sh - g.H; g.H = sh; }
     var dpr = Math.min(2, window.devicePixelRatio || 1);
     g.cv.width = W * dpr; g.cv.height = g.H * dpr; g.cv.style.height = g.H + 'px';
     g.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);

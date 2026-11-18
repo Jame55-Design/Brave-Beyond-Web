@@ -469,7 +469,8 @@
     gm.W = W;
     gm.fs = Math.max(11, Math.min(16, Math.round(W/96)));   // HUD text, same scale as the other footer games
     gm.hy = Math.round(gm.fs*1.6);
-    gm.H = gm.hy + Math.round(gm.fs*1.4) + (W < 560 ? 350 : 476);   // in line with the other footer games
+    gm.H = gm.hy + Math.round(gm.fs*1.4) + (W < 560 ? 350 : 476);
+    gm.H = Math.max(gm.H, window.BBI && BBI.heightFor ? BBI.heightFor(W) : 0);   // shared footer game height (extra sky)
     const dpr = Math.min(2, window.devicePixelRatio || 1); gm.dpr = dpr;
     gm.cv.width = W*dpr; gm.cv.height = gm.H*dpr; gm.cv.style.height = gm.H + 'px';
     gm.ctx.setTransform(dpr,0,0,dpr,0,0);

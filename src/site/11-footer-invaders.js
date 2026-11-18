@@ -102,6 +102,22 @@
     for (i = 0; i < w * H2; i++) a[i] = src[(i + o) * 4 + 3] > 110 ? 1 : 0;
     return { w: w, h: H2, a: a };
   };
+  // Shared footer game height: every footer game is as tall as the invaders game at that width (the tallest),
+  // so swapping games doesn't make the footer jump. Uses the footer logo's paths; cached per width.
+  B.heightFor = function (W, paths) {
+    W = Math.round(W); if (!W) return 0;
+    B.hCache = B.hCache || {};
+    if (B.hCache[W]) return B.hCache[W];
+    if (!paths || !paths.length) paths = B.footPaths || [].map.call(document.querySelectorAll('.bb-footer .bbft-lm .bbft-l'), function (p) { return p.getAttribute('data-bb-d') || p.getAttribute('d'); });
+    if (!paths.length) return 0;
+    B.footPaths = paths;
+    var small = W < 600, P = small ? 3 : 4, Pl = small ? 2 : 3, C = Math.max(2, Math.min(4, Math.round(W / 420)));
+    var fs = Math.max(11, Math.min(16, Math.round(W / 96))), hy = Math.round(fs * 1.6), lane = Math.round(hy + fs + 8);
+    var banH = B.raster(paths, small ? 170 : 260).h + 6;
+    var top = lane + Math.max(9 * Pl, banH) + 12 + 10;
+    var logoH = B.raster(paths, Math.floor(W * 0.98 / C)).h;
+    return (B.hCache[W] = top + 3 * 11 * P + 56 + logoH * C + 96);
+  };
   B.buildLogo = function (g) {
     var L = g.logo, C = g.C, r = B.raster(g.paths, Math.floor(g.W * 0.98 / C));
     L.w = r.w; L.h = r.h; L.cv.width = r.w; L.cv.height = r.h;
@@ -180,7 +196,7 @@
     g.laneH = Math.max(9 * g.Pl, g.ban.h * g.Bp) + 12;
     g.top = g.lane + g.laneH + 10;                         // top of the invader formation
     B.buildLogo(g);
-    g.H = g.top + g.rows * 11 * g.P + 56 + g.logo.h * g.C + 96;
+    g.H = g.top + g.rows * 11 * g.P + 56 + g.logo.h * g.C + 96;   // same as B.heightFor(W), the shared footer game height
     var dpr = Math.min(2, window.devicePixelRatio || 1);
     g.cv.width = W * dpr; g.cv.height = g.H * dpr; g.cv.style.height = g.H + 'px';
     g.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);

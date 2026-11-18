@@ -95,7 +95,7 @@
     var PW = g.pw = F ? W : Math.min(W, H.MAX_W), ox = g.ox = Math.round((W - PW) / 2);
     var band = g.phone ? 400 : Math.round(clamp(PW * 0.36, 440, 560));   // the game's height on the site at this width
     var dpr = F ? F.w / css : Math.min(2, window.devicePixelRatio || 1);
-    g.H = F ? Math.round(F.h / dpr) : band;
+    g.H = F ? Math.round(F.h / dpr) : Math.max(band, window.BBI && BBI.heightFor ? BBI.heightFor(W) : 0);   // shared footer game height (extra sky)
     g.cv.width = Math.round(W * dpr); g.cv.height = Math.round(g.H * dpr); if (!F) g.cv.style.height = g.H + 'px';
     g.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     var u = g.u = clamp(Math.min(PW / 1200, band / 440), 0.62, 1.25);

@@ -164,6 +164,7 @@
     // leaving open space above the boxes for the combo pop and the TIME'S UP screen
     var gameH = W < 560 ? 250 : 340;
     g.H = g.hy + Math.round(g.fs * 1.4) + Math.round(gameH * K.SKY);
+    g.H = Math.max(g.H, window.BBI && BBI.heightFor ? BBI.heightFor(W) : 0);   // shared footer game height (extra sky above the boxes)
     var dpr = Math.min(2, window.devicePixelRatio || 1);
     g.cv.width = W * dpr; g.cv.height = g.H * dpr; g.cv.style.height = g.H + 'px';
     g.ctx.setTransform(dpr, 0, 0, dpr, 0, 0); g.ctx.imageSmoothingEnabled = false;
