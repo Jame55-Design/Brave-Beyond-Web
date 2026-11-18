@@ -156,10 +156,19 @@
     // stop the page scrolling only when a touch starts on the ball, so the footer still scrolls on phones
     cv.addEventListener('touchstart', function (e) {
       var t = e.touches[0]; if (!t) return;
-      if (g.mode === 'over' || nearBall(pt(t))) e.preventDefault();
+      if (g.mode === 'over' || nearBall(pt(t)) || H.stickerAt(g, pt(t)) >= 0) e.preventDefault();
     }, { passive: false });
     cv.addEventListener('pointerdown', function (e) {
       var p = pt(e);
+      var sn = H.stickerAt(g, p);   // graffiti stickers on the wall can be picked up and moved around
+      if (sn >= 0) {
+        var bx = g.grBox[sn];
+        g.sd = { n: sn, ox: p.x - bx.x, oy: p.y - bx.y, pid: e.pointerId };
+        g.stkOrder.splice(g.stkOrder.indexOf(sn), 1); g.stkOrder.push(sn);   // the one you pick up goes on top
+        try { cv.setPointerCapture(e.pointerId); } catch (x) {}
+        cv.style.cursor = 'grabbing';
+        return;
+      }
       if (g.mode === 'over') {
         var bt = g.btn;
         if (bt && g.overT > 0.6 && p.x > bt.x && p.x < bt.x + bt.w && p.y > bt.y && p.y < bt.y + bt.h) H.reset(g);
@@ -173,17 +182,19 @@
     });
     cv.addEventListener('pointermove', function (e) {
       var p = pt(e); g.mx = p.x; g.my = p.y; g.mT = 2.5; g.hover = true;
+      if (g.sd && e.pointerId === g.sd.pid) { H.moveSticker(g, p); cv.style.cursor = 'grabbing'; return; }
       if (g.b && g.b.drag && e.pointerId === g.pid) H.aim(g, p);
-      else cv.style.cursor = g.mode === 'over' ? (g.btn && p.x > g.btn.x && p.x < g.btn.x + g.btn.w && p.y > g.btn.y && p.y < g.btn.y + g.btn.h ? 'pointer' : '') : nearBall(p) ? 'grab' : '';
+      else cv.style.cursor = H.stickerAt(g, p) >= 0 ? 'grab' : g.mode === 'over' ? (g.btn && p.x > g.btn.x && p.x < g.btn.x + g.btn.w && p.y > g.btn.y && p.y < g.btn.y + g.btn.h ? 'pointer' : '') : nearBall(p) ? 'grab' : '';
     });
     function up(e) {
+      if (g.sd && e.pointerId === g.sd.pid) { g.sd = null; cv.style.cursor = 'grab'; H.saveStickers(g); return; }
       if (!g.b || !g.b.drag || e.pointerId !== g.pid) return;
       g.b.drag = false; cv.style.cursor = '';
       H.release(g);
     }
     cv.addEventListener('pointerup', up);
     cv.addEventListener('pointerleave', function () { g.hover = false; });
-    cv.addEventListener('pointercancel', function (e) { if (g.b && g.b.drag && e.pointerId === g.pid) { g.b.drag = false; H.toPouch(g, true); } });
+    cv.addEventListener('pointercancel', function (e) { if (g.sd && e.pointerId === g.sd.pid) { g.sd = null; H.saveStickers(g); } if (g.b && g.b.drag && e.pointerId === g.pid) { g.b.drag = false; H.toPouch(g, true); } });
   };
 
   H.aim = function (g, p) {
@@ -385,15 +396,58 @@
     { at: 0.28, rows: ['.KK.KK.', 'KKKKKKK', 'KKKKKKK', '.KKKKK.', '..KKK..', '...K...'], drips: [[1, 2], [5, 3]] },                        // heart
     { at: 0.10, rows: ['...W...', '..WWW..', 'WWWWWWW', '.WWWWW.', '..WWW..', '.WW.WW.', '.W...W.'], drips: [] }                          // star
   ];
-  H.drawGraffiti = function (g, x0, x1, yt, yb) {
-    var x = g.ctx, P = g.wallP, cols = Math.round((x1 - x0) / P), hgt = yb - yt;
-    var pal = { L: C.lime, K: C.pink, W: C.cream, O: C.inn };
+  // Sticker positions: fx = across the wall (0 left .. 1 right), fy = down it (0 top .. 1 bottom). Saved per visitor
+  // in localStorage (bbHoopsWall) once someone moves one; otherwise the defaults from H.GRAFF.
+  H.STK_KEY = 'bbHoopsWall';
+  H.stickers = function (g) {
+    if (g.stk) return;
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem(H.STK_KEY) || 'null'); } catch (e) {}
+    g.stk = []; g.stkOrder = [];
     for (var n = 0; n < H.GRAFF.length; n++) {
-      var t = H.GRAFF[n], w = t.rows[0].length, h = t.rows.length;
-      if (w + 3 > cols) continue;
-      var gx = x0 + Math.round((cols - w) / 2 + (n % 2 ? 0.5 : -0.5)) * P;
-      var gy = Math.round(yb - t.at * hgt - h * P / 2);
-      if (gy < yt + 2 * P || gy + (h + 6) * P > yb) continue;
+      var sv = saved && saved.p && saved.p[n];
+      g.stk.push(sv ? { fx: +sv[0] || 0, fy: +sv[1] || 0 } : { fx: n % 2 ? 0.75 : 0.25, fy: 1 - H.GRAFF[n].at });
+    }
+    if (saved && saved.o && saved.o.length === H.GRAFF.length) g.stkOrder = saved.o.slice();
+    else for (n = 0; n < H.GRAFF.length; n++) g.stkOrder.push(n);
+  };
+  H.saveStickers = function (g) {
+    try { localStorage.setItem(H.STK_KEY, JSON.stringify({ p: g.stk.map(function (s) { return [+s.fx.toFixed(3), +s.fy.toFixed(3)]; }), o: g.stkOrder })); } catch (e) {}
+  };
+  // free room for a sticker on the wall, in wall pixels (keeps its outline, shadow and drips on the bricks)
+  H.stkRoom = function (g, n) {
+    var wb = g.wallBox, t = H.GRAFF[n], w = t.rows[0].length, h = t.rows.length, dr = 0;
+    for (var k = 0; k < t.drips.length; k++) dr = Math.max(dr, t.drips[k][1]);
+    return { w: w, h: h, cx: Math.max(0, wb.cols - w - 3), cy: Math.max(0, wb.rows - h - dr - 4) };
+  };
+  H.stickerAt = function (g, p) {
+    if (!g.wallT || !g.grBox || !g.stkOrder) return -1;
+    var P = g.wallP;
+    for (var i = g.stkOrder.length - 1; i >= 0; i--) {
+      var n = g.stkOrder[i], b = g.grBox[n];
+      if (b && p.x > b.x - P && p.x < b.x + b.w + P && p.y > b.y - P && p.y < b.y + b.h + P) return n;
+    }
+    return -1;
+  };
+  H.moveSticker = function (g, p) {
+    var sd = g.sd, wb = g.wallBox, P = g.wallP, rm = H.stkRoom(g, sd.n);
+    var col = (p.x - sd.ox - wb.x0) / P - 1, row = (p.y - sd.oy - wb.yt) / P - 2;
+    g.stk[sd.n].fx = rm.cx ? clamp(col / rm.cx, 0, 1) : 0.5;
+    g.stk[sd.n].fy = rm.cy ? clamp(row / rm.cy, 0, 1) : 0.5;
+  };
+  H.drawGraffiti = function (g, x0, x1, yt, yb) {
+    var x = g.ctx, P = g.wallP;
+    H.stickers(g);
+    g.wallBox = { x0: x0, yt: yt, cols: Math.round((x1 - x0) / P), rows: Math.floor((yb - yt) / P) };
+    g.grBox = [];
+    var pal = { L: C.lime, K: C.pink, W: C.cream, O: C.inn };
+    for (var o = 0; o < g.stkOrder.length; o++) {
+      var n = g.stkOrder[o], t = H.GRAFF[n], rm = H.stkRoom(g, n), w = rm.w, h = rm.h;
+      if (w + 3 > g.wallBox.cols) continue;
+      var lift = g.sd && g.sd.n === n ? P : 0;   // a picked-up sticker lifts off the wall a little
+      var gx = x0 + (1 + Math.round(g.stk[n].fx * rm.cx)) * P - lift;
+      var gy = yt + (2 + Math.round(g.stk[n].fy * rm.cy)) * P - lift;
+      g.grBox[n] = { x: gx, y: gy, w: w * P, h: h * P };
       // every painted pixel of the tag, drips included
       var px = [];
       for (var r = 0; r < h; r++) for (var c = 0; c < w; c++) if (t.rows[r][c] !== '.') px.push([c, r, t.rows[r][c]]);
@@ -402,8 +456,9 @@
         for (r = h - 1; r >= 0 && !col; r--) if (t.rows[r][dc] !== '.' && t.rows[r][dc] !== 'O') col = t.rows[r][dc];
         if (col) for (r = h; r < h + t.drips[k][1]; r++) px.push([dc, r, col]);
       }
-      x.fillStyle = C.inn;   // outline + shadow
-      for (var i = 0; i < px.length; i++) x.fillRect(gx + (px[i][0] - 1) * P, gy + (px[i][1] - 1) * P, 4 * P, 4 * P);
+      x.fillStyle = C.inn;   // outline + shadow (deeper while lifted)
+      var sh = 4 + (lift ? 2 : 0);
+      for (var i = 0; i < px.length; i++) x.fillRect(gx + (px[i][0] - 1) * P, gy + (px[i][1] - 1) * P, sh * P, sh * P);
       for (i = 0; i < px.length; i++) { x.fillStyle = pal[px[i][2]]; x.fillRect(gx + px[i][0] * P, gy + px[i][1] * P, P, P); }
     }
   };
