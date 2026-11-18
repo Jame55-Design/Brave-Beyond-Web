@@ -45,8 +45,8 @@
   // Colour sets: the green footer (home, goodies) and the Purps footer (contact, privacy), with the same swaps as the
   // other purple-footer games so nothing blends into the background.
   H.THEMES = {
-    green:  { bg: '#07A87E', rim: C.purps, pop: C.lav, fire: C.lime, flash: C.lav, conf: [C.purps, C.lav, C.lime, C.pink] },
-    purple: { bg: '#AE9AE4', rim: '#07A87E', pop: C.lime, fire: C.lime, flash: C.lime, conf: ['#07A87E', C.lime, C.lav, C.ink] }
+    green:  { bg: '#07A87E', wall: [C.purps, C.lav], rim: C.purps, pop: C.lav, fire: C.lime, flash: C.lav, conf: [C.purps, C.lav, C.lime, C.pink] },
+    purple: { bg: '#AE9AE4', wall: ['#07A87E', C.mint], rim: '#07A87E', pop: C.lime, fire: C.lime, flash: C.lime, conf: ['#07A87E', C.lime, C.lav, C.ink] }
   };
   H.theme = function (g) {
     if (g.frame) return H.THEMES[g.frame.theme] || H.THEMES.green;
@@ -116,9 +116,12 @@
       var rw = g.r * (g.phone ? 3.1 : 3.2);
       return { pts: d.pts, bob: d.bob, x: ox + Math.round(PW * d.fx), baseY: g.floorY - 40 * u - d.fh * playH, y: 0, rw: rw, rr: 3.5 * u, sw: old[i] ? old[i].sw : 0 };
     });
-    // keep the far hoop's backboard inside the court
-    var last = g.hoops[g.hoops.length - 1], edge = last.x + last.rw / 2 + 14 * u;
-    if (edge > ox + PW - 6) last.x -= edge - (ox + PW - 6);
+    // pixel brick wall at the right end of the court (the ball bounces off its face); keep the far hoop in front of it
+    var wp = g.wallP = Math.max(2, Math.round(3 * u));
+    g.wallT = (g.phone ? 14 : 20) * wp;   // same thickness on every screen; on wide screens the footer carries on past it
+    g.wallX = ox + PW - g.wallT;
+    var last = g.hoops[g.hoops.length - 1], edge = last.x + last.rw / 2 + 24 * u;
+    if (edge > g.wallX - 8) last.x -= edge - (g.wallX - 8);
     H.placeHoops(g);
     if (g.b) H.toPouch(g, true);
   };
@@ -244,7 +247,7 @@
       b.vx *= Math.pow(0.35, dt);    // rolling friction
     }
     // side walls
-    var wl = g.ox + r, wr = g.ox + g.pw - r;   // walls at the edges of the (capped, centred) court
+    var wl = r, wr = g.wallX - g.wallP - r;   // the footer's left edge, and the brick wall's face on the right
     if (b.x > wr && b.vx > 0) { b.x = wr; b.vx *= -0.5; }
     if (b.x < wl && b.vx < 0) { b.x = wl; b.vx *= -0.5; }
     // ceiling: the top of the footer (or of the video frame), so a big fling bounces back instead of vanishing
@@ -366,6 +369,25 @@
 
   // ---- drawing -----------------------------------------------------------------------------------
   function line(x, a, b, c, d, w, col) { x.strokeStyle = col; x.lineWidth = w; x.beginPath(); x.moveTo(a, b); x.lineTo(c, d); x.stroke(); }
+
+  // Retro pixel brick wall behind the far hoop: from the floor up to just under the score bar, g.wallT thick.
+  // Bricks are 8 x 4 wall pixels (mortar included), every other row offset by half a brick; each brick has a lighter
+  // top row. Mortar is C.inn (stays black on the ink 404 page), the face line is ink.
+  H.drawWall = function (g) {
+    var x = g.ctx, P = g.wallP, x0 = g.wallX, x1 = g.wallX + g.wallT, yb = Math.round(g.floorY), yt = Math.round(g.top + g.fs), bw = 8 * P, bh = 4 * P;
+    var col = g.pal.wall || H.THEMES.green.wall;
+    x.fillStyle = C.inn; x.fillRect(x0, yt, x1 - x0, yb - yt);
+    for (var row = 0, y = yb - bh; y > yt - bh; row++, y -= bh) {
+      var top = Math.max(y, yt), off = row % 2 ? -bw / 2 : 0;
+      for (var bx = x0 + off; bx < x1; bx += bw) {
+        var l = Math.max(bx + P, x0 + P), rr = Math.min(bx + bw, x1), h = y + bh - P - top;
+        if (rr <= l || h <= 0) continue;
+        x.fillStyle = col[0]; x.fillRect(l, top, rr - l, h);
+        if (top === y) { x.fillStyle = col[1]; x.fillRect(l, top, rr - l, P); }
+      }
+    }
+    x.fillStyle = C.ink; x.fillRect(x0 - P, yt, P, yb - yt);   // face of the wall
+  };
 
   H.drawHoopBack = function (g, h) {
     var x = g.ctx, u = g.u;
@@ -624,6 +646,7 @@
     if (g.frame) H.drawNav(g);   // the logo sits back with the score bar, so the ball flies in front of it
     // floor rule
     x.fillStyle = C.ink; x.fillRect(0, g.floorY, W, 1.5);
+    H.drawWall(g);
     for (i = 0; i < g.hoops.length; i++) H.drawHoopBack(g, g.hoops[i]);
     H.drawSling(g, 'back');
     H.drawAim(g);
