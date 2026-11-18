@@ -30,6 +30,7 @@
   H.SWISH = 2;           // multiplier for a clean shot
   H.FIRE_AT = 3;         // baskets in a row to catch fire (a nod to the old 90s arcade basketball games)
   H.FIRE_X = 2;          // points multiplier while on fire
+  H.MAX_W = 1440;        // widest the play area gets: on wider screens the court is centred so the far hoop stays in reach
   H.KICKS_AT = 3;        // baskets made while already on fire to earn the high-tops (kept for the rest of the round)
   // Once he has the kicks every basket stays double points for the rest of the round, fire or no fire (they don't stack: x2 max)
   // Pixel basketball high-top (our own design), facing right with the heel at the left.
@@ -90,32 +91,34 @@
     g.fs = Math.max(11, Math.min(16, Math.round(W / 96)));
     g.hy = Math.round(g.fs * 1.6);
     g.phone = !F && W < 560;   // the recorder always uses the full four-hoop layout
-    var band = g.phone ? 400 : Math.round(clamp(W * 0.36, 440, 560));   // the game's height on the site at this width
+    // play width: the court (sling, hoops, walls) is capped at H.MAX_W and centred; score bar and floor still run full width
+    var PW = g.pw = F ? W : Math.min(W, H.MAX_W), ox = g.ox = Math.round((W - PW) / 2);
+    var band = g.phone ? 400 : Math.round(clamp(PW * 0.36, 440, 560));   // the game's height on the site at this width
     var dpr = F ? F.w / css : Math.min(2, window.devicePixelRatio || 1);
     g.H = F ? Math.round(F.h / dpr) : band;
     g.cv.width = Math.round(W * dpr); g.cv.height = Math.round(g.H * dpr); if (!F) g.cv.style.height = g.H + 'px';
     g.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    var u = g.u = clamp(Math.min(W / 1200, band / 440), 0.62, 1.25);
+    var u = g.u = clamp(Math.min(PW / 1200, band / 440), 0.62, 1.25);
     g.footH = F ? H.FOOT_H : 0;
     g.floorY = g.H - g.footH - Math.round(10 * u);
     g.top = g.hy + g.fs * 2;
     g.band = band;
     g.r = Math.max(12, 17 * u);
     g.G = 1500 * u;
-    g.sx = Math.round(Math.max(56, W * (g.phone ? 0.13 : 0.11)));
+    g.sx = ox + Math.round(Math.max(56, PW * (g.phone ? 0.13 : 0.11)));
     g.forkY = g.floorY - 118 * u;
     g.pouch = { x: g.sx, y: g.forkY + 4 * u };
     g.maxPull = 92 * u;
-    g.vmax = Math.sqrt(g.G * ((W * 0.98 - g.sx) * 1.3 + (g.floorY - g.top) * 0.8));
+    g.vmax = Math.sqrt(g.G * ((ox + PW * 0.98 - g.sx) * 1.3 + (g.floorY - g.top) * 0.8));
     var list = g.phone ? H.HOOPS_PHONE : H.HOOPS, playH = band - Math.round(10 * u) - g.top - 70 * u;
     var old = g.hoops || [];
     g.hoops = list.map(function (d, i) {
       var rw = g.r * (g.phone ? 3.1 : 3.2);
-      return { pts: d.pts, bob: d.bob, x: Math.round(W * d.fx), baseY: g.floorY - 40 * u - d.fh * playH, y: 0, rw: rw, rr: 3.5 * u, sw: old[i] ? old[i].sw : 0 };
+      return { pts: d.pts, bob: d.bob, x: ox + Math.round(PW * d.fx), baseY: g.floorY - 40 * u - d.fh * playH, y: 0, rw: rw, rr: 3.5 * u, sw: old[i] ? old[i].sw : 0 };
     });
     // keep the far hoop's backboard inside the canvas
     var last = g.hoops[g.hoops.length - 1], edge = last.x + last.rw / 2 + 14 * u;
-    if (edge > W - 6) last.x -= edge - (W - 6);
+    if (edge > ox + PW - 6) last.x -= edge - (ox + PW - 6);
     H.placeHoops(g);
     if (g.b) H.toPouch(g, true);
   };
@@ -241,8 +244,9 @@
       b.vx *= Math.pow(0.35, dt);    // rolling friction
     }
     // side walls
-    if (b.x > g.W - r && b.vx > 0) { b.x = g.W - r; b.vx *= -0.5; }
-    if (b.x < r && b.vx < 0) { b.x = r; b.vx *= -0.5; }
+    var wl = g.ox + r, wr = g.ox + g.pw - r;   // walls at the edges of the (capped, centred) court
+    if (b.x > wr && b.vx > 0) { b.x = wr; b.vx *= -0.5; }
+    if (b.x < wl && b.vx < 0) { b.x = wl; b.vx *= -0.5; }
     // ceiling: the top of the footer (or of the video frame), so a big fling bounces back instead of vanishing
     if (b.y < g.ceil + r && b.vy < 0) { b.y = g.ceil + r; b.vy *= -0.45; }
     for (var i = 0; i < g.hoops.length; i++) {
