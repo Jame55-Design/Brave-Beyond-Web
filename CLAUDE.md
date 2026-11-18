@@ -91,6 +91,11 @@ James's studio site. Built in Webflow, with custom JS served from this repo via 
 - Also on this page: the hoops catapult is Purps (BB404.SLING), the backpack's lime twinkles have no outline, and the calico cat's ear patch stays cream (black would lose the ear against the page).
 - Both button types have ink-page colours in 10-404-styles.js (outline: cream outline, cream squiggle, ink text; solid game button: cream pill, ink text). Same shapes, sizes and motion.
 
+## Footer game consistency (Nov 2026)
+- Every footer game is the same height at a given width: the invaders height (BBI.heightFor(W)); the others add the extra as sky (bricks: above the paddle).
+- The footer's top padding is set once by the arcade (.bb-footer.bbarc-on: 4vw, 24px on phones), with or without a game, so "Fancy a game?" never moves. Don't add padding-top in a game file.
+- Score bars: side padding W < 560 ? 16 : round(W * 0.05) (lines up with the footer content), centred on g.hy, weight 500. NEXT GAME is placed with BBA.hud(st, W - pad, g.hy, W) in every game.
+
 ## Footer arcade intro (18-footer-arcade.js + 18b-footer-doit.js)
 - "Fancy a game?" (bold heading, .bbarc-h) and "Take five. Go on." (.bbarc-p) sit at the top of the footer. Plain ink text; cream on the 404 page.
 - The outline PLAY A GAME button sits under them only while no game runs (hidden once one starts). NEXT GAME lives in the running game's score bar, far right, as the small solid score-bar button: every game calls BBA.hud(stage, right, y, W) while drawing its HUD and lays the rest of its right side (LOGO %, BEST) out from the edge it returns. 'Next' under 480px wide. NEXT GAME is the only button in any score bar (James, Nov 2026): no Restore logo in invaders or bricks (a new game rebuilds the logo), no Play in cats (feeding a cat or tapping the game starts it; idle HUD says FEED A CAT TO PLAY). A press runs BBA.swap (old game fades out, next fades in).
