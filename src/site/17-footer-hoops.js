@@ -373,6 +373,38 @@
   // Retro pixel brick wall behind the far hoop: from the floor up to just under the score bar, g.wallT thick.
   // Bricks are 8 x 4 wall pixels (mortar included), every other row offset by half a brick; each brick has a lighter
   // top row. Mortar is C.inn (stays black on the ink 404 page), the face line is ink.
+  // Pixel graffiti sprayed on the wall (our own little tags), in wall pixels. L = lime, K = pink, W = cream,
+  // O = ink (inside a tag). Every tag gets a 1-pixel ink outline plus a drop shadow to the bottom right, so it reads
+  // over the bricks like a spray throw-up. at: how far up the wall (0 = floor, 1 = top); drips: [column, length].
+  H.GRAFF = [
+    { at: 0.90, rows: ['L...L...L', 'LL.LLL.LL', 'LLLLLLLLL', 'LLLLLLLLL', 'LLLLLLLLL'], drips: [[1, 2], [7, 3]] },                         // crown
+    { at: 0.70, rows: ['KKKKK..KKKKK.', 'KK..KK.KK..KK', 'KK..KK.KK..KK', 'KKKKK..KKKKK.', 'KK..KK.KK..KK', 'KK..KK.KK..KK', 'KKKKK..KKKKK.'], drips: [[0, 3], [4, 2], [8, 4], [12, 2]] },   // BB tag
+    { at: 0.48, rows: ['..LLLL..', '.LLLLLL.', 'LLOLLOLL', 'LLLLLLLL', 'LOLLLLOL', 'LLOOOOLL', '.LLLLLL.', '..LLLL..'], drips: [[3, 3]] },   // his face
+    { at: 0.28, rows: ['.KK.KK.', 'KKKKKKK', 'KKKKKKK', '.KKKKK.', '..KKK..', '...K...'], drips: [[1, 2], [5, 3]] },                        // heart
+    { at: 0.10, rows: ['...W...', '..WWW..', 'WWWWWWW', '.WWWWW.', '..WWW..', '.WW.WW.', '.W...W.'], drips: [] }                          // star
+  ];
+  H.drawGraffiti = function (g, x0, x1, yt, yb) {
+    var x = g.ctx, P = g.wallP, cols = Math.round((x1 - x0) / P), hgt = yb - yt;
+    var pal = { L: C.lime, K: C.pink, W: C.cream, O: C.inn };
+    for (var n = 0; n < H.GRAFF.length; n++) {
+      var t = H.GRAFF[n], w = t.rows[0].length, h = t.rows.length;
+      if (w + 3 > cols) continue;
+      var gx = x0 + Math.round((cols - w) / 2 + (n % 2 ? 0.5 : -0.5)) * P;
+      var gy = Math.round(yb - t.at * hgt - h * P / 2);
+      if (gy < yt + 2 * P || gy + (h + 6) * P > yb) continue;
+      // every painted pixel of the tag, drips included
+      var px = [];
+      for (var r = 0; r < h; r++) for (var c = 0; c < w; c++) if (t.rows[r][c] !== '.') px.push([c, r, t.rows[r][c]]);
+      for (var k = 0; k < t.drips.length; k++) {
+        var dc = t.drips[k][0], col = '';
+        for (r = h - 1; r >= 0 && !col; r--) if (t.rows[r][dc] !== '.' && t.rows[r][dc] !== 'O') col = t.rows[r][dc];
+        if (col) for (r = h; r < h + t.drips[k][1]; r++) px.push([dc, r, col]);
+      }
+      x.fillStyle = C.inn;   // outline + shadow
+      for (var i = 0; i < px.length; i++) x.fillRect(gx + (px[i][0] - 1) * P, gy + (px[i][1] - 1) * P, 4 * P, 4 * P);
+      for (i = 0; i < px.length; i++) { x.fillStyle = pal[px[i][2]]; x.fillRect(gx + px[i][0] * P, gy + px[i][1] * P, P, P); }
+    }
+  };
   H.drawWall = function (g) {
     var x = g.ctx, P = g.wallP, x0 = g.wallX, x1 = g.wallX + g.wallT, yb = Math.round(g.floorY), yt = Math.round(g.top + g.fs), bw = 8 * P, bh = 4 * P;
     var col = g.pal.wall || H.THEMES.green.wall;
@@ -386,6 +418,7 @@
         if (top === y) { x.fillStyle = col[1]; x.fillRect(l, top, rr - l, P); }
       }
     }
+    H.drawGraffiti(g, x0, x1, yt, yb);
     x.fillStyle = C.ink; x.fillRect(x0 - P, yt, P, yb - yt);   // face of the wall
   };
 
