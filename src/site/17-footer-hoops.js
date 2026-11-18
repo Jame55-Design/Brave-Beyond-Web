@@ -599,24 +599,25 @@
     if (g.frame) { x.fillStyle = g.pal.bg; x.fillRect(0, 0, W, g.H); H.drawFoot(g); }
     // HUD
     x.textBaseline = 'alphabetic'; x.fillStyle = C.ink;
-    x.font = '700 ' + g.fs + 'px ' + g.font; x.textAlign = 'left';
-    var pad = Math.max(16, Math.round(W * 0.05));
+    x.font = (g.flash > 0 ? '700 ' : '500 ') + g.fs + 'px ' + g.font; x.textAlign = 'left';
+    var pad = W < 560 ? 16 : Math.round(W * 0.05);   // score bar side padding, the same in every footer game
+    var hb = g.hy + Math.round(g.fs * 0.35);          // text baseline that centres the score bar on g.hy, like the other games
     x.fillStyle = g.flash > 0 ? g.pal.flash : C.ink;
-    x.fillText('SCORE ' + g.score, pad, g.hy);
+    x.fillText('SCORE ' + g.score, pad, hb);
     x.fillStyle = C.ink; x.font = '500 ' + g.fs + 'px ' + g.font;
     var sw = x.measureText('SCORE 0000').width + g.fs * 1.5;
-    x.font = '700 ' + g.fs + 'px ' + g.font;
+    x.font = '500 ' + g.fs + 'px ' + g.font;
     for (i = 0; i < H.BALLS; i++) {
-      x.beginPath(); x.arc(pad + sw + i * g.fs * 0.8, g.hy - g.fs * 0.34, g.fs * 0.26, 0, Math.PI * 2);
+      x.beginPath(); x.arc(pad + sw + i * g.fs * 0.8, g.hy, g.fs * 0.26, 0, Math.PI * 2);
       if (i < g.left) { x.fillStyle = C.lime; x.fill(); }
       x.lineWidth = 1.5; x.strokeStyle = C.ink; x.stroke();
     }
     if (!g.phone && (g.onFire ? Math.floor(g.clock * 6) % 2 : g.kicks)) {   // flashing while on fire, steady once it's just the kicks
       x.textAlign = 'left'; x.fillStyle = g.onFire ? g.pal.fire : C.ink; x.font = '600 ' + g.fs + 'px ' + g.font;
-      x.fillText((g.onFire ? 'ON FIRE x' : 'KICKS x') + H.FIRE_X, pad + sw + H.BALLS * g.fs * 0.8 + g.fs, g.hy);
+      x.fillText((g.onFire ? 'ON FIRE x' : 'KICKS x') + H.FIRE_X, pad + sw + H.BALLS * g.fs * 0.8 + g.fs, hb);
     }
     x.textAlign = 'right'; x.fillStyle = C.ink; x.font = '500 ' + g.fs + 'px ' + g.font;
-    x.fillText('BEST ' + g.best, (window.BBA && BBA.hud ? BBA.hud(g.st, W - pad, Math.round(g.hy - g.fs * 0.35), W) : W - pad) - (window.BBA && BBA.hudOn(g.st) ? 4 : 0), g.hy);
+    x.fillText('BEST ' + g.best, (window.BBA && BBA.hud ? BBA.hud(g.st, W - pad, g.hy, W) : W - pad) - (window.BBA && BBA.hudOn(g.st) ? 4 : 0), hb);
     if (g.frame) H.drawNav(g);   // the logo sits back with the score bar, so the ball flies in front of it
     // floor rule
     x.fillStyle = C.ink; x.fillRect(0, g.floorY, W, 1.5);

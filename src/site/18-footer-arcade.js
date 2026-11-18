@@ -14,6 +14,7 @@
   // data-squiggle hands it to 02-squiggle-buttons.js, so on hover the ink squiggle draws in and fills it, the text
   // turns Purps (.sq-on) and the sparkle jumps to the left in white, like the site's buttons.
   s.textContent =
+    '.bb-footer.bbarc-on{padding-top:4vw}@media (max-width:479px){.bb-footer.bbarc-on{padding-top:24px}}' +
     '.bbarc-bar{order:-1;align-self:center;display:flex;flex-direction:column;align-items:center;text-align:center;margin:0 0 1.2vw;position:relative;z-index:2}' +
     // intro above the button so people know there's a game here: plain text, no effects
     '.bbarc-h{margin:0 0 6px;font-family:inherit;font-size:clamp(26px,3vw,44px);line-height:1.05;font-weight:700;letter-spacing:-.01em;color:#212121}' +
@@ -213,6 +214,7 @@
     try { A.miniLogo(A.f); } catch (e) {}
     A.t = A.theme(A.f);
     if (!A.games(A.t).length) return;
+    A.f.classList.add('bbarc-on');
     var bar = A.bar = document.createElement('div');
     bar.className = 'bbarc-bar';
     bar.innerHTML = '<p class="bbarc-h">Fancy a game?</p><p class="bbarc-p">Take five. Go on.</p><button type="button" class="bbarc-btn" data-squiggle><span class="bbarc-ic bbarc-ic-l">' + star('#F4F4F4') + '</span><span class="bbarc-tx">Next game</span><span class="bbarc-ic bbarc-ic-r">' + star('#212121') + '</span></button>';

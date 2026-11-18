@@ -11,13 +11,13 @@
   var B = window.BBI = window.BBI || {};
   var s = document.createElement('style');
   s.textContent =
-    '.bb-footer.bbinv-on{padding-top:6vw}' +
+    '.bb-footer.bbinv-on{padding-top:4vw}' +
     '.bb-footer.bbinv-on .bbft-lm{display:none}' +
     '.bbinv-stage{order:0;align-self:stretch;margin:0 -5vw;position:relative}' +
     '.bbinv-stage canvas{display:block;width:100%;touch-action:pan-y;-webkit-user-select:none;user-select:none}' +
     // Instagram sits centred just above Privacy Policy (order 1, before the tag in the DOM) on every footer
     '.bb-footer .bbft-ig{order:1;margin:2vw 0 0}' +
-    '@media (max-width:479px){.bb-footer.bbinv-on{padding-top:32px}.bb-footer .bbft-ig{margin:16px 0 0}}';
+    '@media (max-width:479px){.bb-footer.bbinv-on{padding-top:24px}.bb-footer .bbft-ig{margin:16px 0 0}}';
   document.head.appendChild(s);
   B.SEL = '[data-barba-namespace="home"] .bb-footer,[data-barba-namespace="goodies"] .bb-footer';
   // Colour sets. On the Purps footer the middle row of blobs and anything Purps go Main Green, and blob bullets go ink.
@@ -465,9 +465,10 @@
     else if (g.hyd && g.intro > 0 && g.mode === 'play') B.bigText(g, x, [['FINAL WAVE', 1]], 2.2 - g.intro);
     // HUD
     x.font = '500 ' + g.fs + 'px ' + g.font; x.fillStyle = K.ink; x.textBaseline = 'middle';
-    x.textAlign = 'left'; x.fillText('SCORE ' + g.score + '   ' + (g.hyd ? 'FINAL WAVE' : 'WAVE ' + g.wave + '/' + B.WAVES) + '   LIVES ' + g.lives, 16, g.hy);
+    var hp = W < 560 ? 16 : Math.round(W * 0.05);   // score bar side padding, the same in every footer game
+    x.textAlign = 'left'; x.fillText('SCORE ' + g.score + '   ' + (g.hyd ? 'FINAL WAVE' : 'WAVE ' + g.wave + '/' + B.WAVES) + '   LIVES ' + g.lives, hp, g.hy);
     // the only score-bar button is NEXT GAME (no Restore logo: a new game rebuilds the logo)
-    var px = (window.BBA && BBA.hud ? BBA.hud(g.st, W - 16, g.hy, W) : W - 16) + 8;
+    var px = (window.BBA && BBA.hud ? BBA.hud(g.st, W - hp, g.hy, W) : W - hp) + 8;
     x.font = '500 ' + g.fs + 'px ' + g.font; x.fillStyle = K.ink;
     x.textAlign = 'right'; x.fillText('LOGO ' + Math.round(100 * L.alive / L.total) + '%', px - 10, g.hy);
     // instructions are plain text; the only button is Play again (the same one as every other game)
