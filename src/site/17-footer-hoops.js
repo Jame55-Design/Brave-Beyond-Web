@@ -30,7 +30,8 @@
   H.SWISH = 2;           // multiplier for a clean shot
   H.FIRE_AT = 3;         // baskets in a row to catch fire (a nod to the old 90s arcade basketball games)
   H.FIRE_X = 2;          // points multiplier while on fire
-  H.MAX_W = 1440;        // widest the play area gets: on wider screens the court is centred so the far hoop stays in reach
+  H.MAX_W = 1440;
+  H.WALL_MIN = 992;      // the graffiti brick wall only shows at this width and up (not on phones or tablets)        // widest the play area gets: on wider screens the court is centred so the far hoop stays in reach
   H.KICKS_AT = 3;        // baskets made while already on fire to earn the high-tops (kept for the rest of the round)
   // Once he has the kicks every basket stays double points for the rest of the round, fire or no fire (they don't stack: x2 max)
   // Pixel basketball high-top (our own design), facing right with the heel at the left.
@@ -118,7 +119,8 @@
     });
     // pixel brick wall at the right end of the court (the ball bounces off its face); keep the far hoop in front of it
     var wp = g.wallP = Math.max(2, Math.round(3 * u));
-    g.wallT = (g.phone ? 14 : 20) * wp;   // same thickness on every screen; on wide screens the footer carries on past it
+    // desktop only: no wall on phones and tablets (under 992px, Webflow's tablet size), the ball bounces off the footer's edge there
+    g.wallT = !F && W < H.WALL_MIN ? 0 : 20 * wp;   // same thickness on every desktop screen; on wide screens the footer carries on past it
     g.wallX = ox + PW - g.wallT;
     var last = g.hoops[g.hoops.length - 1], edge = last.x + last.rw / 2 + 24 * u;
     if (edge > g.wallX - 8) last.x -= edge - (g.wallX - 8);
@@ -247,7 +249,7 @@
       b.vx *= Math.pow(0.35, dt);    // rolling friction
     }
     // side walls
-    var wl = r, wr = g.wallX - g.wallP - r;   // the footer's left edge, and the brick wall's face on the right
+    var wl = r, wr = g.wallX - (g.wallT ? g.wallP : 0) - r;   // the footer's left edge, and the brick wall's face on the right
     if (b.x > wr && b.vx > 0) { b.x = wr; b.vx *= -0.5; }
     if (b.x < wl && b.vx < 0) { b.x = wl; b.vx *= -0.5; }
     // ceiling: the top of the footer (or of the video frame), so a big fling bounces back instead of vanishing
@@ -406,6 +408,7 @@
     }
   };
   H.drawWall = function (g) {
+    if (!g.wallT) return;
     var x = g.ctx, P = g.wallP, x0 = g.wallX, x1 = g.wallX + g.wallT, yb = Math.round(g.floorY), yt = Math.round(g.top + g.fs), bw = 8 * P, bh = 4 * P;
     var col = g.pal.wall || H.THEMES.green.wall;
     x.fillStyle = C.inn; x.fillRect(x0, yt, x1 - x0, yb - yt);
