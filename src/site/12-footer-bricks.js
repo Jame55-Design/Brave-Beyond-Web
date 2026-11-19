@@ -330,8 +330,10 @@
 
   B.size = function (g) {
     var W = Math.round(g.st.getBoundingClientRect().width);
-    if (!W || W === g.W) return;
-    g.W = W;
+    if (!W) return;
+    var sh = window.BBI && BBI.heightFor ? BBI.heightFor(W) : 0;   // the shared footer game height
+    if (W === g.W && sh === g.T) return;
+    g.W = W; g.T = sh;
     g.fs = Math.max(11, Math.min(16, Math.round(W / 96)));   // HUD text, same scale as the invaders game
     g.hy = Math.round(g.fs * 1.6);
     var lw = Math.min(W * (W < 600 ? 0.86 : 0.62), 820);
@@ -342,8 +344,14 @@
     g.oy = g.ceil + 18;
     g.py = g.oy + g.rows * g.s + Math.max(110, Math.round(W * 0.14)); // paddle row
     g.H = g.py + 46;
-    var sh = window.BBI && BBI.heightFor ? BBI.heightFor(W) : 0;   // match the shared footer game height (the extra goes above the paddle)
-    if (sh > g.H) { g.py += sh - g.H; g.H = sh; }
+    // a short laptop screen: close up the gap above the paddle (down to 90px), then use smaller bricks, until it fits
+    if (sh && g.H > sh) {
+      var gap = Math.max(90, sh - 46 - g.oy - g.rows * g.s);
+      while (g.oy + g.rows * g.s + gap + 46 > sh && g.s > 4) g.s--;   // same bricks, each one smaller
+      g.ox = Math.round((W - g.cols * g.s) / 2);
+      g.py = g.oy + g.rows * g.s + gap; g.H = g.py + 46;
+    }
+    if (sh > g.H) { g.py += sh - g.H; g.H = sh; }   // match the shared footer game height (the extra goes above the paddle)
     var dpr = Math.min(2, window.devicePixelRatio || 1);
     g.cv.width = W * dpr; g.cv.height = g.H * dpr; g.cv.style.height = g.H + 'px';
     g.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -625,6 +633,8 @@
     var raf = 0, last = performance.now(), dead = false;
     var ro = window.ResizeObserver ? new ResizeObserver(function () { B.size(g); }) : null;
     if (ro) ro.observe(st);
+    var onWinH = function () { B.size(g); };   // the window getting shorter / taller changes the shared game height on laptops
+    window.addEventListener('resize', onWinH);
     function loop(now) {
       if (dead || !cv.isConnected) return;
       var dt = Math.max(0, Math.min(.033, (now - last) / 1000)); last = now;   // never negative (a frame stamp can predate mount)
@@ -636,7 +646,7 @@
     }
     raf = requestAnimationFrame(loop);
     g.stop = function () {
-      dead = true; g.vis = g.focus = false; cancelAnimationFrame(raf); if (ro) ro.disconnect();
+      dead = true; g.vis = g.focus = false; cancelAnimationFrame(raf); if (ro) ro.disconnect(); window.removeEventListener('resize', onWinH);
       window.removeEventListener('keydown', g.kd); window.removeEventListener('keyup', g.ku);
     };
     B.g = g;

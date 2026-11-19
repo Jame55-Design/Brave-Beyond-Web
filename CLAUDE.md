@@ -93,6 +93,7 @@ James's studio site. Built in Webflow, with custom JS served from this repo via 
 
 ## Footer game consistency (Nov 2026)
 - Every footer game is the same height at a given width: the invaders height (BBI.heightFor(W)); the others add the extra as sky (bricks: above the paddle).
+- On laptops / desktops (992px+) BBI.heightFor caps that height so the whole game fits under the fixed nav: window height - nav (measured, BBI.navH) - 16px, never below 440px. Invaders narrows its logo (g.lw), smaller banner and gap; bricks closes the paddle gap then shrinks bricks; cats / backpack / hoops trim their sky. Each game re-sizes on window resize too. Phones and tablets keep the full height.
 - The footer's top padding is set once by the arcade (.bb-footer.bbarc-on: 4vw, 24px on phones), with or without a game, so "Fancy a game?" never moves. Don't add padding-top in a game file.
 - Score bars: side padding W < 560 ? 16 : round(W * 0.05) (lines up with the footer content), centred on g.hy, weight 500. NEXT GAME is placed with BBA.hud(st, W - pad, g.hy, W) in every game.
 

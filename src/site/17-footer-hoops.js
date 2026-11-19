@@ -91,7 +91,9 @@
     if (!rw) return;
     var css = F ? (F.css || 540) : rw;
     if (F) { g.k = css / rw; g.cv.style.height = Math.round(rw * F.h / F.w) + 'px'; if (g.W === css && g.frame === F) return; }
-    else { g.k = 1; if (rw === g.W) return; }
+    var T = !F && window.BBI && BBI.heightFor ? BBI.heightFor(rw) : 0;   // the shared footer game height
+    if (!F) { g.k = 1; if (rw === g.W && T === g.T) return; }
+    g.T = T;
     var W = g.W = css;
     g.frame = F || null;
     g.pal = H.theme(g);
@@ -101,8 +103,9 @@
     // play width: the court (sling, hoops, walls) is capped at H.MAX_W and centred; score bar and floor still run full width
     var PW = g.pw = F ? W : Math.min(W, H.MAX_W), ox = g.ox = Math.round((W - PW) / 2);
     var band = g.phone ? 400 : Math.round(clamp(PW * 0.36, 440, 560));   // the game's height on the site at this width
+    if (T && !g.phone) band = Math.max(440, Math.min(band, T));           // short laptop screens: fit under the nav
     var dpr = F ? F.w / css : Math.min(2, window.devicePixelRatio || 1);
-    g.H = F ? Math.round(F.h / dpr) : Math.max(band, window.BBI && BBI.heightFor ? BBI.heightFor(W) : 0);   // shared footer game height (extra sky)
+    g.H = F ? Math.round(F.h / dpr) : Math.max(band, T);   // shared footer game height (extra sky)
     g.cv.width = Math.round(W * dpr); g.cv.height = Math.round(g.H * dpr); if (!F) g.cv.style.height = g.H + 'px';
     g.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     var u = g.u = clamp(Math.min(PW / 1200, band / 440), 0.62, 1.25);
@@ -917,6 +920,8 @@
     var raf = 0, last = performance.now(), dead = false;
     var ro = window.ResizeObserver ? new ResizeObserver(function () { H.size(g); }) : null;
     if (ro) ro.observe(st);
+    var onWinH = function () { H.size(g); };   // the window getting shorter / taller changes the shared game height on laptops
+    window.addEventListener('resize', onWinH);
     function loop(now) {
       if (dead || !cv.isConnected) return;
       var dt = Math.max(0, Math.min(.05, (now - last) / 1000)); last = now;   // never negative (a frame stamp can predate mount)
@@ -926,7 +931,7 @@
       raf = requestAnimationFrame(loop);
     }
     raf = requestAnimationFrame(loop);
-    g.stop = function () { dead = true; cancelAnimationFrame(raf); if (ro) ro.disconnect(); };
+    g.stop = function () { dead = true; cancelAnimationFrame(raf); if (ro) ro.disconnect(); window.removeEventListener('resize', onWinH); };
     H.g = g;
     return true;
   };

@@ -104,7 +104,31 @@
   };
   // Shared footer game height: every footer game is as tall as the invaders game at that width (the tallest),
   // so swapping games doesn't make the footer jump. Uses the footer logo's paths; cached per width.
+  // On laptops / desktops (W >= B.FIT_MIN) the shared height is also capped so the whole game fits on screen under
+  // the fixed nav: window height - nav - B.FIT_GAP, never below B.FIT_FLOOR. Invaders shrinks its logo to fit,
+  // bricks shrinks its gap / bricks, the others trim their sky. Phones and tablets keep the full height (they scroll).
+  B.FIT_MIN = 992; B.FIT_FLOOR = 440; B.FIT_GAP = 16;
+  B.navH = function () {
+    if (B.navT && Date.now() - B.navT < 1000) return B.nav;
+    B.navT = Date.now(); B.nav = 84;
+    try {
+      var els = document.elementsFromPoint(window.innerWidth / 2, 12);
+      for (var i = 0; i < els.length; i++) {
+        var cs = getComputedStyle(els[i]);
+        if ((cs.position === 'fixed' || cs.position === 'sticky') && !/cursor/.test(els[i].className)) {
+          var b = els[i].getBoundingClientRect().bottom;
+          if (b > 20 && b < 180) { B.nav = Math.round(b); break; }
+        }
+      }
+    } catch (e) {}
+    return B.nav;
+  };
   B.heightFor = function (W, paths) {
+    var nat = B.natH(W, paths);
+    if (!nat || W < B.FIT_MIN) return nat;
+    return Math.round(Math.min(nat, Math.max(B.FIT_FLOOR, window.innerHeight - B.navH() - B.FIT_GAP)));
+  };
+  B.natH = function (W, paths) {
     W = Math.round(W); if (!W) return 0;
     B.hCache = B.hCache || {};
     if (B.hCache[W]) return B.hCache[W];
@@ -119,7 +143,7 @@
     return (B.hCache[W] = top + 3 * 11 * P + 56 + logoH * C + 96);
   };
   B.buildLogo = function (g) {
-    var L = g.logo, C = g.C, r = B.raster(g.paths, Math.floor(g.W * 0.98 / C));
+    var L = g.logo, C = g.C, r = B.raster(g.paths, Math.floor(g.W * 0.98 * (g.lw || 1) / C));
     L.w = r.w; L.h = r.h; L.cv.width = r.w; L.cv.height = r.h;
     var lc = L.cv.getContext('2d');
     L.img = lc.createImageData(r.w, r.h); L.cells = r.a;
@@ -132,7 +156,7 @@
   };
   // Banner: the logo on its own in ink (transparent background), rendered fine like the footer logo
   B.buildBanner = function (g) {
-    var r = B.raster(g.paths, g.W < 600 ? 170 : 260), pad = 3;
+    var r = B.raster(g.paths, g.W < 600 || g.fitting ? 170 : 260), pad = 3;
     var bw = r.w + pad * 2, bh = r.h + pad * 2;
     var c = document.createElement('canvas'); c.width = bw; c.height = bh;
     var x = c.getContext('2d'), img = x.createImageData(bw, bh), d = img.data;
@@ -181,9 +205,13 @@
   var B = window.BBI = window.BBI || {};
   B.size = function (g) {
     var W = Math.round(g.st.getBoundingClientRect().width);
-    if (!W || W === g.W) return;
+    if (!W) return;
+    var T = B.heightFor(W, g.paths);
+    if (W === g.W && T === g.T) return;
     var small = W < 600;
-    g.W = W;
+    g.W = W; g.T = T;
+    g.fitting = !!T && T < B.natH(W, g.paths);   // short laptop screen: smaller banner, tighter gap, narrower logo
+    g.gapL = g.fitting ? 36 : 56;
     g.rows = 3;
     g.P = small ? 3 : 4;                                   // invader pixel size (smaller on phones so more fit)
     g.Pl = small ? 2 : 3;                                  // plane pixel size
@@ -195,8 +223,12 @@
     B.buildBanner(g);
     g.laneH = Math.max(9 * g.Pl, g.ban.h * g.Bp) + 12;
     g.top = g.lane + g.laneH + 10;                         // top of the invader formation
+    // logo width: full (0.98 W) unless the game has to fit a short screen, then narrower so the height comes out at T
+    var rest = g.top + g.rows * 11 * g.P + g.gapL + 96;
+    g.lw = 1;
+    if (g.fitting) { var h1 = B.raster(g.paths, Math.floor(W * 0.98 / g.C)).h * g.C; if (rest + h1 > T) g.lw = Math.max(0.28, (T - rest - g.C * 2) / h1); }
     B.buildLogo(g);
-    g.H = g.top + g.rows * 11 * g.P + 56 + g.logo.h * g.C + 96;   // same as B.heightFor(W), the shared footer game height
+    g.H = Math.max(T || 0, rest + g.logo.h * g.C);   // the shared footer game height
     var dpr = Math.min(2, window.devicePixelRatio || 1);
     g.cv.width = W * dpr; g.cv.height = g.H * dpr; g.cv.style.height = g.H + 'px';
     g.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -502,6 +534,8 @@
     var raf = 0, last = performance.now(), dead = false;
     var ro = window.ResizeObserver ? new ResizeObserver(function () { B.size(g); }) : null;
     if (ro) ro.observe(st);
+    var onWinH = function () { B.size(g); };   // the window getting shorter / taller changes the shared game height on laptops
+    window.addEventListener('resize', onWinH);
     function loop(now) {
       if (dead || !cv.isConnected) return;
       var dt = Math.max(0, Math.min(.033, (now - last) / 1000)); last = now;   // never negative (a frame stamp can predate mount)
@@ -513,7 +547,7 @@
       raf = requestAnimationFrame(loop);
     }
     raf = requestAnimationFrame(loop);
-    g.stop = function () { dead = true; cancelAnimationFrame(raf); if (ro) ro.disconnect(); };
+    g.stop = function () { dead = true; cancelAnimationFrame(raf); if (ro) ro.disconnect(); window.removeEventListener('resize', onWinH); };
     B.g = g;
     return true;
   };

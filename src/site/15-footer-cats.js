@@ -156,15 +156,18 @@
 
   K.size = function (g) {
     var W = Math.round(g.st.getBoundingClientRect().width);
-    if (!W || W === g.W) return;
-    g.W = W;
+    if (!W) return;
+    var T = window.BBI && BBI.heightFor ? BBI.heightFor(W) : 0;   // the shared footer game height
+    if (W === g.W && T === g.T) return;
+    g.W = W; g.T = T;
     g.fs = Math.max(11, Math.min(16, Math.round(W / 96)));   // HUD text, same scale as the other footer games
     g.hy = Math.round(g.fs * 1.6);
     // gameH sets the box/cat size; the canvas is 1.4x that tall so it sits in line with the other footer games,
     // leaving open space above the boxes for the combo pop and the TIME'S UP screen
     var gameH = W < 560 ? 250 : 340;
     g.H = g.hy + Math.round(g.fs * 1.4) + Math.round(gameH * K.SKY);
-    g.H = Math.max(g.H, window.BBI && BBI.heightFor ? BBI.heightFor(W) : 0);   // shared footer game height (extra sky above the boxes)
+    // shared footer game height: more or less sky above the boxes (never less than a little)
+    if (T) g.H = Math.max(T, g.hy + Math.round(g.fs * 1.4) + Math.round(gameH * 1.08));
     var dpr = Math.min(2, window.devicePixelRatio || 1);
     g.cv.width = W * dpr; g.cv.height = g.H * dpr; g.cv.style.height = g.H + 'px';
     g.ctx.setTransform(dpr, 0, 0, dpr, 0, 0); g.ctx.imageSmoothingEnabled = false;
@@ -450,6 +453,8 @@
     var raf = 0, last = performance.now(), dead = false;
     var ro = window.ResizeObserver ? new ResizeObserver(function () { K.size(g); }) : null;
     if (ro) ro.observe(st);
+    var onWinH = function () { K.size(g); };   // the window getting shorter / taller changes the shared game height on laptops
+    window.addEventListener('resize', onWinH);
     function loop(now) {
       if (dead || !cv.isConnected) return;
       var dt = Math.max(0, Math.min(.05, (now - last) / 1000)); last = now;   // never negative (a frame stamp can predate mount)
@@ -459,7 +464,7 @@
       raf = requestAnimationFrame(loop);
     }
     raf = requestAnimationFrame(loop);
-    g.stop = function () { document.body.classList.remove('bbcat-hover'); dead = true; cancelAnimationFrame(raf); if (ro) ro.disconnect(); };
+    g.stop = function () { document.body.classList.remove('bbcat-hover'); dead = true; cancelAnimationFrame(raf); if (ro) ro.disconnect(); window.removeEventListener('resize', onWinH); };
     K.g = g;
     return true;
   };

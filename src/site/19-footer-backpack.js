@@ -465,12 +465,14 @@
   BP.size = function(gm){
     g = gm;
     const W = Math.round(gm.st.getBoundingClientRect().width);
-    if (!W || W === gm.W) return;
-    gm.W = W;
+    if (!W) return;
+    const T = window.BBI && BBI.heightFor ? BBI.heightFor(W) : 0;   // the shared footer game height
+    if (W === gm.W && T === gm.T) return;
+    gm.W = W; gm.T = T;
     gm.fs = Math.max(11, Math.min(16, Math.round(W/96)));   // HUD text, same scale as the other footer games
     gm.hy = Math.round(gm.fs*1.6);
     gm.H = gm.hy + Math.round(gm.fs*1.4) + (W < 560 ? 350 : 476);
-    gm.H = Math.max(gm.H, window.BBI && BBI.heightFor ? BBI.heightFor(W) : 0);   // shared footer game height (extra sky)
+    if (T) gm.H = Math.max(T, gm.hy + Math.round(gm.fs*1.4) + (W < 560 ? 350 : 380));   // shared footer game height (more or less sky)
     const dpr = Math.min(2, window.devicePixelRatio || 1); gm.dpr = dpr;
     gm.cv.width = W*dpr; gm.cv.height = gm.H*dpr; gm.cv.style.height = gm.H + 'px';
     gm.ctx.setTransform(dpr,0,0,dpr,0,0);
@@ -741,6 +743,8 @@
     var raf = 0, last = performance.now(), dead = false;
     var ro = window.ResizeObserver ? new ResizeObserver(function () { BP.size(gm); }) : null;
     if (ro) ro.observe(st);
+    var onWinH = function () { BP.size(gm); };   // the window getting shorter / taller changes the shared game height on laptops
+    window.addEventListener('resize', onWinH);
     function loop(now) {
       if (dead || !cv.isConnected) return;
       var dt = Math.max(0, Math.min(.05, (now - last) / 1000)); last = now;
@@ -751,7 +755,7 @@
     }
     raf = requestAnimationFrame(loop);
     gm.stop = function () {
-      document.body.classList.remove('bbbp-hover'); dead = true; cancelAnimationFrame(raf); if (ro) ro.disconnect();
+      document.body.classList.remove('bbbp-hover'); dead = true; cancelAnimationFrame(raf); if (ro) ro.disconnect(); window.removeEventListener('resize', onWinH);
       window.removeEventListener('keydown', kd); window.removeEventListener('keyup', ku);
     };
     BP.g = gm;
